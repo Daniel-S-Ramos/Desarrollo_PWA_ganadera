@@ -22,8 +22,8 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 0.1 | Herramientas del equipo: Node.js, npm, Git, VS Code y sus extensiones | ✅ |
 | 0.2 | Proyecto base: `package.json`, versiones fijadas de la Tabla 19, TypeScript, Vite | ✅ |
 | 0.3 | Estructura de carpetas según los componentes de la Tabla 20 | ✅ |
-| 0.4 | Repositorio Git local y repositorio privado en GitHub; primer commit | ⬜ |
-| 0.5 | Conexión con Supabase: archivo `.env.local` y cliente `supabase-js` | ⬜ |
+| 0.4 | Repositorio Git local y repositorio privado en GitHub; primer commit | ✅ |
+| 0.5 | Conexión con Supabase: archivo `.env.local` y cliente `supabase-js` | ✅ |
 | 0.6 | Pantalla mínima y primer arranque con `npm run dev` | ⬜ |
 | 0.7 | Configuración PWA: manifiesto, íconos, Service Worker; instalación en el teléfono | ⬜ |
 | 0.8 | Entorno de pruebas con Vitest y una primera prueba | ⬜ |
@@ -113,6 +113,8 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-03 | Lenguaje TypeScript | Los valores admitidos del modelo de datos se verifican al compilar |
 | 2026-10-03 | Versiones fijadas exactamente como en la Tabla 19 | Reproducibilidad y coherencia con el documento |
 | 2026-10-03 | react-router 7.18.4 en lugar de la 8 | La versión 8 exige Node 22.22 y el equipo tiene Node 22.14 |
+| 2026-10-03 | Registro abierto de usuarios desactivado en Supabase | Los tres usuarios del predio los crea el propietario (3.9.1); con el registro abierto cualquiera con la clave publicable podría crear una cuenta |
+| 2026-10-03 | Archivo `.gitattributes` con fin de línea LF | Evita diferencias de formato entre Windows y otros sistemas |
 
 ## Pendientes para el documento
 

@@ -1,0 +1,8 @@
+# Fin de línea LF en el repositorio y en la copia de trabajo, en cualquier sistema operativo.
+* text=auto eol=lf
+
+# Binarios: sin conversión.
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary
