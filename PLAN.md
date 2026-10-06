@@ -24,7 +24,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 0.3 | Estructura de carpetas según los componentes de la Tabla 20 | ✅ |
 | 0.4 | Repositorio Git local y repositorio privado en GitHub; primer commit | ✅ |
 | 0.5 | Conexión con Supabase: archivo `.env.local` y cliente `supabase-js` | ✅ |
-| 0.6 | Pantalla mínima y primer arranque con `npm run dev` | ⬜ |
+| 0.6 | Pantalla mínima y primer arranque con `npm run dev` | ✅ |
 | 0.7 | Configuración PWA: manifiesto, íconos, Service Worker; instalación en el teléfono | ⬜ |
 | 0.8 | Entorno de pruebas con Vitest y una primera prueba | ⬜ |
 

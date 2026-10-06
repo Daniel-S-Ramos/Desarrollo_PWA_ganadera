@@ -1,0 +1,119 @@
+/*
+ * Estilos base del prototipo.
+ *
+ * Los colores provienen del sistema definido en la Tabla 29 del documento. Cada tono cumple
+ * una función fija y conserva el mismo significado en todas las pantallas (apartado 3.10.4.1).
+ */
+:root {
+  /* Tabla 29 */
+  --verde-oscuro: #165232;     /* botones principales, elementos activos, encabezados */
+  --amarillo: #f4c542;         /* chapeta, recordatorios, información que requiere atención */
+  --fondo: #f7f8f2;            /* fondo general */
+  --texto: #17251c;            /* texto principal */
+  --rojo-oscuro: #922b21;      /* advertencias con posible consecuencia sanitaria */
+  --rojo-fondo: #f9e3e0;
+  --verde-claro: #dcefe2;      /* confirmaciones y estados correctos */
+  --amarillo-claro: #fdf3d3;   /* avisos que requieren revisión */
+
+  --texto-secundario: #4a5a50;
+  --borde: #d5dbd2;
+  --blanco: #ffffff;
+
+  /* Apartado 3.10.4.2: controles principales de unos 64 px, por encima de los 44 px de WCAG 2.2 */
+  --alto-control: 64px;
+  --separacion: 16px;
+  --radio: 12px;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fondo);
+  -webkit-text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--fondo);
+}
+
+/* Estructura general: encabezado fijo arriba, barra de estado siempre visible abajo. */
+.marco {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.encabezado {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  padding: var(--separacion);
+  padding-top: max(var(--separacion), env(safe-area-inset-top));
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.contenido {
+  flex: 1;
+  padding: var(--separacion);
+}
+
+.barra-inferior {
+  position: sticky;
+  bottom: 0;
+  background: var(--blanco);
+  border-top: 1px solid var(--borde);
+  padding: 12px var(--separacion);
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  font-weight: 600;
+}
+
+.titulo-seccion {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.texto-secundario {
+  color: var(--texto-secundario);
+  margin: 4px 0 var(--separacion);
+}
+
+/* Tarjetas de estado: el color nunca va solo, siempre acompañado de texto e ícono (WCAG 1.4.1). */
+.tarjeta {
+  border-radius: var(--radio);
+  padding: var(--separacion);
+  border: 1px solid var(--borde);
+  background: var(--blanco);
+}
+
+.tarjeta h2 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.tarjeta p {
+  margin: 0;
+}
+
+.tarjeta--correcto {
+  background: var(--verde-claro);
+  border-color: var(--verde-oscuro);
+}
+
+.tarjeta--aviso {
+  background: var(--amarillo-claro);
+  border-color: var(--amarillo);
+}
