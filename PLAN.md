@@ -9,7 +9,8 @@ apartado 2.8.7 (Tabla 13) del documento de trabajo de grado.
 2. Daniel aprueba o ajusta.
 3. Se implementa.
 4. Daniel lo verifica en su equipo (comando, navegador o teléfono).
-5. Se registra el avance con un commit y se anotan los insumos para el capítulo 4.
+5. Se documentan las pruebas del paso en `docs/pruebas/` con su evidencia.
+6. Se registra el avance con un commit y se anotan los insumos para el capítulo 4.
 
 Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 

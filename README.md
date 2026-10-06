@@ -21,6 +21,10 @@ npm run build      # versión de producción en dist/
 
 Ver [PLAN.md](PLAN.md).
 
+## Pruebas
+
+Ver [docs/pruebas](docs/pruebas/README.md): casos de prueba, resultados, evidencias y matriz de trazabilidad.
+
 ## Autor
 
 Daniel Santiago Ramos Pintor
