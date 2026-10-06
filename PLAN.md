@@ -25,7 +25,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 0.4 | Repositorio Git local y repositorio privado en GitHub; primer commit | ✅ |
 | 0.5 | Conexión con Supabase: archivo `.env.local` y cliente `supabase-js` | ✅ |
 | 0.6 | Pantalla mínima y primer arranque con `npm run dev` | ✅ |
-| 0.7 | Configuración PWA: manifiesto, íconos, Service Worker; instalación en el teléfono | ⬜ |
+| 0.7 | Configuración PWA: manifiesto, íconos, Service Worker; instalación en el teléfono | ✅ |
 | 0.8 | Entorno de pruebas con Vitest y una primera prueba | ⬜ |
 
 ## Iteración 1 — Fundación técnica (HU-08, HU-06, HU-07 · 16 puntos)
@@ -115,6 +115,10 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-03 | react-router 7.18.4 en lugar de la 8 | La versión 8 exige Node 22.22 y el equipo tiene Node 22.14 |
 | 2026-10-03 | Registro abierto de usuarios desactivado en Supabase | Los tres usuarios del predio los crea el propietario (3.9.1); con el registro abierto cualquiera con la clave publicable podría crear una cuenta |
 | 2026-10-03 | Archivo `.gitattributes` con fin de línea LF | Evita diferencias de formato entre Windows y otros sistemas |
+| 2026-10-05 | Logo: iniciales JR en dorado, sin fondo; fondo claro solo en los íconos maskable y de Apple | Decisión del propietario del proyecto; Android e iOS rellenan de negro lo transparente en esas dos variantes |
+| 2026-10-05 | Nombre corto de la aplicación «JR» | «Ganadería JR» se corta bajo el ícono en algunos teléfonos |
+| 2026-10-05 | @vite-pwa/assets-generator 1.0.4 en lugar de la 2.0.0 | vite-plugin-pwa 1.3.0 (Tabla 19) solo es compatible con la serie 1.x |
+| 2026-10-05 | Actualización de la aplicación con aviso al usuario (registerType: prompt) | Evita que la aplicación se recargue en medio de un registro |
 
 ## Pendientes para el documento
 

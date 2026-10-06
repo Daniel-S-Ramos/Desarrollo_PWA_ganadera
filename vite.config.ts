@@ -13,10 +13,10 @@ export default defineConfig({
     VitePWA({
       // El usuario decide cuándo aplicar una versión nueva (aviso de actualización de Workbox).
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'Ganadería JR',
-        short_name: 'Ganadería JR',
+        short_name: 'JR',
         description: 'Registro y consulta en campo para la trazabilidad bovina y el seguimiento de leche y carne.',
         lang: 'es-CO',
         start_url: '/',
@@ -26,9 +26,10 @@ export default defineConfig({
         theme_color: VERDE_OSCURO,
         background_color: FONDO_CLARO,
         icons: [
+          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

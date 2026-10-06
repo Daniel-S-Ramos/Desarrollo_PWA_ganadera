@@ -117,3 +117,55 @@ body {
   background: var(--amarillo-claro);
   border-color: var(--amarillo);
 }
+
+/* Botones (apartado 3.10.4.2): la acción principal va rellena en verde, las secundarias con
+ * fondo claro y borde. La diferencia se resuelve por relleno y no por posición. */
+.boton {
+  min-height: var(--alto-control);
+  padding: 0 24px;
+  border-radius: var(--radio);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton--principal {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  border: 2px solid var(--verde-oscuro);
+}
+
+.boton--secundario {
+  background: var(--blanco);
+  color: var(--verde-oscuro);
+  border: 2px solid var(--verde-oscuro);
+}
+
+/* Avisos que aparecen sobre la barra inferior. */
+.aviso {
+  margin: 0 var(--separacion) var(--separacion);
+  padding: var(--separacion);
+  border-radius: var(--radio);
+  border: 1px solid;
+}
+
+.aviso p {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.aviso__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* separación deliberada entre acciones contiguas (apartado 3.10.4.2) */
+}
+
+.aviso--atencion {
+  background: var(--amarillo-claro);
+  border-color: var(--amarillo);
+}
+
+.aviso--correcto {
+  background: var(--verde-claro);
+  border-color: var(--verde-oscuro);
+}

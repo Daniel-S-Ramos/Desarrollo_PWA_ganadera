@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AvisoActualizacion } from '../ui/componentes/AvisoActualizacion';
 
 type EstadoConexion = 'verificando' | 'conectado' | 'sin_red' | 'error';
 
@@ -18,13 +19,15 @@ export function App() {
 
       <main className="contenido">
         <p className="titulo-seccion">Prototipo en construcción</p>
-        <p className="texto-secundario">Fase 0 · Entorno listo</p>
+        <p className="texto-secundario">Fase 0 · Aplicación web progresiva</p>
 
         <section className={`tarjeta tarjeta--${estado === 'conectado' ? 'correcto' : estado === 'verificando' ? 'neutro' : 'aviso'}`}>
           <h2>Conexión con Supabase</h2>
           <p>{TEXTO_ESTADO[estado]}</p>
         </section>
       </main>
+
+      <AvisoActualizacion />
 
       <footer className="barra-inferior" aria-live="polite">
         Pendientes de enviar: —
@@ -36,7 +39,7 @@ export function App() {
 const TEXTO_ESTADO: Record<EstadoConexion, string> = {
   verificando: 'Verificando…',
   conectado: '✓ Configurada y en línea',
-  sin_red: '⚠ Sin conexión a internet. La aplicación seguirá funcionando sin red cuando esté terminada.',
+  sin_red: '⚠ Sin conexión a internet. La aplicación sigue funcionando desde este dispositivo.',
   error: '⚠ Configurada, pero el servicio no respondió. Revise la URL y la clave en .env.local.',
 };
 

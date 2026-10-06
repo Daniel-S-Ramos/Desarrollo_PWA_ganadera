@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Logo de la Ganadería JR: iniciales en dorado con brillo, sin fondo. -->
+  <defs>
+    <!-- Degradado vertical que imita el metal dorado: claro arriba, profundo abajo. -->
+    <linearGradient id="oro" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FCEBA6"/>
+      <stop offset="0.35" stop-color="#E9C25A"/>
+      <stop offset="0.55" stop-color="#C9971F"/>
+      <stop offset="0.8" stop-color="#E2B54A"/>
+      <stop offset="1" stop-color="#9C7212"/>
+    </linearGradient>
+    <!-- Reflejo diagonal que da el brillo. -->
+    <linearGradient id="brillo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="300" text-anchor="middle">
+    <text x="256" y="360" fill="url(#oro)" stroke="#7A5A0E" stroke-width="6" paint-order="stroke">JR</text>
+    <text x="256" y="360" fill="url(#brillo)">JR</text>
+  </g>
+</svg>
