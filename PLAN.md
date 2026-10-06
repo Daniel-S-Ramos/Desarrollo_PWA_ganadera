@@ -27,7 +27,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 0.5 | Conexión con Supabase: archivo `.env.local` y cliente `supabase-js` | ✅ |
 | 0.6 | Pantalla mínima y primer arranque con `npm run dev` | ✅ |
 | 0.7 | Configuración PWA: manifiesto, íconos, Service Worker; instalación en el teléfono | ✅ |
-| 0.8 | Entorno de pruebas con Vitest y una primera prueba | ⬜ |
+| 0.8 | Entorno de pruebas con Vitest y una primera prueba | ✅ |
 
 ## Iteración 1 — Fundación técnica (HU-08, HU-06, HU-07 · 16 puntos)
 
@@ -120,6 +120,8 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-05 | Nombre corto de la aplicación «JR» | «Ganadería JR» se corta bajo el ícono en algunos teléfonos |
 | 2026-10-05 | @vite-pwa/assets-generator 1.0.4 en lugar de la 2.0.0 | vite-plugin-pwa 1.3.0 (Tabla 19) solo es compatible con la serie 1.x |
 | 2026-10-05 | Actualización de la aplicación con aviso al usuario (registerType: prompt) | Evita que la aplicación se recargue en medio de un registro |
+| 2026-10-05 | Fondo rojizo #FBECEA y texto secundario #49584E | La prueba PU-01 detectó contrastes de 6,60:1 y 6,85:1, por debajo del 7:1 que adopta el apartado 3.10.4.1 |
+| 2026-10-05 | Informe automático de pruebas en `docs/pruebas/resultados/` | Evidencia versionada de cada ejecución, vinculada al commit evaluado |
 
 ## Pendientes para el documento
 

@@ -1,6 +1,6 @@
 # Pruebas de la Fase 0 — Preparación del entorno
 
-Verificaciones ejecutadas al preparar el entorno de desarrollo (apartado 1.6.3.2, pasos 0.1 a 0.7
+Verificaciones ejecutadas al preparar el entorno de desarrollo (apartado 1.6.3.2, pasos 0.1 a 0.8
 del [plan](../../PLAN.md)). Su propósito es comprobar que la base sobre la que se construirán las
 cinco iteraciones funciona antes de empezar a construir sobre ella.
 
@@ -23,8 +23,9 @@ cinco iteraciones funciona antes de empezar a construir sobre ella.
 | PE-09 | Service Worker registrado y activo | Paso 0.7 · RF-28 | ⚠️ Aprobada con observaciones |
 | PE-10 | La aplicación abre sin conexión | RF-28 · RD-01 | ✅ |
 | PE-11 | Instalación sin tienda de aplicaciones | RNF-11 · RNF-10 | ✅ |
+| PU-01 | Contraste del sistema de color (prueba automática) | 3.10.4.1 · RNF-01 | ⚠️ Aprobada tras corrección |
 
-**Total:** 11 pruebas · 11 aprobadas · 0 fallidas · 2 con observaciones.
+**Total:** 12 pruebas (11 manuales y 1 automática con 16 verificaciones) · 12 aprobadas · 0 fallidas · 3 con observaciones.
 
 ## Versiones del código evaluadas
 
@@ -267,3 +268,25 @@ files generated
 | Observaciones | Verificado en computador de escritorio. La instalación en un teléfono Android real queda pendiente para cuando la aplicación esté desplegada con HTTPS (paso 6.5), ya que fuera de `localhost` los navegadores exigen conexión segura para registrar un Service Worker |
 
 ![PE-11 Aplicación instalada](evidencias/fase-0/PE-11-aplicacion-instalada.png)
+
+## PU-01 · Contraste del sistema de color
+
+Primera prueba automática del proyecto (paso 0.8). Verifica con Vitest las cifras de contraste que
+afirma el apartado 3.10.4.1 y que todas las combinaciones de texto del sistema de color alcanzan el
+nivel reforzado de WCAG 2.2.
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que (a) la función de contraste calcula conforme a WCAG 2.2, (b) las cifras declaradas en el documento son correctas y (c) toda combinación de texto y fondo empleada alcanza 7:1 |
+| Requerimiento | Apartado 3.10.4.1 (Tabla 29) · RNF-01 (operación en condiciones de campo) |
+| Tipo | Unitaria, automática |
+| Código | [`src/ui/contraste.ts`](../../src/ui/contraste.ts) · prueba [`src/ui/contraste.test.ts`](../../src/ui/contraste.test.ts) |
+| Condiciones iniciales | Hoja de estilos `src/ui/estilos.css` con las variables de color. La prueba lee los colores de ese archivo, de modo que verifica los que usa la aplicación y no una copia |
+| Datos de entrada | Nueve combinaciones de texto y fondo, más casos de referencia: negro sobre blanco (21:1) y un color sobre sí mismo (1:1) |
+| Pasos | Ejecutar `npm run test:informe` |
+| Resultado esperado | 16 verificaciones aprobadas. Las cifras 9,18:1 y 14,92:1 del documento se reproducen |
+| Resultado obtenido | **Primera ejecución: 14 aprobadas, 2 fallidas** ([informe](resultados/2026-10-05_215341_18596d8.md)). Las cifras del documento se reproducen exactamente, pero dos combinaciones agregadas en la implementación no alcanzaban 7:1: rojo oscuro sobre fondo rojizo, 6,60:1, en las **advertencias sanitarias**, y texto secundario sobre fondo claro, 6,85:1. **Tras la corrección: 16 de 16 aprobadas** ([informe](resultados/2026-10-05_215417_18596d8.md)) |
+| Estado | ⚠️ Aprobada tras corrección |
+| Fecha | 2026-10-05 |
+| Corrección aplicada | Fondo rojizo de #F9E3E0 a **#FBECEA** (7,06:1). Se aclaró el fondo y no se oscureció el rojo, porque #922B21 está declarado en la Tabla 29 y el fondo rojizo no tenía un valor fijado en el documento. Texto secundario de #4A5A50 a **#49584E** (7,05:1). En ambos casos se buscó el ajuste mínimo que alcanza el umbral, para no alterar la apariencia |
+| Observaciones | Ambas combinaciones cumplían ya el nivel mínimo AA (4,5:1). Se exigió el reforzado (7:1) porque es el que el documento adopta y por las condiciones de luz del potrero. La prueba queda en el conjunto automático: si un cambio futuro de colores rompe el contraste, fallará |

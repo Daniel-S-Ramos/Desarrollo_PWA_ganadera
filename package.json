@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verificar:supabase": "node --env-file=.env.local scripts/verificar-supabase.mjs",
-    "iconos": "pwa-assets-generator"
+    "iconos": "pwa-assets-generator",
+    "test:informe": "node scripts/informe-pruebas.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.116.0",

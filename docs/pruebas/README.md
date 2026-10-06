@@ -39,11 +39,19 @@ observaciones):
 Las evidencias (capturas de pantalla y salidas de comandos) se guardan en `evidencias/`, con el
 identificador del caso como prefijo del nombre del archivo.
 
+## Informes de las pruebas automáticas
+
+Las pruebas unitarias y de integración se ejecutan con `npm run test:informe`, que además de
+mostrar el resultado en la terminal guarda un informe en [`resultados/`](resultados/). El nombre
+del archivo lleva la fecha, la hora y el commit evaluado, así que los informes se ordenan solos
+y cada uno puede vincularse con la versión exacta del código. Se generan automáticamente y no
+se editan a mano.
+
 ## Documentos
 
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
-| [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.7) | 11 | 11 aprobadas |
+| [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -53,6 +61,7 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | Requerimiento | Descripción breve | Pruebas | Estado |
 |---|---|---|---|
 | RF-28 | Registrar y consultar sin conexión | PE-07, PE-10 (base técnica: la aplicación abre sin red) | 🔄 Parcial: falta registrar y consultar datos |
+| RNF-01 | Operación en condiciones de campo | PU-01 (contraste 7:1 en todas las combinaciones de texto) | 🔄 Parcial: falta el tamaño de los controles y la prueba en campo |
 | RNF-07 | Acceso condicionado a autenticación | PE-04 (registro abierto cerrado en el servicio) | 🔄 Parcial: falta el inicio de sesión |
 | RNF-10 | Navegadores móviles y de escritorio | PE-06, PE-11 | 🔄 Parcial: falta la prueba en un teléfono real |
 | RNF-11 | Instalable sin tienda de aplicaciones | PE-11 | ✅ Verificado |

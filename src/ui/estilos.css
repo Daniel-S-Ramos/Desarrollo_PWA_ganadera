@@ -11,11 +11,11 @@
   --fondo: #f7f8f2;            /* fondo general */
   --texto: #17251c;            /* texto principal */
   --rojo-oscuro: #922b21;      /* advertencias con posible consecuencia sanitaria */
-  --rojo-fondo: #f9e3e0;
+  --rojo-fondo: #fbecea;       /* aclarado de #f9e3e0 para que el rojo alcance 7:1 (PU-01) */
   --verde-claro: #dcefe2;      /* confirmaciones y estados correctos */
   --amarillo-claro: #fdf3d3;   /* avisos que requieren revisión */
 
-  --texto-secundario: #4a5a50;
+  --texto-secundario: #49584e; /* oscurecido de #4a5a50 para alcanzar 7:1 (PU-01) */
   --borde: #d5dbd2;
   --blanco: #ffffff;
 
