@@ -138,11 +138,13 @@ export interface Animal extends Auditable {
   padre_externo: string | null;
 }
 
+/**
+ * Datos de una fotografía. La ruta de la imagen en el servicio de archivos no se almacena: se deduce
+ * como `{animal_id}/{id}.webp` (docs/tecnica/05-esquema-remoto.md, sección 2.1).
+ */
 export interface Fotografia extends Auditable {
   animal_id: Uuid;
   tipo: TipoFotografia;
-  /** Ruta en el servicio de archivos; vacía mientras la imagen no se ha transmitido. */
-  ruta_remota: string | null;
 }
 
 export interface EventoSanitario extends Auditable {

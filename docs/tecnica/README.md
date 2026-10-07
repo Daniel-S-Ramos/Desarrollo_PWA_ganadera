@@ -13,3 +13,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 02 | [Esquema local: la base de datos del dispositivo](02-esquema-local.md) | 1.3 | RD-01 · 3.8.4 · Tabla 25 |
 | 03 | [Repositorio local y cola de operaciones](03-repositorio-y-cola.md) | 1.4 | 3.7.2 · RNF-04 · Tabla 20 |
 | 04 | [Almacenamiento persistente](04-almacenamiento-persistente.md) | 1.5 | RNF-15 · 3.8.7 |
+| 05 | [Esquema remoto: la base de datos del servicio](05-esquema-remoto.md) | 1.6 | 3.8.3 · 3.7.8 · RNF-06 |

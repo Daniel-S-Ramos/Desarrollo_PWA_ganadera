@@ -15,6 +15,7 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PU-05 | Repositorio local y cola de operaciones | 1.4 | 3.7.2 · RNF-04 · RD-04 · RF-27 · RNF-13 | ✅ |
 | PU-06 | Almacenamiento persistente | 1.5 | RNF-15 · 3.8.7 | ✅ |
 | PE-12 | Almacenamiento persistente en el navegador real | 1.5 | RNF-15 | ⚠️ Aprobada con observaciones |
+| PI-01 | Esquema remoto contra la base de datos real | 1.6 | RNF-05 · RNF-06 · RNF-08 · RD-04 · 3.7.3 · 3.7.8 | ⚠️ Aprobada tras corrección |
 
 ---
 
@@ -226,5 +227,70 @@ verificación con Chrome instalado y sin instalar se registra en PE-12.
 | Pestaña normal | Aparece | `false` | [captura del aviso](evidencias/iteracion-1/PE-12-1-pestana-normal-aviso.png) · [captura de la consola](evidencias/iteracion-1/PE-12-2-pestana-normal-persisted-false.png) |
 | Aplicación instalada | Aparece | `false` | [captura del aviso](evidencias/iteracion-1/PE-12-3-app-instalada-aviso.png) · [captura de la consola](evidencias/iteracion-1/PE-12-4-app-instalada-persisted-false.png) |
 | Pestaña normal con el sitio en marcadores | Aparece | `false` | [captura](evidencias/iteracion-1/PE-12-5-con-marcador-persisted-false.png) |
+| Aplicación instalada, tras el ajuste del aviso | Aparece la variante para aplicación instalada, sin pedir instalarla | `false` | [captura](evidencias/iteracion-1/PE-12-6-app-instalada-aviso-ajustado.png) |
+
+**Verificación del ajuste (2026-10-06).** Tras compilar la versión con el aviso adaptable y
+actualizar la aplicación instalada, el aviso mostró la variante «Mantenga espacio libre en el
+teléfono y abra la aplicación con señal con frecuencia para que la información se envíe», sin
+pedir instalar la aplicación.
 
 ![PE-12 Aplicación instalada: persisted() devuelve false](evidencias/iteracion-1/PE-12-4-app-instalada-persisted-false.png)
+
+## PI-01 · Esquema remoto contra la base de datos real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar en la base de datos real de Supabase que el esquema tiene las tablas, restricciones y privilegios especificados: solo inserción y consulta, `recibido_en` fijada por el servicio, unicidad de la chapeta y del ordeño diario, y rechazo de valores fuera del dominio |
+| Requerimiento | RNF-05 · RNF-06 · RNF-08 · RD-04 · RD-05 · 3.7.3 (tercera regla) · 3.7.7 · 3.7.8 · Tabla 24 |
+| Tipo | Integración, contra el servicio real. Script SQL que inserta datos de apoyo y los revierte al terminar |
+| Especificación | [docs/tecnica/05-esquema-remoto.md](../tecnica/05-esquema-remoto.md), sección 10 |
+| Código | Migraciones en [`supabase/migrations/`](../../supabase/migrations/) · prueba [`supabase/pruebas/pi-01-esquema.sql`](../../supabase/pruebas/pi-01-esquema.sql) |
+| Condiciones iniciales | Proyecto de Supabase vinculado con la CLI (`supabase link`) y migraciones aplicadas con `npm run db:push` |
+| Pasos | Ejecutar `npm run prueba:pi-01` y, después, el revisor de seguridad `npx supabase db advisors --linked` |
+| Resultado esperado | Todas las verificaciones aprobadas; el revisor de seguridad sin hallazgos; ningún dato residual |
+| Resultado obtenido | **11 de 11 aprobadas** y revisor de seguridad sin hallazgos, tras una corrección (ver abajo) |
+| Estado | ⚠️ Aprobada tras corrección |
+| Fecha | 2026-10-06 |
+
+**Detalle de las verificaciones (ejecución final):**
+
+| # | Verificación | Resultado | Detalle |
+|---|---|---|---|
+| 1 | 14 tablas con RLS activada | ✅ | 14 de 14 |
+| 2 | `authenticated`: solo `SELECT` e `INSERT` en el predio y `SELECT` en referencia; `anon`: ninguno; nadie `UPDATE` ni `DELETE` | ✅ | 14 tablas |
+| 3 | `recibido_en` la fija el servicio | ✅ | Enviado 2000-01-01, guardado con la hora del servicio |
+| 4 | Mismo `id` rechazado; con `ON CONFLICT DO NOTHING` ignorado sin error | ✅ | 23505 · OK · 1 fila |
+| 5 | Chapeta única | ✅ | 23505 |
+| 6 | Un ordeño por vaca y fecha | ✅ | 23505 |
+| 7 | Ocho valores fuera del dominio rechazados: litros negativos, peso cero, sexo inválido, padre doble, cría viva sin cría, venta sin valor, anulación con valores, «otro» sin nota | ✅ | 8 × 23514 |
+| 8 | «ivermectina» rechazada si existe «Ivermectina» | ✅ | 23505 |
+| 9 | Segunda compra rechazada; segunda alimentación admitida | ✅ | 23505 · OK |
+| 10 | Seis parámetros de la Tabla 30 | ✅ | 6 de 6 |
+| 11 | Ninguna función `SECURITY DEFINER` de `public` ejecutable por `anon` ni `authenticated` | ✅ | Ninguna expuesta |
+
+**Ciclo de la prueba.**
+
+1. *Primera ejecución:* 10 de 10 aprobadas. Se comprobó además con una consulta que la prueba no
+   dejó datos: 0 usuarios, 0 animales, 0 ordeños y 0 cuentas de prueba; solo los 6 parámetros y las
+   2 migraciones registradas. [Evidencia](evidencias/iteracion-1/PI-01-1-primera-ejecucion.txt)
+2. *Revisor de seguridad de Supabase:* dos advertencias sobre la función `public.rls_auto_enable()`,
+   ejecutable por `anon` y `authenticated` mediante la API con privilegios de su dueño
+   (`SECURITY DEFINER`). No pertenece al esquema del prototipo: la crea la opción «Habilitar RLS
+   automático» elegida al crear el proyecto. La migración inicial retiró los privilegios de las
+   tablas y de la función propia, pero no de esta, cuya existencia se desconocía.
+   [Evidencia](evidencias/iteracion-1/PI-01-3-revisor-de-seguridad-antes.txt)
+3. *Ampliación de la prueba:* se agregó la verificación 11 y se ejecutó antes de corregir: **falló
+   señalando `rls_auto_enable`**, lo que confirma que detecta el problema.
+   [Evidencia](evidencias/iteracion-1/PI-01-2-antes-de-la-correccion.txt)
+4. *Corrección:* migración `20261006000300_revocar_rls_auto_enable.sql`, que retira el privilegio de
+   ejecución. La función sigue actuando como disparador de eventos al crear tablas, porque el sistema
+   la invoca sin requerir ese privilegio.
+5. *Ejecución final:* 11 de 11 aprobadas y el revisor de seguridad responde «No issues found».
+   [Evidencia](evidencias/iteracion-1/PI-01-4-despues-de-la-correccion.txt)
+
+**Observación.** No se hizo prueba de mutación sobre el esquema remoto porque implicaría alterar a
+propósito la base de datos real del proyecto. El paso 3 cumple una función equivalente: la
+verificación 11 se ejecutó contra un estado con el defecto presente y lo detectó.
+
+**Conjunto automático local** tras los cambios de este paso (retiro de `ruta_remota` de la
+fotografía): 133 de 133 ([informe](resultados/2026-10-06_235142_36c8303.md)).

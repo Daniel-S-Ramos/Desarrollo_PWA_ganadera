@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "verificar:supabase": "node --env-file=.env.local scripts/verificar-supabase.mjs",
     "iconos": "pwa-assets-generator",
-    "test:informe": "node scripts/informe-pruebas.mjs"
+    "test:informe": "node scripts/informe-pruebas.mjs",
+    "db:push": "supabase db push",
+    "prueba:pi-01": "supabase db query --linked -f supabase/pruebas/pi-01-esquema.sql"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.116.0",
@@ -31,6 +33,7 @@
     "@vite-pwa/assets-generator": "1.0.4",
     "@vitejs/plugin-react": "6.1.1",
     "fake-indexeddb": "6.2.5",
+    "supabase": "2.120.0",
     "typescript": "7.0.2",
     "vite": "8.2.2",
     "vite-plugin-pwa": "1.3.0",
