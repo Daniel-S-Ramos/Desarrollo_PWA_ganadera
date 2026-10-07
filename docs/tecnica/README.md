@@ -10,3 +10,4 @@ actualiza si la implementación obliga a cambiar algo.
 | # | Componente | Paso | Origen en el documento |
 |---|---|---|---|
 | 01 | [Identificador de los registros: UUID versión 7](01-identificador-uuidv7.md) | 1.2 | 3.7.1 · RD-02 |
+| 02 | [Esquema local: la base de datos del dispositivo](02-esquema-local.md) | 1.3 | RD-01 · 3.8.4 · Tabla 25 |

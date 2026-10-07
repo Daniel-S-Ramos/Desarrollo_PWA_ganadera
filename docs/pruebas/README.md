@@ -53,7 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
-| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 2 | 2 aprobadas |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 3 | 3 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -62,7 +62,8 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 
 | Requerimiento | Descripción breve | Pruebas | Estado |
 |---|---|---|---|
-| RF-28 | Registrar y consultar sin conexión | PE-07, PE-10 (base técnica: la aplicación abre sin red) | 🔄 Parcial: falta registrar y consultar datos |
+| RF-28 | Registrar y consultar sin conexión | PE-07, PE-10 (la aplicación abre sin red); PU-04 (base de datos local y consultas por índice) | 🔄 Parcial: falta el registro desde la interfaz |
+| RNF-09 | Consultas de la ficha contra el almacenamiento local | PU-04 (consultas por índice simple, compuesto y por rango) | 🔄 Parcial: falta la pantalla de la ficha |
 | RNF-01 | Operación en condiciones de campo | PU-01 (contraste 7:1 en todas las combinaciones de texto) | 🔄 Parcial: falta el tamaño de los controles y la prueba en campo |
 | RNF-07 | Acceso condicionado a autenticación | PE-04 (registro abierto cerrado en el servicio) | 🔄 Parcial: falta el inicio de sesión |
 | RNF-10 | Navegadores móviles y de escritorio | PE-06, PE-11 | 🔄 Parcial: falta la prueba en un teléfono real |
@@ -70,4 +71,4 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | RNF-13 | Arquitectura modular | PE-02 (estructura por capas y módulos) | 🔄 Parcial: se verifica con cada módulo construido |
 | RNF-08 | Autoría y fecha de creación inalterables | PU-02 (campos de solo lectura en el tipo) | 🔄 Parcial: falta la restricción en la base de datos |
 | RD-02 | Identificadores sin contador central | PU-03 (UUID v7: unicidad, orden y dos dispositivos sin coincidencias) | ✅ Verificado |
-| RD-01 | Almacenamiento primario en el dispositivo | PE-10 (recursos servidos desde el dispositivo) | 🔄 Parcial: falta el almacenamiento de datos |
+| RD-01 | Almacenamiento primario en el dispositivo | PE-10 (recursos servidos desde el dispositivo); PU-04 (esquema local de 18 tablas) | ✅ Verificado |

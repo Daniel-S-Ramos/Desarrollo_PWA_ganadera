@@ -11,6 +11,7 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 |---|---|---|---|---|
 | PU-02 | Tipos del dominio frente al modelo lógico | 1.1 | Tablas 23 y 24 · RD-02, RD-04, RNF-08 | ✅ |
 | PU-03 | Identificador UUID versión 7 | 1.2 | 3.7.1 · RD-02 · RF-29 | ✅ |
+| PU-04 | Esquema local | 1.3 | RD-01 · RNF-09 · 3.8.4 · 3.7.3 | ⚠️ Aprobada tras ajuste de la prueba |
 
 ---
 
@@ -66,3 +67,44 @@ contador por un reinicio a cero. Fallaron 4 de las 11 verificaciones, exactament
 (criterios 4, 5 y 6), mientras que las de formato, unicidad y dos dispositivos siguieron
 aprobando, como corresponde, porque esas propiedades las sostienen los 62 bits aleatorios y no
 el contador. Se restauró el código y volvieron a aprobar las 11.
+
+## PU-04 · Esquema local
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que la base de datos del dispositivo tiene las tablas e índices especificados y que responde las consultas que la aplicación necesita sin conexión |
+| Requerimiento | RD-01 · RF-28 · RNF-09 · apartado 3.8.4 (Tabla 25) · 3.7.3, tercera regla |
+| Tipo | Integración, automática: el esquema contra una base IndexedDB real simulada en memoria (`fake-indexeddb`, misma especificación W3C) |
+| Especificación | [docs/tecnica/02-esquema-local.md](../tecnica/02-esquema-local.md) |
+| Código | [`src/datos/db.ts`](../../src/datos/db.ts) · prueba [`src/datos/db.test.ts`](../../src/datos/db.test.ts) |
+| Condiciones iniciales | Cada prueba abre una base de datos propia y vacía, y la elimina al terminar |
+| Datos de entrada | Animales, eventos sanitarios, ordeños, pesajes y una imagen de 100 KB, con valores del predio (chapetas 012, 027, 031 y 045) |
+| Pasos | Ejecutar `npm run test:informe` |
+| Resultado esperado | Se cumplen los nueve criterios de la sección 12 del documento técnico |
+| Resultado obtenido | 51 verificaciones aprobadas ([informe](resultados/2026-10-06_222303_3372bed.md)). Total del conjunto automático: 98 de 98 |
+| Estado | ⚠️ Aprobada tras ajuste de la prueba |
+| Fecha | 2026-10-06 |
+
+**Detalle de los nueve criterios:**
+
+| # | Criterio | Resultado |
+|---|---|---|
+| 1 | Estructura: 18 tablas con su clave primaria; las colas con clave autoincremental | ✅ |
+| 2 | Índices: cada tabla tiene exactamente los índices justificados en la sección 5, ni uno más ni uno menos, y ninguno es único | ✅ |
+| 3 | Índice simple: el historial sanitario del animal 027 no trae los eventos del 031 | ✅ |
+| 4 | Índices compuestos: `[animal_id+fecha]` encuentra el ordeño de la vaca 012 en un día; `[animal_id+medicamento_id]` encuentra la aplicación previa de un medicamento al 027 (base de RF-09) | ✅ |
+| 5 | Fechas: cinco ordeños insertados desordenados, cruzando cambio de mes y de año, salen en orden cronológico; un rango semanal devuelve solo los días del periodo | ✅ |
+| 6 | Unicidad no local: dos animales con chapeta 045 coexisten; la consulta por código permite advertir la coincidencia; el registro en conflicto se localiza por su estado | ✅ |
+| 7 | Cola: cuatro operaciones se recorren en el orden en que se agregaron, con `seq` creciente y sin repetidos | ✅ |
+| 8 | Campos no indexados: un pesaje recuperado es idéntico al guardado, incluidos `peso` y `metodo` | ✅ |
+| 9 | Binarios: una imagen de 100 KB se recupera con el mismo tamaño, tipo y contenido byte a byte | ✅ |
+
+**Verificación del mecanismo de prueba (prueba de mutación) y ajuste.** Se declaró de forma
+deliberada el índice `codigo_chapeta` como único, que es exactamente lo que la sección 6 del
+documento técnico prohíbe. Fallaron las dos pruebas de coexistencia con `ConstraintError`, el
+mismo error que en operación bloquearía la sincronización. Sin embargo, la prueba de índices
+**siguió aprobando**, porque comparaba solo los nombres de los índices y no si eran únicos. Se
+agregó la verificación explícita «ningún índice es único», y al repetir la mutación fallaron tres
+pruebas, la nueva señalando directamente `animal.codigo_chapeta`. Se restauró el esquema y las 51
+verificaciones aprobaron. El hallazgo mejoró la prueba: ahora detecta la regresión en la propia
+declaración del esquema, sin depender de que haya datos que la pongan en evidencia.

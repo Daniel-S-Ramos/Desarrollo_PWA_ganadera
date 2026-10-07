@@ -35,7 +35,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 |---|---|---|---|
 | 1.1 | Tipos del dominio (entidades y valores admitidos) | Tablas 23 y 24 | ✅ |
 | 1.2 | Identificador UUID v7 generado en el dispositivo | 3.7.1 | ✅ |
-| 1.3 | Esquema local con Dexie | 3.8.4, Tabla 25 | ⬜ |
+| 1.3 | Esquema local con Dexie | 3.8.4, Tabla 25 | ✅ |
 | 1.4 | Repositorio local y cola de operaciones en una sola transacción | 3.7.2 | ⬜ |
 | 1.5 | Solicitud de almacenamiento persistente | RNF-15, 3.8.7 | ⬜ |
 | 1.6 | Esquema remoto en Supabase: tablas, permisos e inmutabilidad de autoría | 3.8.3, 3.9.4 | ⬜ |
@@ -124,6 +124,15 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-05 | Informe automático de pruebas en `docs/pruebas/resultados/` | Evidencia versionada de cada ejecución, vinculada al commit evaluado |
 | 2026-10-06 | Unidades de dosis `ml, cc, mg, dosis`; tipos de evento sanitario `vacuna, purga, vitamina, tratamiento, otro` | Validados con el propietario del proyecto; el documento no los enumera |
 | 2026-10-06 | El informe de pruebas incluye la verificación de tipos | Las afirmaciones `expectTypeOf` solo las evalúa el compilador |
+| 2026-10-06 | Sin índices únicos en el esquema local; la unicidad la impone el servicio remoto | Un índice único local cancelaría los lotes de descarga con un conflicto de chapeta y el dispositivo no volvería a sincronizar (3.7.3, 3.7.7) |
+
+## Pendientes de diseño
+
+Decisiones que el documento no resuelve y que deben acordarse antes del paso indicado.
+
+| Paso | Pendiente | Origen |
+|---|---|---|
+| 2.1 | Cómo resuelve el propietario un conflicto de chapeta. Si son dos animales distintos, corregir el código (3.9.5). Si es el mismo animal registrado dos veces, anular el duplicado; falta definir qué pasa con los eventos que ya se le registraron al duplicado en ese teléfono. Consultar con el propietario | 3.7.3, tercera regla · conversación del 2026-10-06 |
 
 ## Pendientes para el documento
 
@@ -139,3 +148,4 @@ la pregunte. Cada tema tiene su documento técnico.
 | Tema | Por qué es importante | Documento |
 |---|---|---|
 | Identificador UUID v7 | Sostiene el registro sin conexión entre varios dispositivos (RD-02) y la deduplicación de la sincronización (3.7.8) | [01-identificador-uuidv7.md](docs/tecnica/01-identificador-uuidv7.md) |
+| Unicidad de la chapeta sin índice único local | Decisión que parece un descuido y en realidad evita que un teléfono deje de sincronizar para siempre (3.7.3, tercera regla) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6 |
