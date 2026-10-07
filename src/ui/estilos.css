@@ -169,3 +169,20 @@ body {
   background: var(--verde-claro);
   border-color: var(--verde-oscuro);
 }
+
+/* Aviso dentro del contenido de la pantalla (no sobre la barra inferior). */
+.aviso--en-contenido {
+  margin: 0 0 var(--separacion);
+}
+
+.aviso .aviso__detalle {
+  font-weight: 400;
+  margin-bottom: 0;
+}
+
+.barra-inferior__detalle {
+  display: block;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--texto-secundario);
+}

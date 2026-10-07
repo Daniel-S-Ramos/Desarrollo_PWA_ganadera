@@ -13,6 +13,8 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PU-03 | Identificador UUID versión 7 | 1.2 | 3.7.1 · RD-02 · RF-29 | ✅ |
 | PU-04 | Esquema local | 1.3 | RD-01 · RNF-09 · 3.8.4 · 3.7.3 | ⚠️ Aprobada tras ajuste de la prueba |
 | PU-05 | Repositorio local y cola de operaciones | 1.4 | 3.7.2 · RNF-04 · RD-04 · RF-27 · RNF-13 | ✅ |
+| PU-06 | Almacenamiento persistente | 1.5 | RNF-15 · 3.8.7 | ✅ |
+| PE-12 | Almacenamiento persistente en el navegador real | 1.5 | RNF-15 | ⚠️ Aprobada con observaciones |
 
 ---
 
@@ -170,3 +172,59 @@ prueba.
 | Pruebas afectadas | **PU-02:** se agregó la afirmación de tipos «el animal no almacena su estado» (21 verificaciones). **PU-04:** la lista de índices esperados de `animal` ya no incluye `estado`; la prueba «cada tabla tiene exactamente los índices justificados» confirma que el índice se retiró. **PU-05:** los datos de prueba de la cría ya no llevan estado |
 | Resultado | 113 de 113 aprobadas y verificación de tipos sin errores ([informe](resultados/2026-10-06_224050_6aee657.md)) |
 | Impacto en dispositivos | Ninguno: el cambio se hizo antes de que el esquema guardara datos en algún dispositivo, por lo que se ajustó la versión 1 sin necesidad de migración |
+
+## PU-06 · Almacenamiento persistente
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que la aplicación solicita el almacenamiento persistente cuando no lo tiene, no lo vuelve a solicitar cuando ya lo tiene, informa correctamente cada respuesta posible del navegador sin fallar, y presenta el espacio en unidades legibles |
+| Requerimiento | RNF-15 · apartado 3.8.7 |
+| Tipo | Unitaria, automática. La interfaz de almacenamiento del navegador se simula con cada respuesta posible |
+| Especificación | [docs/tecnica/04-almacenamiento-persistente.md](../tecnica/04-almacenamiento-persistente.md) |
+| Código | [`src/datos/almacenamiento.ts`](../../src/datos/almacenamiento.ts) · prueba [`src/datos/almacenamiento.test.ts`](../../src/datos/almacenamiento.test.ts) |
+| Pasos | Ejecutar `npm run test:informe` |
+| Resultado esperado | Se cumplen los ocho criterios de la sección 8 del documento técnico |
+| Resultado obtenido | 12 verificaciones aprobadas ([informe](resultados/2026-10-06_224751_43cefd6.md)). Tras PE-12 se agregaron 7 verificaciones del texto del aviso y de la detección de la aplicación instalada (criterios 9 y 10), en [`src/ui/componentes/AvisoAlmacenamiento.test.ts`](../../src/ui/componentes/AvisoAlmacenamiento.test.ts): 19 en total ([informe](resultados/2026-10-06_232311_43cefd6.md)). Total del conjunto automático: 132 de 132 |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-06 |
+
+| # | Situación simulada | Resultado |
+|---|---|---|
+| 1 | Datos ya persistentes: estado `persistente` sin volver a solicitar | ✅ |
+| 2 | No persistentes y el navegador concede: una sola solicitud, estado `persistente` | ✅ |
+| 3 | El navegador niega: estado `negado` | ✅ |
+| 4 | Sin interfaz de almacenamiento, o con la interfaz incompleta: estado `no_disponible` sin errores | ✅ |
+| 5 | La solicitud falla con un error: estado `negado`, sin propagar el error | ✅ |
+| 6 | Estimación disponible: devuelve bytes ocupados y cuota | ✅ |
+| 7 | Estimación ausente, vacía o con error: devuelve vacío sin errores | ✅ |
+| 8 | Formato: 0 B, 512 B, 1,5 KB, 4,2 MB y 6,1 GB, con coma decimal | ✅ |
+| 9 | Texto del aviso: sin aviso si es persistente; sin instalar recomienda instalar; instalada recomienda espacio libre y sincronizar, sin pedir que instale | ✅ |
+| 10 | Detección de la aplicación instalada: pestaña normal, `display-mode: standalone` y `navigator.standalone` de iOS | ✅ |
+
+**Verificación visual.** Con el servidor de desarrollo y una pantalla de teléfono, en un navegador
+sin la aplicación instalada, se observó el aviso amarillo «Los datos de este teléfono no están
+protegidos» en la parte superior del contenido y el espacio estimado en la barra inferior. La
+verificación con Chrome instalado y sin instalar se registra en PE-12.
+
+## PE-12 · Almacenamiento persistente en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar en Chrome que el aviso aparece cuando el navegador niega la persistencia, y verificar la suposición del documento técnico de que instalar la aplicación la concede |
+| Requerimiento | RNF-15 |
+| Tipo | Verificación manual en el navegador |
+| Condiciones iniciales | Versión de producción servida con `npm run build` y `npm run preview`. Aplicación instalada desde PE-11 |
+| Pasos | 1. Abrir `http://localhost:4173` en una pestaña normal de Chrome, observar el aviso y ejecutar `await navigator.storage.persisted()` en la consola. 2. Repetir en la aplicación instalada. 3. Agregar el sitio a marcadores (Ctrl+D), recargar y repetir la consulta |
+| Resultado esperado | (a) El aviso aparece si y solo si `persisted()` devuelve `false`. (b) Con la aplicación instalada, Chrome concede la persistencia |
+| Resultado obtenido | (a) **Se cumple.** En los tres casos `persisted()` devolvió `false` y el aviso apareció. (b) **No se cumple.** Con la aplicación instalada, y también con el sitio en marcadores, Chrome para Windows siguió negando la persistencia |
+| Estado | ⚠️ Aprobada con observaciones |
+| Fecha | 2026-10-06 |
+| Observaciones | El requerimiento RNF-15 se cumple: la aplicación advierte cuando el navegador niega la condición en lugar de continuar en silencio. La suposición (b) del documento técnico no se confirmó en escritorio. Chrome no publica una regla exacta para conceder la persistencia, y la instalación figura entre sus criterios sobre todo en Android. **Acciones:** se corrigió la sección 3 del documento técnico 04; se agregó una segunda variante del aviso para la aplicación ya instalada, que no pide instalarla y recomienda mantener espacio libre y sincronizar con frecuencia; se agregaron las verificaciones 9 y 10 a PU-06. Queda pendiente verificar el comportamiento en un teléfono Android con la aplicación servida por HTTPS (paso 6.4) |
+
+| Caso | Aviso | `persisted()` | Evidencia |
+|---|---|---|---|
+| Pestaña normal | Aparece | `false` | [captura del aviso](evidencias/iteracion-1/PE-12-1-pestana-normal-aviso.png) · [captura de la consola](evidencias/iteracion-1/PE-12-2-pestana-normal-persisted-false.png) |
+| Aplicación instalada | Aparece | `false` | [captura del aviso](evidencias/iteracion-1/PE-12-3-app-instalada-aviso.png) · [captura de la consola](evidencias/iteracion-1/PE-12-4-app-instalada-persisted-false.png) |
+| Pestaña normal con el sitio en marcadores | Aparece | `false` | [captura](evidencias/iteracion-1/PE-12-5-con-marcador-persisted-false.png) |
+
+![PE-12 Aplicación instalada: persisted() devuelve false](evidencias/iteracion-1/PE-12-4-app-instalada-persisted-false.png)

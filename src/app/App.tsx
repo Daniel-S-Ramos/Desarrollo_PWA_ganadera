@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
+import { formatearBytes } from '../datos/almacenamiento';
 import { AvisoActualizacion } from '../ui/componentes/AvisoActualizacion';
+import { AvisoAlmacenamiento } from '../ui/componentes/AvisoAlmacenamiento';
+import { useAlmacenamiento } from '../ui/useAlmacenamiento';
 
 type EstadoConexion = 'verificando' | 'conectado' | 'sin_red' | 'error';
 
@@ -10,6 +13,7 @@ type EstadoConexion = 'verificando' | 'conectado' | 'sin_red' | 'error';
  */
 export function App() {
   const estado = useEstadoSupabase();
+  const almacenamiento = useAlmacenamiento();
 
   return (
     <div className="marco">
@@ -18,6 +22,8 @@ export function App() {
       </header>
 
       <main className="contenido">
+        <AvisoAlmacenamiento persistencia={almacenamiento.persistencia} />
+
         <p className="titulo-seccion">Prototipo en construcción</p>
         <p className="texto-secundario">Fase 0 · Aplicación web progresiva</p>
 
@@ -31,6 +37,12 @@ export function App() {
 
       <footer className="barra-inferior" aria-live="polite">
         Pendientes de enviar: —
+        {almacenamiento.espacio && (
+          <span className="barra-inferior__detalle">
+            Espacio usado (estimado): {formatearBytes(almacenamiento.espacio.usado)} de{' '}
+            {formatearBytes(almacenamiento.espacio.cuota)}
+          </span>
+        )}
       </footer>
     </div>
   );

@@ -37,7 +37,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.2 | Identificador UUID v7 generado en el dispositivo | 3.7.1 | ✅ |
 | 1.3 | Esquema local con Dexie | 3.8.4, Tabla 25 | ✅ |
 | 1.4 | Repositorio local y cola de operaciones en una sola transacción | 3.7.2 | ✅ |
-| 1.5 | Solicitud de almacenamiento persistente | RNF-15, 3.8.7 | ⬜ |
+| 1.5 | Solicitud de almacenamiento persistente | RNF-15, 3.8.7 | ✅ |
 | 1.6 | Esquema remoto en Supabase: tablas, permisos e inmutabilidad de autoría | 3.8.3, 3.9.4 | ⬜ |
 | 1.7 | Autenticación: ingreso, perfil en el token, verificación sin red | 3.9.1 | ⬜ |
 | 1.8 | Código de desbloqueo local | 3.9.1 | ⬜ |
@@ -127,6 +127,8 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-06 | Sin índices únicos en el esquema local; la unicidad la impone el servicio remoto | Un índice único local cancelaría los lotes de descarga con un conflicto de chapeta y el dispositivo no volvería a sincronizar (3.7.3, 3.7.7) |
 | 2026-10-06 | Lectura mediante tablas de solo lectura y prueba de arquitectura que impide importar `db.ts` fuera de `src/datos/` | Garantiza que toda escritura pase por el repositorio y entre a la cola (Tabla 20, 3.7.2) |
 | 2026-10-06 | El estado del animal (activo o retirado) no se almacena: se deduce de la existencia de una salida vigente | Evita modificar registros (RNF-06), no exige permiso de modificación en el servidor (3.7.8) y la anulación de una salida restituye el estado sin intervención (documento técnico 02, sección 6.1) |
+| 2026-10-06 | El almacenamiento persistente se solicita en cada inicio mientras no esté concedido, no solo en el primero | Chrome decide según el uso y puede conceder tras la instalación un permiso que negó antes; la solicitud no muestra nada al usuario (documento técnico 04, sección 4.1) |
+| 2026-10-06 | El aviso de almacenamiento tiene dos variantes según la aplicación esté instalada o no | En PE-12 Chrome para Windows negó la persistencia aun con la aplicación instalada; pedir instalarla a quien ya lo hizo confunde al usuario |
 
 ## Pendientes de diseño
 
@@ -134,6 +136,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 
 | Paso | Pendiente | Origen |
 |---|---|---|
+| 6.4 | Verificar en un teléfono Android si instalar la aplicación concede el almacenamiento persistente (en Windows no lo concedió, PE-12) | Documento técnico 04, sección 3 |
 | 2.1 | Cómo resuelve el propietario un conflicto de chapeta. Si son dos animales distintos, corregir el código (3.9.5). Si es el mismo animal registrado dos veces, anular el duplicado; falta definir qué pasa con los eventos que ya se le registraron al duplicado en ese teléfono. Consultar con el propietario | 3.7.3, tercera regla · conversación del 2026-10-06 |
 
 ## Pendientes para el documento
