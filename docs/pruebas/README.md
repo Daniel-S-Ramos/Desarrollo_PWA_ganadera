@@ -53,7 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
-| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 1 | 1 aprobada |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 2 | 2 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -69,4 +69,5 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | RNF-11 | Instalable sin tienda de aplicaciones | PE-11 | ✅ Verificado |
 | RNF-13 | Arquitectura modular | PE-02 (estructura por capas y módulos) | 🔄 Parcial: se verifica con cada módulo construido |
 | RNF-08 | Autoría y fecha de creación inalterables | PU-02 (campos de solo lectura en el tipo) | 🔄 Parcial: falta la restricción en la base de datos |
+| RD-02 | Identificadores sin contador central | PU-03 (UUID v7: unicidad, orden y dos dispositivos sin coincidencias) | ✅ Verificado |
 | RD-01 | Almacenamiento primario en el dispositivo | PE-10 (recursos servidos desde el dispositivo) | 🔄 Parcial: falta el almacenamiento de datos |

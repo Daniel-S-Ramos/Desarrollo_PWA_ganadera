@@ -5,7 +5,7 @@ apartado 2.8.7 (Tabla 13) del documento de trabajo de grado.
 
 **Forma de trabajo en cada paso**
 
-1. Se explica qué se va a hacer y por qué, con referencia al documento.
+1. Se explica qué se va a hacer y por qué, con referencia al documento. Los componentes con lógica propia se documentan en `docs/tecnica/` antes de implementarse.
 2. Daniel aprueba o ajusta.
 3. Se implementa.
 4. Daniel lo verifica en su equipo (comando, navegador o teléfono).
@@ -34,7 +34,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | Paso | Contenido | Referencia | Estado |
 |---|---|---|---|
 | 1.1 | Tipos del dominio (entidades y valores admitidos) | Tablas 23 y 24 | ✅ |
-| 1.2 | Identificador UUID v7 generado en el dispositivo | 3.7.1 | ⬜ |
+| 1.2 | Identificador UUID v7 generado en el dispositivo | 3.7.1 | ✅ |
 | 1.3 | Esquema local con Dexie | 3.8.4, Tabla 25 | ⬜ |
 | 1.4 | Repositorio local y cola de operaciones en una sola transacción | 3.7.2 | ⬜ |
 | 1.5 | Solicitud de almacenamiento persistente | RNF-15, 3.8.7 | ⬜ |
@@ -130,3 +130,12 @@ Registro para justificarlas en el capítulo 4.
 - Agregar a la Tabla 19: TypeScript, react-router y Vitest (no figuran hoy).
 - Corregir en 3.8.11 la referencia «los once componentes de la Tabla 19» → Tabla 20.
 - Unificar qué casos de uso extiende CU-15 (2.8.6.3 dice CU-04 y CU-08; 2.8.6.5 dice CU-06 y CU-08).
+
+## Temas de estudio para la sustentación
+
+Lógica que conviene repasar a fondo al terminar el desarrollo, porque es probable que el jurado
+la pregunte. Cada tema tiene su documento técnico.
+
+| Tema | Por qué es importante | Documento |
+|---|---|---|
+| Identificador UUID v7 | Sostiene el registro sin conexión entre varios dispositivos (RD-02) y la deduplicación de la sincronización (3.7.8) | [01-identificador-uuidv7.md](docs/tecnica/01-identificador-uuidv7.md) |

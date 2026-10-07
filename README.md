@@ -25,6 +25,12 @@ Ver [PLAN.md](PLAN.md).
 
 Ver [docs/pruebas](docs/pruebas/README.md): casos de prueba, resultados, evidencias y matriz de trazabilidad.
 
+## Documentación técnica
+
+Ver [docs/tecnica](docs/tecnica/README.md): funcionamiento interno de cada componente.
+
+
+
 ## Autor
 
 Daniel Santiago Ramos Pintor
