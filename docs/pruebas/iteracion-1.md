@@ -159,3 +159,14 @@ logró simular la falla, porque el repositorio accedía a las tablas por su nomb
 repositorio para acceder siempre por la propiedad de la tabla, que es la misma instancia en ambos
 casos, y la prueba pasó a ejercer la falla. El hallazgo se corrigió antes de dar por aprobada la
 prueba.
+
+## Cambio de diseño posterior: estado del animal deducido
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-06 |
+| Cambio | Se retiró el campo `estado` de la entidad `animal` y su índice del esquema local. El estado activo o retirado se deduce de la existencia de una salida vigente |
+| Motivo | Evita modificar registros (RNF-06), no exige permiso de modificación en el servidor (3.7.8) y la anulación de una salida restituye el estado sin intervención. Justificación completa en [docs/tecnica/02-esquema-local.md](../tecnica/02-esquema-local.md), sección 6.1 |
+| Pruebas afectadas | **PU-02:** se agregó la afirmación de tipos «el animal no almacena su estado» (21 verificaciones). **PU-04:** la lista de índices esperados de `animal` ya no incluye `estado`; la prueba «cada tabla tiene exactamente los índices justificados» confirma que el índice se retiró. **PU-05:** los datos de prueba de la cría ya no llevan estado |
+| Resultado | 113 de 113 aprobadas y verificación de tipos sin errores ([informe](resultados/2026-10-06_224050_6aee657.md)) |
+| Impacto en dispositivos | Ninguno: el cambio se hizo antes de que el esquema guardara datos en algún dispositivo, por lo que se ajustó la versión 1 sin necesidad de migración |

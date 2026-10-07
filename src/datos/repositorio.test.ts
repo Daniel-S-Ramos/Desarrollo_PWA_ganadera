@@ -46,7 +46,6 @@ function cria(codigo: string): DatosNuevos<'animal'> {
     madre_id: uuidv7(),
     padre_id: null,
     padre_externo: null,
-    estado: 'activo',
   };
 }
 

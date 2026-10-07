@@ -205,7 +205,7 @@ Para que el alcance del paso quede claro:
 | Verificar que el perfil del usuario permite la operación | Gestor de sesión y permisos, paso 1.9. El repositorio recibe el autor ya autorizado |
 | Transmitir la cola al servicio remoto | Motor de sincronización, paso 1.10 |
 | Corregir o anular registros | Paso 4.3. No requiere nada nuevo del repositorio: una corrección es un registro más de la tabla `correccion` que se crea con `crear` (3.9.5) |
-| Cambiar el estado de un animal a retirado al registrar su salida | Paso 5.2. Se definirá entonces si el estado se actualiza en el dispositivo o se deriva de la existencia de la salida |
+| Cambiar el estado de un animal a retirado al registrar su salida | **No hace falta.** Decidido el 2026-10-06: el estado no se almacena, se deduce de la existencia de una salida vigente ([documento 02](02-esquema-local.md), sección 6.1). Registrar la salida es un `crear` como cualquier otro |
 
 Que el repositorio **solo sepa crear** no es una omisión sino una consecuencia del diseño: el
 apartado 3.7.3 establece que los eventos no se modifican ni se eliminan, y el 3.9.5 que las

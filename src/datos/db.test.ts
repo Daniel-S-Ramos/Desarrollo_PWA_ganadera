@@ -47,7 +47,6 @@ function animal(codigo: string): RegistroLocal<'animal'> {
     madre_id: null,
     padre_id: null,
     padre_externo: null,
-    estado: 'activo',
   };
 }
 
@@ -65,7 +64,7 @@ function ordeno(animalId: Uuid, fecha: string, litros: number): RegistroLocal<'p
 
 /** Índices de cada tabla según la sección 5 del documento técnico (sin contar la clave primaria). */
 const INDICES_ESPERADOS: Record<string, string[]> = {
-  animal: ['codigo_chapeta', 'estado', 'madre_id', 'padre_id', 'estado_sync'],
+  animal: ['codigo_chapeta', 'madre_id', 'padre_id', 'estado_sync'],
   fotografia: ['animal_id', '[animal_id+tipo]', 'estado_sync'],
   evento_sanitario: ['animal_id', 'medicamento_id', '[animal_id+medicamento_id]', 'fecha', 'estado_sync'],
   produccion_leche: ['animal_id', 'fecha', '[animal_id+fecha]', 'estado_sync'],

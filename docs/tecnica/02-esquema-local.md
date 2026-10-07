@@ -132,7 +132,6 @@ siguiente es la justificación completa.
 | Tabla | Índice | Consulta que responde | Origen |
 |---|---|---|---|
 | `animal` | `codigo_chapeta` | Localizar un animal por su chapeta; advertir que un código ya está asignado antes de guardar | RF-06, CU-02 flujo 4 |
-| | `estado` | Listar solo los animales activos | CU-03, RF-15 |
 | | `madre_id` | Descendencia de una vaca | CU-11 |
 | | `padre_id` | Descendencia de un reproductor del predio; advertencia por cruce entre emparentados | HU-12 |
 | `fotografia` | `animal_id` | Las fotografías de un animal | CU-03 |
@@ -153,7 +152,7 @@ siguiente es la justificación completa.
 | | `desde` | Ordenar los cambios de destino | RF-19 |
 | `movimiento_economico` | `animal_id` | Costos de un animal para el consolidado | CU-14 |
 | | `concepto` | Verificar que un animal tenga un solo movimiento de compra | Tabla 24 |
-| `salida` | `animal_id` | Salida de un animal | CU-13 |
+| `salida` | `animal_id` | Salida de un animal; deducir qué animales están retirados (sección 6.1) | CU-13, CU-03 |
 | `recordatorio` | `tipo`, `animal_id` | ¿Este recordatorio está pospuesto para este animal? | 3.8.11 |
 | `correccion` | `[entidad_afectada+registro_id]` | Correcciones de un registro, para calcular su valor vigente | 3.9.5 |
 | | `registro_id` | Saber si un registro fue anulado | 3.9.5 |
@@ -211,6 +210,32 @@ el error en la interfaz y el servidor garantiza la regla para todo el predio.
 | Servicio remoto | Restricción `UNIQUE` en la base de datos | Cuando el código lo registró **otro** teléfono sin que este lo supiera |
 | Sincronización | Marca el registro rechazado como `conflicto` | Cuando el servidor rechaza por la regla anterior |
 
+### 6.1 El estado del animal no se guarda: se deduce
+
+*Decisión del 2026-10-06, posterior a la primera versión de este documento.*
+
+La Tabla 24 dice que, al registrar la salida de un animal, «su estado pasa a retirado». Guardar ese
+estado como un campo del animal obligaría a **modificar** el registro del animal cada vez que sale
+del predio. Se decidió en cambio **no almacenar el estado y deducirlo**: un animal está retirado si
+tiene una salida vigente, es decir, una salida que no ha sido anulada, y está activo en caso
+contrario.
+
+| Criterio | Guardar el campo `estado` | Deducirlo de la salida (adoptado) |
+|---|---|---|
+| Inmutabilidad (RNF-06, 3.7.3) | Hay que modificar el registro del animal | Nada se modifica: la salida es un registro nuevo |
+| Permisos del servicio remoto | Requiere permiso de modificar la tabla `animal`, la puerta que el 3.7.8 advierte que permite sobrescribir registros | Basta el permiso de insertar |
+| Salida registrada por error y anulada (3.9.5) | Hay que devolver el estado a «activo»; si se omite, el animal desaparece del inventario | Automático: sin salida vigente, el animal vuelve a estar activo |
+| Dos teléfonos sin señal | Posible conflicto entre versiones del animal (3.7.3, segunda regla) | Sin conflicto posible |
+| Costo | — | Consultar las salidas al listar los animales; con el volumen del predio es inmediato |
+
+El principio es que **un dato que puede calcularse a partir de otros no debe guardarse por
+separado**, porque tarde o temprano las dos copias se contradicen. Es el mismo criterio que el
+documento aplica a los recordatorios vigentes (3.8.11), que se derivan en lugar de almacenarse.
+
+En consecuencia, la entidad `animal` no tiene campo `estado` ni índice sobre él. La consulta de los
+animales activos se resuelve con el índice `animal_id` de la tabla `salida`, descartando las salidas
+anuladas según la tabla `correccion`.
+
 ## 7. Formato de los datos guardados
 
 | Tipo de dato | Cómo se guarda | Por qué |
@@ -231,7 +256,7 @@ desde cualquier versión vieja hasta la actual.
 
 | Versión | Paso | Cambios |
 |---|---|---|
-| 1 | 1.3 | Esquema inicial: 18 tablas |
+| 1 | 1.3 | Esquema inicial: 18 tablas. Ajustado el 2026-10-06, antes de que existieran datos en ningún dispositivo, para retirar el índice `estado` de `animal` (sección 6.1) |
 
 ## 9. Volumen y límites
 

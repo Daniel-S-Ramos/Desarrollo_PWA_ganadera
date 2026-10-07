@@ -17,6 +17,10 @@ export type Perfil = (typeof PERFILES)[number];
 export const SEXOS = ['macho', 'hembra'] as const;
 export type Sexo = (typeof SEXOS)[number];
 
+/**
+ * Estado de un animal en el inventario. No se almacena: un animal está retirado cuando tiene una
+ * salida vigente (no anulada) y activo en caso contrario. Ver docs/tecnica/02-esquema-local.md, sección 6.1.
+ */
 export const ESTADOS_ANIMAL = ['activo', 'retirado'] as const;
 export type EstadoAnimal = (typeof ESTADOS_ANIMAL)[number];
 
@@ -132,7 +136,6 @@ export interface Animal extends Auditable {
   /** El padre es un animal del predio o un reproductor externo, nunca las dos cosas a la vez. */
   padre_id: Uuid | null;
   padre_externo: string | null;
-  estado: EstadoAnimal;
 }
 
 export interface Fotografia extends Auditable {

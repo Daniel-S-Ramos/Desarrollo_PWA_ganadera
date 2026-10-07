@@ -85,7 +85,7 @@ export class BaseLocal extends Dexie {
     // poder coexistir dos registros en conflicto hasta que el propietario los resuelva
     // (apartado 3.7.3, tercera regla).
     this.version(1).stores({
-      animal: 'id, codigo_chapeta, estado, madre_id, padre_id, estado_sync',
+      animal: 'id, codigo_chapeta, madre_id, padre_id, estado_sync',
       fotografia: 'id, animal_id, [animal_id+tipo], estado_sync',
       evento_sanitario: 'id, animal_id, medicamento_id, [animal_id+medicamento_id], fecha, estado_sync',
       produccion_leche: 'id, animal_id, fecha, [animal_id+fecha], estado_sync',

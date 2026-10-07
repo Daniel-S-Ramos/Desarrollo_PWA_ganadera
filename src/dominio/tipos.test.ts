@@ -15,6 +15,7 @@ import {
   TIPOS_MEDICAMENTO,
   TIPOS_RECORDATORIO,
   UNIDADES_DOSIS,
+  type Animal,
   type Auditable,
   type DatosNuevos,
   type EntidadCorregible,
@@ -110,5 +111,11 @@ describe('PU-02 · Tipos auxiliares de la capa de datos', () => {
   it('el autor y la fecha de creación son de solo lectura (RNF-08)', () => {
     type Escribible<T> = { -readonly [K in keyof T]: T[K] };
     expectTypeOf<Auditable>().not.toEqualTypeOf<Escribible<Auditable>>();
+  });
+});
+
+describe('PU-02 · Estado del animal derivado de la salida (decisión del 2026-10-06)', () => {
+  it('el animal no almacena su estado: se deriva de la existencia de una salida vigente', () => {
+    expectTypeOf<Animal>().not.toHaveProperty('estado');
   });
 });

@@ -126,6 +126,7 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-06 | El informe de pruebas incluye la verificación de tipos | Las afirmaciones `expectTypeOf` solo las evalúa el compilador |
 | 2026-10-06 | Sin índices únicos en el esquema local; la unicidad la impone el servicio remoto | Un índice único local cancelaría los lotes de descarga con un conflicto de chapeta y el dispositivo no volvería a sincronizar (3.7.3, 3.7.7) |
 | 2026-10-06 | Lectura mediante tablas de solo lectura y prueba de arquitectura que impide importar `db.ts` fuera de `src/datos/` | Garantiza que toda escritura pase por el repositorio y entre a la cola (Tabla 20, 3.7.2) |
+| 2026-10-06 | El estado del animal (activo o retirado) no se almacena: se deduce de la existencia de una salida vigente | Evita modificar registros (RNF-06), no exige permiso de modificación en el servidor (3.7.8) y la anulación de una salida restituye el estado sin intervención (documento técnico 02, sección 6.1) |
 
 ## Pendientes de diseño
 
@@ -139,6 +140,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 
 - Agregar a la Tabla 19: TypeScript, react-router y Vitest (no figuran hoy).
 - Corregir en 3.8.11 la referencia «los once componentes de la Tabla 19» → Tabla 20.
+- Tabla 24, fila `salida`: precisar que el estado «retirado» del animal no se almacena sino que se deduce de la existencia de una salida vigente (decisión del 2026-10-06). Revisar también la fila `animal` («El sexo y el estado admiten valores definidos»).
 - Unificar qué casos de uso extiende CU-15 (2.8.6.3 dice CU-04 y CU-08; 2.8.6.5 dice CU-06 y CU-08).
 
 ## Temas de estudio para la sustentación
@@ -149,4 +151,5 @@ la pregunte. Cada tema tiene su documento técnico.
 | Tema | Por qué es importante | Documento |
 |---|---|---|
 | Identificador UUID v7 | Sostiene el registro sin conexión entre varios dispositivos (RD-02) y la deduplicación de la sincronización (3.7.8) | [01-identificador-uuidv7.md](docs/tecnica/01-identificador-uuidv7.md) |
+| Estado del animal deducido y no almacenado | Ejemplo del principio «no guardar lo que puede calcularse», el mismo de los recordatorios derivados (3.8.11) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6.1 |
 | Unicidad de la chapeta sin índice único local | Decisión que parece un descuido y en realidad evita que un teléfono deje de sincronizar para siempre (3.7.3, tercera regla) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6 |
