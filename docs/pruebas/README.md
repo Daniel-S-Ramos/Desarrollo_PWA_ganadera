@@ -41,8 +41,9 @@ identificador del caso como prefijo del nombre del archivo.
 
 ## Informes de las pruebas automáticas
 
-Las pruebas unitarias y de integración se ejecutan con `npm run test:informe`, que además de
-mostrar el resultado en la terminal guarda un informe en [`resultados/`](resultados/). El nombre
+Las pruebas unitarias y de integración se ejecutan con `npm run test:informe`. Primero verifica
+los tipos con TypeScript, que es la que evalúa las afirmaciones de tipos de las pruebas, y
+después ejecuta Vitest. Además de mostrar el resultado en la terminal guarda un informe en [`resultados/`](resultados/). El nombre
 del archivo lleva la fecha, la hora y el commit evaluado, así que los informes se ordenan solos
 y cada uno puede vincularse con la versión exacta del código. Se generan automáticamente y no
 se editan a mano.
@@ -52,6 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 1 | 1 aprobada |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -66,4 +68,5 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | RNF-10 | Navegadores móviles y de escritorio | PE-06, PE-11 | 🔄 Parcial: falta la prueba en un teléfono real |
 | RNF-11 | Instalable sin tienda de aplicaciones | PE-11 | ✅ Verificado |
 | RNF-13 | Arquitectura modular | PE-02 (estructura por capas y módulos) | 🔄 Parcial: se verifica con cada módulo construido |
+| RNF-08 | Autoría y fecha de creación inalterables | PU-02 (campos de solo lectura en el tipo) | 🔄 Parcial: falta la restricción en la base de datos |
 | RD-01 | Almacenamiento primario en el dispositivo | PE-10 (recursos servidos desde el dispositivo) | 🔄 Parcial: falta el almacenamiento de datos |

@@ -33,7 +33,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 
 | Paso | Contenido | Referencia | Estado |
 |---|---|---|---|
-| 1.1 | Tipos del dominio (entidades y valores admitidos) | Tablas 23 y 24 | ⬜ |
+| 1.1 | Tipos del dominio (entidades y valores admitidos) | Tablas 23 y 24 | ✅ |
 | 1.2 | Identificador UUID v7 generado en el dispositivo | 3.7.1 | ⬜ |
 | 1.3 | Esquema local con Dexie | 3.8.4, Tabla 25 | ⬜ |
 | 1.4 | Repositorio local y cola de operaciones en una sola transacción | 3.7.2 | ⬜ |
@@ -122,6 +122,8 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-05 | Actualización de la aplicación con aviso al usuario (registerType: prompt) | Evita que la aplicación se recargue en medio de un registro |
 | 2026-10-05 | Fondo rojizo #FBECEA y texto secundario #49584E | La prueba PU-01 detectó contrastes de 6,60:1 y 6,85:1, por debajo del 7:1 que adopta el apartado 3.10.4.1 |
 | 2026-10-05 | Informe automático de pruebas en `docs/pruebas/resultados/` | Evidencia versionada de cada ejecución, vinculada al commit evaluado |
+| 2026-10-06 | Unidades de dosis `ml, cc, mg, dosis`; tipos de evento sanitario `vacuna, purga, vitamina, tratamiento, otro` | Validados con el propietario del proyecto; el documento no los enumera |
+| 2026-10-06 | El informe de pruebas incluye la verificación de tipos | Las afirmaciones `expectTypeOf` solo las evalúa el compilador |
 
 ## Pendientes para el documento
 
