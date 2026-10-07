@@ -12,6 +12,7 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PU-02 | Tipos del dominio frente al modelo lógico | 1.1 | Tablas 23 y 24 · RD-02, RD-04, RNF-08 | ✅ |
 | PU-03 | Identificador UUID versión 7 | 1.2 | 3.7.1 · RD-02 · RF-29 | ✅ |
 | PU-04 | Esquema local | 1.3 | RD-01 · RNF-09 · 3.8.4 · 3.7.3 | ⚠️ Aprobada tras ajuste de la prueba |
+| PU-05 | Repositorio local y cola de operaciones | 1.4 | 3.7.2 · RNF-04 · RD-04 · RF-27 · RNF-13 | ✅ |
 
 ---
 
@@ -108,3 +109,53 @@ agregó la verificación explícita «ningún índice es único», y al repetir 
 pruebas, la nueva señalando directamente `animal.codigo_chapeta`. Se restauró el esquema y las 51
 verificaciones aprobaron. El hallazgo mejoró la prueba: ahora detecta la regresión en la propia
 declaración del esquema, sin depender de que haya datos que la pongan en evidencia.
+
+## PU-05 · Repositorio local y cola de operaciones
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que todo registro se guarda junto con su entrada en la cola en una sola transacción, que una falla en cualquier punto no deja registros sin enviar ni entradas huérfanas, y que ningún componente puede escribir esquivando al repositorio |
+| Requerimiento | Apartado 3.7.2 · RNF-04 · RD-04 · RF-27 · RNF-08 · RNF-13 · Tabla 21 (fila «El dispositivo se apaga durante el registro») |
+| Tipo | Integración, automática, contra IndexedDB simulada en memoria; incluye una prueba de arquitectura sobre el código fuente |
+| Especificación | [docs/tecnica/03-repositorio-y-cola.md](../tecnica/03-repositorio-y-cola.md) |
+| Código | [`src/datos/repositorio.ts`](../../src/datos/repositorio.ts) · prueba [`src/datos/repositorio.test.ts`](../../src/datos/repositorio.test.ts) |
+| Condiciones iniciales | Base de datos de la aplicación vacía al iniciar cada prueba |
+| Datos de entrada | Pesajes de 287 a 320 kg, una cría con chapeta 058 nacida el 2026-10-07 y su parto |
+| Pasos | Ejecutar `npm run test:informe` |
+| Resultado esperado | Se cumplen los nueve criterios de la sección 9 del documento técnico |
+| Resultado obtenido | 14 verificaciones aprobadas ([informe](resultados/2026-10-06_223258_d3453ae.md)). Total del conjunto automático: 112 de 112 |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-06 |
+
+**Detalle de los nueve criterios:**
+
+| # | Criterio | Resultado |
+|---|---|---|
+| 1 | El repositorio fija id UUID v7, autor, hora de creación y estado pendiente; conserva los datos aportados; y sus campos prevalecen aunque lleguen valores falsos mezclados en los datos | ✅ |
+| 2 | Tras crear existe exactamente una entrada en la cola que apunta al registro, con tipo `insertar` y cero intentos | ✅ |
+| 3 | **Atomicidad.** Con una falla simulada entre la escritura del registro y la de la cola (equivalente a un apagado en ese instante) no queda ni el pesaje ni la entrada; con una falla posterior a la escritura, la transacción se descarta completa | ✅ |
+| 4 | **Unidad de trabajo.** La cría 058 y su parto generan dos registros y dos entradas en orden; si el parto falla, no queda la cría ni ninguna entrada | ✅ |
+| 5 | Al terminar `crear`, el registro ya es legible desde una segunda conexión a la base de datos | ✅ |
+| 6 | Tras cerrar y reabrir la base de datos, el registro y su entrada siguen presentes | ✅ |
+| 7 | Cinco pesajes se leen de la cola en el orden en que se crearon y `contarPendientes` devuelve 5 | ✅ |
+| 8 | Las tablas de consulta permiten consultar por índice y no tienen `add`, `put`, `update`, `delete`, `bulkAdd` ni `clear` (verificado por el compilador) | ✅ |
+| 9 | **Arquitectura.** Ningún archivo fuera de `src/datos/` importa `db.ts` | ✅ |
+
+**Verificación del mecanismo de prueba (dos pruebas de mutación).**
+
+1. *Sin transacción.* Se reemplazó la transacción por la ejecución directa de las escrituras. Fallaron
+   las tres pruebas de atomicidad (criterios 3 y 4): en la primera quedó el pesaje sin su entrada en
+   la cola, que es exactamente la pérdida silenciosa que describe la sección 1 del documento técnico.
+   Las demás pruebas siguieron aprobando, porque sin fallas las escrituras se completan igual. Esto
+   confirma que solo las pruebas de falla distinguen un guardado atómico de uno que no lo es.
+2. *Acceso prohibido.* Se agregó a `src/app/App.tsx` una importación directa de la base de datos. La
+   prueba de arquitectura falló señalando ese archivo.
+
+En ambos casos se restauró el código y las 14 verificaciones aprobaron.
+
+**Ajuste durante la implementación.** En la primera ejecución la prueba de falla del parto no
+logró simular la falla, porque el repositorio accedía a las tablas por su nombre con
+`db.table()` y la simulación reemplazaba el método de la propiedad `db.parto`. Se cambió el
+repositorio para acceder siempre por la propiedad de la tabla, que es la misma instancia en ambos
+casos, y la prueba pasó a ejercer la falla. El hallazgo se corrigió antes de dar por aprobada la
+prueba.

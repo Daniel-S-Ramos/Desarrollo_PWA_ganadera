@@ -36,7 +36,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.1 | Tipos del dominio (entidades y valores admitidos) | Tablas 23 y 24 | ✅ |
 | 1.2 | Identificador UUID v7 generado en el dispositivo | 3.7.1 | ✅ |
 | 1.3 | Esquema local con Dexie | 3.8.4, Tabla 25 | ✅ |
-| 1.4 | Repositorio local y cola de operaciones en una sola transacción | 3.7.2 | ⬜ |
+| 1.4 | Repositorio local y cola de operaciones en una sola transacción | 3.7.2 | ✅ |
 | 1.5 | Solicitud de almacenamiento persistente | RNF-15, 3.8.7 | ⬜ |
 | 1.6 | Esquema remoto en Supabase: tablas, permisos e inmutabilidad de autoría | 3.8.3, 3.9.4 | ⬜ |
 | 1.7 | Autenticación: ingreso, perfil en el token, verificación sin red | 3.9.1 | ⬜ |
@@ -125,6 +125,7 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-06 | Unidades de dosis `ml, cc, mg, dosis`; tipos de evento sanitario `vacuna, purga, vitamina, tratamiento, otro` | Validados con el propietario del proyecto; el documento no los enumera |
 | 2026-10-06 | El informe de pruebas incluye la verificación de tipos | Las afirmaciones `expectTypeOf` solo las evalúa el compilador |
 | 2026-10-06 | Sin índices únicos en el esquema local; la unicidad la impone el servicio remoto | Un índice único local cancelaría los lotes de descarga con un conflicto de chapeta y el dispositivo no volvería a sincronizar (3.7.3, 3.7.7) |
+| 2026-10-06 | Lectura mediante tablas de solo lectura y prueba de arquitectura que impide importar `db.ts` fuera de `src/datos/` | Garantiza que toda escritura pase por el repositorio y entre a la cola (Tabla 20, 3.7.2) |
 
 ## Pendientes de diseño
 
