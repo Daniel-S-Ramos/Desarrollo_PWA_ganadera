@@ -53,7 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
-| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 7 | 7 aprobadas |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 10 | 10 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -68,7 +68,10 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | RF-27 | Registrar el autor y la fecha de creación de cada registro | PU-05 (los fija el repositorio y prevalecen sobre valores falsos); PI-01 (inalterables en el servicio) | 🔄 Parcial: falta verificar que el autor coincida con el usuario autenticado (paso 1.9) |
 | RNF-15 | Almacenamiento persistente y aviso cuando se niega | PU-06 (todos los caminos de la solicitud y texto del aviso); PE-12 (Chrome para Windows: el aviso aparece cuando se niega) | 🔄 Parcial: falta verificar en un teléfono Android (paso 6.4) |
 | RNF-01 | Operación en condiciones de campo | PU-01 (contraste 7:1 en todas las combinaciones de texto) | 🔄 Parcial: falta el tamaño de los controles y la prueba en campo |
-| RNF-07 | Acceso condicionado a autenticación | PE-04 (registro abierto cerrado en el servicio) | 🔄 Parcial: falta el inicio de sesión |
+| RNF-07 | Acceso condicionado a autenticación | PE-04 (registro abierto cerrado); PU-07 (solo tokens firmados por el servicio); PE-13 (ingreso real) | 🔄 Parcial: falta el código de desbloqueo (paso 1.8) |
+| RF-24 | Requerir autenticación antes de acceder | PU-07; PE-13 (sin sesión se muestra la pantalla de ingreso, que exige conexión la primera vez) | ✅ Verificado |
+| RF-25 | Dos perfiles: propietario y trabajador | PU-07 (perfil firmado y validado); PI-02 (perfil en el token); PE-13 (ambos perfiles con usuarios reales) | 🔄 Parcial: faltan los permisos de cada perfil (paso 1.9) |
+| RD-03 | Autenticación sin conexión | PU-07 (verificación de la firma sin red, token vencido aceptado); PE-13 (recarga sin conexión sigue identificado) | ✅ Verificado |
 | RNF-10 | Navegadores móviles y de escritorio | PE-06, PE-11 | 🔄 Parcial: falta la prueba en un teléfono real |
 | RNF-11 | Instalable sin tienda de aplicaciones | PE-11 | ✅ Verificado |
 | RNF-13 | Arquitectura modular | PE-02 (estructura por capas y módulos); PU-05 (prueba de arquitectura: una sola vía de escritura) | 🔄 Parcial: se verifica con cada módulo construido |

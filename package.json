@@ -15,12 +15,14 @@
     "iconos": "pwa-assets-generator",
     "test:informe": "node scripts/informe-pruebas.mjs",
     "db:push": "supabase db push",
-    "prueba:pi-01": "supabase db query --linked -f supabase/pruebas/pi-01-esquema.sql"
+    "prueba:pi-01": "supabase db query --linked -f supabase/pruebas/pi-01-esquema.sql",
+    "prueba:pi-02": "supabase db query --linked -f supabase/pruebas/pi-02-gancho-token.sql"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.116.0",
     "dexie": "4.4.5",
     "dexie-react-hooks": "4.4.0",
+    "jose": "6.2.12",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router": "7.18.4",

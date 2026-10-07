@@ -16,6 +16,9 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PU-06 | Almacenamiento persistente | 1.5 | RNF-15 · 3.8.7 | ✅ |
 | PE-12 | Almacenamiento persistente en el navegador real | 1.5 | RNF-15 | ⚠️ Aprobada con observaciones |
 | PI-01 | Esquema remoto contra la base de datos real | 1.6 | RNF-05 · RNF-06 · RNF-08 · RD-04 · 3.7.3 · 3.7.8 | ⚠️ Aprobada tras corrección |
+| PU-07 | Verificación del token sin conexión y sesión local | 1.7 | 3.9.1 · RD-03 · RF-24 · RF-25 | ✅ |
+| PI-02 | Gancho de token de acceso contra el servicio real | 1.7 | 3.9.1 · RF-25 | ✅ |
+| PE-13 | Ingreso con conexión y apertura sin conexión | 1.7 | RF-24 · RD-03 · RNF-07 · CU-01 | ⚠️ Aprobada con observaciones |
 
 ---
 
@@ -294,3 +297,97 @@ verificación 11 se ejecutó contra un estado con el defecto presente y lo detec
 
 **Conjunto automático local** tras los cambios de este paso (retiro de `ruta_remota` de la
 fotografía): 133 de 133 ([informe](resultados/2026-10-06_235142_36c8303.md)).
+
+## PU-07 · Verificación del token sin conexión y sesión local
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que el teléfono acepta solo tokens firmados por el servicio, extrae de ellos el usuario y el perfil sin red, acepta tokens vencidos y descarta una sesión guardada que haya sido alterada |
+| Requerimiento | Apartado 3.9.1 · RD-03 · RF-24 · RF-25 |
+| Tipo | Unitaria y de integración con IndexedDB simulada, automática. La prueba genera su propio par de claves ES256: la privada hace el papel del servicio y la pública el de la clave guardada en el teléfono |
+| Especificación | [docs/tecnica/06-autenticacion.md](../tecnica/06-autenticacion.md), sección 11 |
+| Código | [`src/sesion/token.ts`](../../src/sesion/token.ts), [`src/sesion/sesionLocal.ts`](../../src/sesion/sesionLocal.ts) · prueba [`src/sesion/token.test.ts`](../../src/sesion/token.test.ts) |
+| Pasos | Ejecutar `npm run test:informe` |
+| Resultado obtenido | 15 verificaciones aprobadas ([informe](resultados/2026-10-07_003732_0a6e6f0.md)). Total del conjunto automático: 148 de 148 |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-07 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Token válido: entrega usuario, perfil y nombre | ✅ |
+| 2 | Token vencido hace un día: se acepta | ✅ |
+| 3 | Perfil cambiado de trabajador a propietario sin volver a firmar: se rechaza por firma | ✅ |
+| 4 | Token firmado con otra clave: se rechaza; con otro identificador de clave: se rechaza antes de verificar | ✅ |
+| 5 | Token sin perfil: se rechaza | ✅ |
+| 6 | Perfil «administrador»: se rechaza | ✅ |
+| 7 | Algoritmos `none` y `HS256`: se rechazan; otro emisor: se rechaza; texto que no es token: se rechaza sin errores | ✅ |
+| 8 | Sesión local: se guarda y se recupera; un token inválido no se guarda; la sesión no contiene contraseña ni datos derivados de ella (solo los campos `identidad`, `token`, `clave_publica`, `emisor` y `verificada_en`); una sesión alterada directamente en la base de datos se descarta al abrir | ✅ |
+
+**Prueba de mutación.** Se reemplazó la verificación de la firma por una simple lectura del
+contenido del token. Fallaron 4 verificaciones: el token con el perfil cambiado, el firmado con
+otra clave, el guardado de un token inválido y la sesión alterada. Se restauró el código y las 15
+aprobaron.
+
+**Ajuste de la prueba de arquitectura de PU-05.** La primera ejecución del conjunto completo dio
+147 de 148: la prueba de arquitectura de PU-05 señaló `src/sesion/token.test.ts`, que importa la
+base de datos directamente para reiniciarla y para simular la manipulación de la sesión guardada.
+La regla existe para el código de la aplicación, no para las pruebas, que necesitan manipular la
+base de datos para simular fallas y ataques. Se excluyeron de la regla los archivos `*.test.ts`,
+con el motivo escrito en la propia prueba, y se repitió la mutación de PU-05 (una pantalla que
+importa `db.ts`): la prueba siguió detectándola. El informe de esa primera ejecución no se
+conservó; el hecho queda registrado aquí.
+
+## PI-02 · Gancho de token de acceso contra el servicio real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que la función del gancho agrega perfil y nombre al token solo para usuarios con fila en `usuario`, y que solo el servicio de autenticación puede ejecutarla |
+| Requerimiento | Apartado 3.9.1 · RF-25 |
+| Tipo | Integración contra el servicio real. Script SQL que se revierte al terminar |
+| Código | [`20261007000100_gancho_perfil_token.sql`](../../supabase/migrations/20261007000100_gancho_perfil_token.sql) · prueba [`supabase/pruebas/pi-02-gancho-token.sql`](../../supabase/pruebas/pi-02-gancho-token.sql) |
+| Condiciones iniciales | Migración aplicada con `npm run db:push` y gancho activado en *Authentication → Auth Hooks* ([captura](evidencias/iteracion-1/PI-02-0-gancho-activado.png)) |
+| Pasos | Ejecutar `npm run prueba:pi-02` y repetir `npm run prueba:pi-01` |
+| Resultado obtenido | 5 de 5 aprobadas; PI-01 repetida: 11 de 11 ([evidencia](evidencias/iteracion-1/PI-02-1-ejecucion.txt)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-07 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Con fila en `usuario`: el token incluye perfil y nombre | ✅ |
+| 2 | Sin fila: el token sale sin perfil ni nombre, aunque llegara uno en las declaraciones originales | ✅ |
+| 3 | Solo `supabase_auth_admin` puede ejecutar la función | ✅ |
+| 4 | `supabase_auth_admin` puede leer `usuario` (privilegio y política de RLS) | ✅ |
+| 5 | La función no es `SECURITY DEFINER` | ✅ |
+
+## PE-13 · Ingreso con conexión y apertura sin conexión
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar con el servicio real y los usuarios reales del predio que el ingreso entrega el perfil firmado, que la identidad se conserva sin red y que el primer ingreso exige conexión |
+| Requerimiento | RF-24 · RD-03 · RNF-07 · CU-01 (flujo principal y precondición) · Tabla 31 |
+| Tipo | Verificación manual en Chrome, con la versión de producción (`npm run build` y `npm run preview`) |
+| Condiciones iniciales | Tres cuentas creadas en el servicio (un propietario y dos trabajadores) con su fila en `usuario`. Las contraseñas y los correos no se registran en este documento |
+| Resultado obtenido | Los cinco pasos se comportaron como se esperaba (tabla siguiente) |
+| Estado | ⚠️ Aprobada con observaciones |
+| Fecha | 2026-10-07 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Ingreso como el propietario | El encabezado muestra su nombre y «Propietario» | [captura](evidencias/iteracion-1/PE-13-1-ingreso-propietario.png) |
+| 2 | Red en «Sin conexión» y recarga | **Sigue identificado como propietario, sin pedir credenciales**; 0 kB transferidos | [captura](evidencias/iteracion-1/PE-13-2-recarga-sin-conexion-sigue-identificado.png) |
+| 3 | Revisión de `meta` en IndexedDB | Existe la entrada `sesion` | captura del paso 4 |
+| 4 | Sin conexión: cerrar sesión e intentar ingresar | «El primer ingreso en este teléfono requiere conexión a internet» | [captura, con el correo omitido](evidencias/iteracion-1/PE-13-4-ingreso-sin-conexion-rechazado.png) |
+| 5 | Con conexión: ingreso como un trabajador | El encabezado muestra su nombre y «Trabajador» | [captura](evidencias/iteracion-1/PE-13-5-ingreso-trabajador.png) |
+
+**Observaciones.**
+
+1. En la captura del paso 4 el valor de la entrada `sesion` aparece contraído, de modo que la
+   captura no permite ver su contenido. La ausencia de contraseña en la sesión guardada la verifica
+   PU-07 (criterio 8), que comprueba los campos exactos que se guardan.
+2. En esa misma captura la tabla `meta` todavía muestra la entrada `sesion` después de cerrar la
+   sesión. Las herramientas de desarrollador no actualizan la vista de IndexedDB por sí solas. La
+   aplicación sí la borró: solo muestra la pantalla de ingreso cuando el cierre terminó con éxito,
+   y el borrado de la sesión local lo verifica PU-07.
+3. Una de las cuentas se creó inicialmente con una dirección de `gmail.com` inexistente. Se
+   recomendó cambiarla por una del dominio reservado `.test` (RFC 2606), que no puede pertenecer a
+   nadie, para que un eventual correo del servicio no llegue a un tercero.

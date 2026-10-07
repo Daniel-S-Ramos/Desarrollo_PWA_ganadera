@@ -39,7 +39,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.4 | Repositorio local y cola de operaciones en una sola transacción | 3.7.2 | ✅ |
 | 1.5 | Solicitud de almacenamiento persistente | RNF-15, 3.8.7 | ✅ |
 | 1.6 | Esquema remoto en Supabase: tablas, permisos e inmutabilidad de autoría | 3.8.3, 3.9.4 | ✅ |
-| 1.7 | Autenticación: ingreso, perfil en el token, verificación sin red | 3.9.1 | ⬜ |
+| 1.7 | Autenticación: ingreso, perfil en el token, verificación sin red | 3.9.1 | ✅ |
 | 1.8 | Código de desbloqueo local | 3.9.1 | ⬜ |
 | 1.9 | Gestor de sesión y permisos, y reglas a nivel de fila | 3.9.2, 3.9.3, Tabla 27 | ⬜ |
 | 1.10 | Motor de sincronización: subida, bajada, marca de avance, idempotencia | 3.7.3 – 3.7.8 | ⬜ |
@@ -134,6 +134,11 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-06 | «No corregir un registro anulado» se verifica en el dispositivo; el servicio acepta ambas filas | Compatibiliza la Tabla 24 con la Tabla 21 cuando la anulación llega primero (documento técnico 05, sección 5.3) |
 | 2026-10-06 | Esquema remoto aplicado con la CLI de Supabase mediante migraciones versionadas | Reproducible y con registro de las migraciones aplicadas |
 | 2026-10-06 | Se retira el privilegio de ejecución de `public.rls_auto_enable()` | El revisor de seguridad de Supabase la encontró ejecutable por anon y authenticated; la crea la opción «Habilitar RLS automático» del proyecto |
+| 2026-10-07 | Biblioteca `jose` 6.2.12 para verificar la firma del token | Biblioteca de referencia para los estándares JOSE (JWT), auditada y sin dependencias; reduce el riesgo frente a una verificación escrita a mano |
+| 2026-10-07 | Sesión local propia, separada de la sesión de supabase-js | Si el token de refresco deja de ser válido la biblioteca borra su sesión; el 3.9.1 exige no borrar nada y seguir operando sin red |
+| 2026-10-07 | El nombre del usuario viaja en el token junto con el perfil | Permite mostrarlo desde el primer ingreso, antes de que las reglas del paso 1.9 permitan consultar la tabla `usuario` |
+| 2026-10-07 | Los datos personales de los usuarios (nombres y correos) se cargan desde el panel de Supabase y no se versionan | Privacidad: no quedan en el repositorio ni en la documentación |
+| 2026-10-07 | La regla de arquitectura de PU-05 excluye los archivos de prueba | Las pruebas necesitan manipular la base de datos para simular fallas y ataques |
 
 ## Pendientes de diseño
 
@@ -146,7 +151,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 
 ## Pendientes para el documento
 
-- Agregar a la Tabla 19: TypeScript, react-router y Vitest (no figuran hoy).
+- Agregar a la Tabla 19: TypeScript, react-router, Vitest, jose y la CLI de Supabase (no figuran hoy).
 - Corregir en 3.8.11 la referencia «los once componentes de la Tabla 19» → Tabla 20.
 - Tabla 24, fila `salida`: precisar que el estado «retirado» del animal no se almacena sino que se deduce de la existencia de una salida vigente (decisión del 2026-10-06). Revisar también la fila `animal` («El sexo y el estado admiten valores definidos»).
 - Tabla 24, fila `correccion`: la restricción «no se admite una corrección ni una anulación sobre un registro ya anulado» es incompatible en el servidor con la Tabla 21 («prevalece la anulación, cualquiera que sea el orden de llegada; la corrección se conserva»). Precisar que la verifica el dispositivo y que el servicio acepta ambas filas y calcula el valor vigente al leer (decisión del 2026-10-06, documento técnico 05, sección 5.3).
@@ -166,4 +171,5 @@ la pregunte. Cada tema tiene su documento técnico.
 | Estado del animal deducido y no almacenado | Ejemplo del principio «no guardar lo que puede calcularse», el mismo de los recordatorios derivados (3.8.11) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6.1 |
 | Servidor de solo inserciones | Por qué sin privilegio UPDATE ninguna política futura puede habilitar una sobrescritura (3.7.8), y cómo eso obligó a deducir la ruta de la foto y el estado del animal | [05-esquema-remoto.md](docs/tecnica/05-esquema-remoto.md), sección 2 |
 | Conflicto entre las Tablas 21 y 24 | Ejemplo de una contradicción del diseño descubierta al implementarlo, y su resolución | [05-esquema-remoto.md](docs/tecnica/05-esquema-remoto.md), sección 5.3 |
+| Token firmado con clave asimétrica | Cómo el teléfono confía en el perfil sin preguntarle al servidor, y por qué una sesión alterada se detecta (3.9.1, RD-03) | [06-autenticacion.md](docs/tecnica/06-autenticacion.md), secciones 3 a 5 |
 | Unicidad de la chapeta sin índice único local | Decisión que parece un descuido y en realidad evita que un teléfono deje de sincronizar para siempre (3.7.3, tercera regla) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6 |

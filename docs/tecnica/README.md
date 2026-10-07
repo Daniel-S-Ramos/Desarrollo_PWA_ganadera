@@ -14,3 +14,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 03 | [Repositorio local y cola de operaciones](03-repositorio-y-cola.md) | 1.4 | 3.7.2 · RNF-04 · Tabla 20 |
 | 04 | [Almacenamiento persistente](04-almacenamiento-persistente.md) | 1.5 | RNF-15 · 3.8.7 |
 | 05 | [Esquema remoto: la base de datos del servicio](05-esquema-remoto.md) | 1.6 | 3.8.3 · 3.7.8 · RNF-06 |
+| 06 | [Autenticación con conexión y sin ella](06-autenticacion.md) | 1.7 | 3.9.1 · RF-24 · RD-03 |
