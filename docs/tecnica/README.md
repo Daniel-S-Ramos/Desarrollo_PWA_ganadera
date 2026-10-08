@@ -16,3 +16,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 05 | [Esquema remoto: la base de datos del servicio](05-esquema-remoto.md) | 1.6 | 3.8.3 · 3.7.8 · RNF-06 |
 | 06 | [Autenticación con conexión y sin ella](06-autenticacion.md) | 1.7 | 3.9.1 · RF-24 · RD-03 |
 | 07 | [Código de desbloqueo](07-codigo-de-desbloqueo.md) | 1.8 | 3.9.1 · RD-05 · Tabla 31 |
+| 08 | [Permisos por perfil](08-permisos.md) | 1.9 | 3.9.2 · 3.9.3 · 3.9.5 · Tabla 27 |

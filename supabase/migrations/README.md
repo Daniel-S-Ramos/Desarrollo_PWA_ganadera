@@ -9,6 +9,7 @@ Migraciones del servicio remoto, en orden de aplicación. Especificación:
 | `20261006000200_parametros_iniciales.sql` | Valores de la Tabla 30 |
 | `20261006000300_revocar_rls_auto_enable.sql` | Retira el permiso de ejecución de la función `rls_auto_enable` que el revisor de seguridad encontró expuesta |
 | `20261007000100_gancho_perfil_token.sql` | Función que agrega el perfil y el nombre al token de acceso, con sus privilegios y la política de lectura de `usuario` para el servicio de autenticación |
+| `20261007000200_politicas_rls.sql` | Políticas de lectura y escritura por perfil (Tabla 27), regla de corrección del trabajador y parámetro de días máximos de corrección sin conexión |
 
 Se aplican con `npm run db:push` (CLI de Supabase), que registra en el servicio cuáles ya se
 aplicaron. Una migración aplicada no se edita: los cambios van en un archivo nuevo.

@@ -21,6 +21,8 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PE-13 | Ingreso con conexión y apertura sin conexión | 1.7 | RF-24 · RD-03 · RNF-07 · CU-01 | ⚠️ Aprobada con observaciones |
 | PU-08 | Código de desbloqueo | 1.8 | 3.9.1 · RD-05 · RNF-07 · Tabla 31 | ✅ |
 | PE-14 | Código de desbloqueo en el navegador real | 1.8 | 3.9.1 · Tabla 31 | ✅ |
+| PU-09 | Gestor de permisos del teléfono | 1.9 | 3.9.2 · 3.9.3 · 3.9.5 · Tabla 27 | ✅ |
+| PI-03 | Políticas de seguridad a nivel de fila contra el servicio real | 1.9 | 3.9.2 · 3.9.3 · 3.9.5 · RF-27 · RD-05 · RNF-06 | ⚠️ Aprobada con observaciones |
 
 ---
 
@@ -458,3 +460,71 @@ En los tres casos se restauró el código y las 28 verificaciones del módulo ap
 **Pendiente.** El rechazo del reingreso de otro usuario con pendientes no puede probarse a mano
 todavía, porque ninguna pantalla crea registros. Lo verifica PU-08 (criterios 7 y 7b) y se probará
 a mano en la Iteración 2, cuando exista el registro de animales.
+
+## PU-09 · Gestor de permisos del teléfono
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que el teléfono muestra a cada perfil exactamente las funciones de la Tabla 27, que solo permite escribir en las tablas autorizadas y que aplica la regla de corrección del trabajador |
+| Requerimiento | Apartados 3.9.2 (Tabla 27), 3.9.3 y 3.9.5 · RF-25 · RF-26 · RD-05 · Tabla 31 |
+| Tipo | Unitaria y de integración con IndexedDB simulada, automática |
+| Especificación | [docs/tecnica/08-permisos.md](../tecnica/08-permisos.md), sección 10 |
+| Código | [`src/sesion/permisos.ts`](../../src/sesion/permisos.ts), [`src/dominio/fechas.ts`](../../src/dominio/fechas.ts) · prueba [`src/sesion/permisos.test.ts`](../../src/sesion/permisos.test.ts) |
+| Pasos | Ejecutar `npm run test:informe` |
+| Resultado obtenido | 39 verificaciones aprobadas ([informe](resultados/2026-10-07_234900_7ef3b89.md)). Total del conjunto automático: 218 de 218 |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-07 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Los 18 casos de uso de la Tabla 27, transcritos uno por uno: el propietario los tiene todos; el trabajador, los 12 que la tabla le habilita | ✅ |
+| 2 | Las 12 tablas: ambos perfiles escriben en 8; solo el propietario en destino, salida, movimiento económico y recordatorio | ✅ |
+| 3 | El propietario corrige cualquier registro, de cualquier autor y fecha | ✅ |
+| 4 | El trabajador corrige uno de un trabajador del mismo día; no uno del propietario; no uno de otro día; no uno de autor desconocido. Un registro de las 11 p. m. y una corrección de la 1 a. m. son días distintos en la fecha del predio | ✅ |
+| 5 | `crearAutorizado` rechaza una salida del trabajador sin escribir nada; admite su pesaje con su autoría; admite la salida del propietario | ✅ |
+
+**Pruebas de mutación.**
+
+| Mutación | Pruebas que fallaron |
+|---|---|
+| Habilitar al trabajador «Comparar producción» (CU-07) | 1: la fila CU-07 de la Tabla 27 |
+| Quitar la condición del mismo día | 2: otro día y el cambio de día en la fecha del predio |
+| Escribir sin verificar el permiso | 1: la salida del trabajador |
+
+## PI-03 · Políticas de seguridad a nivel de fila contra el servicio real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar en el servicio real que las políticas aplican la Tabla 27, la regla del autor y la regla de corrección, también frente a lo que intentaría un teléfono manipulado |
+| Requerimiento | Apartados 3.9.2, 3.9.3 y 3.9.5 · RF-25 · RF-26 · RF-27 · RD-05 · RNF-06 · RNF-08 |
+| Tipo | Integración contra el servicio real. El script simula, dentro de la base de datos, las sesiones de un propietario, dos trabajadores, una cuenta sin perfil y un visitante sin sesión, y se revierte al terminar |
+| Código | [`20261007000200_politicas_rls.sql`](../../supabase/migrations/20261007000200_politicas_rls.sql) · prueba [`supabase/pruebas/pi-03-politicas.sql`](../../supabase/pruebas/pi-03-politicas.sql) |
+| Pasos | `npm run db:push`, `npm run prueba:pi-03`, repetir PI-01 y PI-02, y ejecutar el revisor de seguridad |
+| Resultado obtenido | 11 de 11 aprobadas; PI-01 11 de 11; PI-02 5 de 5 ([evidencia](evidencias/iteracion-1/PI-03-1-ejecucion.txt)) |
+| Estado | ⚠️ Aprobada con observaciones |
+| Fecha | 2026-10-07 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Cada perfil registra con su autoría; un trabajador que registra a nombre del propietario es rechazado (42501) | ✅ |
+| 2 | El trabajador no registra destino, salida, movimiento económico ni posposición | ✅ |
+| 3 | El propietario registra los cuatro | ✅ |
+| 4 | El trabajador ve 0 movimientos económicos; el propietario los ve | ✅ |
+| 5 | El trabajador lee pesajes, salidas, destinos, al propietario en `usuario` y los 7 parámetros | ✅ |
+| 6 | El trabajador corrige un registro de otro trabajador del mismo día, también si la corrección llega 3 días después | ✅ |
+| 7 | El trabajador no corrige un registro del propietario, ni de otro día, ni con el reloj del teléfono atrasado 30 días | ✅ |
+| 8 | El propietario corrige un registro de hace 30 días y uno de hoy | ✅ |
+| 9 | Una cuenta sin perfil no registra ni ve animales | ✅ |
+| 10 | Sin sesión no se lee ni se registra | ✅ |
+| 11 | Ni el propietario puede modificar ni eliminar un registro | ✅ |
+
+**Hallazgo durante la implementación.** La primera versión de la migración condicionaba la
+lectura de `usuario` al perfil de quien consulta, que se obtiene de la misma tabla: la política se
+habría invocado a sí misma sin fin. Se detectó al revisar la migración antes de aplicarla, y la
+lectura de `usuario` se abrió a cualquier usuario autenticado, con el motivo documentado en el
+documento técnico 08 (sección 5).
+
+**Observación: revisor de seguridad.** Tras aplicar las políticas, el revisor no reportó hallazgos
+sobre el esquema, las funciones ni las políticas. Reportó una advertencia de configuración de la
+autenticación, ajena al código: la protección contra contraseñas filtradas (verificación contra
+HaveIBeenPwned) está desactivada. Se registra su tratamiento en la tabla de decisiones del plan.

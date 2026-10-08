@@ -41,7 +41,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.6 | Esquema remoto en Supabase: tablas, permisos e inmutabilidad de autoría | 3.8.3, 3.9.4 | ✅ |
 | 1.7 | Autenticación: ingreso, perfil en el token, verificación sin red | 3.9.1 | ✅ |
 | 1.8 | Código de desbloqueo local | 3.9.1 | ✅ |
-| 1.9 | Gestor de sesión y permisos, y reglas a nivel de fila | 3.9.2, 3.9.3, Tabla 27 | ⬜ |
+| 1.9 | Gestor de sesión y permisos, y reglas a nivel de fila | 3.9.2, 3.9.3, Tabla 27 | ✅ |
 | 1.10 | Motor de sincronización: subida, bajada, marca de avance, idempotencia | 3.7.3 – 3.7.8 | ⬜ |
 | 1.11 | Indicador de sincronización (contador y marca por registro) | 3.7.4, 3.10.4.5 | ⬜ |
 | 1.12 | Cierre de sesión con cola vacía | 3.9.1 | ⬜ |
@@ -142,6 +142,10 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-07 | Código de desbloqueo derivado con PBKDF2-SHA-256, sal aleatoria y 600.000 iteraciones; se rechazan códigos triviales | Valor recomendado por OWASP; el código nunca se guarda en claro (3.9.1) |
 | 2026-10-07 | Tras un bloqueo, con pendientes solo el mismo usuario puede reingresar, y el aviso nombra al usuario y la cantidad de pendientes | Evita que los registros de otro autor queden atascados en la cola; el aviso explica el motivo (decisión del propietario del proyecto) |
 | 2026-10-07 | Tras cada ingreso con credenciales se define un código nuevo | El código pertenece a la sesión que lo definió |
+| 2026-10-07 | Permisos en dos niveles: la Tabla 27 se aplica a las funciones en el teléfono; en el servicio el trabajador lee todos los datos salvo los económicos | El teléfono del trabajador necesita producción, partos, destinos, salidas y correcciones para operar sin conexión (documento técnico 08, sección 2) |
+| 2026-10-07 | «Mismo día» de una corrección del trabajador: misma fecha del predio según el teléfono y llegada al servicio a más tardar 7 días después | Admite correcciones hechas sin conexión y cierra la puerta al reloj atrasado (documento técnico 08, sección 4.1) |
+| 2026-10-07 | Las políticas leen el perfil de la tabla `usuario`, no del token | Un cambio de perfil se aplica de inmediato |
+| 2026-10-07 | La lectura de `usuario` se abre a cualquier usuario autenticado | Condicionarla al perfil provocaría una recursión infinita en la política; el registro abierto está deshabilitado |
 
 ## Pendientes de diseño
 
@@ -155,6 +159,8 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 
 ## Pendientes para el documento
 
+- Tabla 27: precisar que la columna del trabajador restringe funciones (pantallas) y no el acceso a los datos que esas funciones resumen, salvo la información económica (documento técnico 08, sección 2).
+- Apartado 3.9.5: precisar cómo se mide «el mismo día» de una corrección hecha sin conexión (documento técnico 08, sección 4.1).
 - Agregar a la Tabla 19: TypeScript, react-router, Vitest, jose y la CLI de Supabase (no figuran hoy).
 - Corregir en 3.8.11 la referencia «los once componentes de la Tabla 19» → Tabla 20.
 - Tabla 24, fila `salida`: precisar que el estado «retirado» del animal no se almacena sino que se deduce de la existencia de una salida vigente (decisión del 2026-10-06). Revisar también la fila `animal` («El sexo y el estado admiten valores definidos»).
@@ -177,4 +183,5 @@ la pregunte. Cada tema tiene su documento técnico.
 | Conflicto entre las Tablas 21 y 24 | Ejemplo de una contradicción del diseño descubierta al implementarlo, y su resolución | [05-esquema-remoto.md](docs/tecnica/05-esquema-remoto.md), sección 5.3 |
 | Token firmado con clave asimétrica | Cómo el teléfono confía en el perfil sin preguntarle al servidor, y por qué una sesión alterada se detecta (3.9.1, RD-03) | [06-autenticacion.md](docs/tecnica/06-autenticacion.md), secciones 3 a 5 |
 | Código de desbloqueo con PBKDF2 | Por qué un código corto no se puede guardar con un resumen simple, qué aportan la sal y las iteraciones, y qué no protege (3.9.1) | [07-codigo-de-desbloqueo.md](docs/tecnica/07-codigo-de-desbloqueo.md), secciones 4 y 7 |
+| Doble aplicación de permisos y funciones frente a datos | Por qué el teléfono no es confiable, qué decide el servicio y por qué el trabajador recibe datos de pantallas que no ve (3.9.3) | [08-permisos.md](docs/tecnica/08-permisos.md), secciones 1, 2 y 4 |
 | Unicidad de la chapeta sin índice único local | Decisión que parece un descuido y en realidad evita que un teléfono deje de sincronizar para siempre (3.7.3, tercera regla) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6 |
