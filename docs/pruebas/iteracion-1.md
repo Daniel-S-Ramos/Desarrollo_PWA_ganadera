@@ -19,6 +19,8 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PU-07 | Verificación del token sin conexión y sesión local | 1.7 | 3.9.1 · RD-03 · RF-24 · RF-25 | ✅ |
 | PI-02 | Gancho de token de acceso contra el servicio real | 1.7 | 3.9.1 · RF-25 | ✅ |
 | PE-13 | Ingreso con conexión y apertura sin conexión | 1.7 | RF-24 · RD-03 · RNF-07 · CU-01 | ⚠️ Aprobada con observaciones |
+| PU-08 | Código de desbloqueo | 1.8 | 3.9.1 · RD-05 · RNF-07 · Tabla 31 | ✅ |
+| PE-14 | Código de desbloqueo en el navegador real | 1.8 | 3.9.1 · Tabla 31 | ✅ |
 
 ---
 
@@ -388,6 +390,71 @@ conservó; el hecho queda registrado aquí.
    sesión. Las herramientas de desarrollador no actualizan la vista de IndexedDB por sí solas. La
    aplicación sí la borró: solo muestra la pantalla de ingreso cuando el cierre terminó con éxito,
    y el borrado de la sesión local lo verifica PU-07.
-3. Una de las cuentas se creó inicialmente con una dirección de `gmail.com` inexistente. Se
-   recomendó cambiarla por una del dominio reservado `.test` (RFC 2606), que no puede pertenecer a
-   nadie, para que un eventual correo del servicio no llegue a un tercero.
+3. Una de las cuentas se creó inicialmente con una dirección de `gmail.com` inexistente. El
+   2026-10-07 se cambió por una del dominio reservado `.test` (RFC 2606), que no puede pertenecer a
+   nadie, para que un eventual correo del servicio no llegue a un tercero. El cambio se hizo en
+   `auth.users` y `auth.identities`; el identificador, la contraseña y el perfil del usuario se
+   conservaron.
+
+## PU-08 · Código de desbloqueo
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que el código se valida, se guarda derivado y nunca en claro, desbloquea solo con el valor correcto, bloquea al quinto error y que, con pendientes, solo el mismo usuario puede volver a ingresar, con un aviso que explica el motivo |
+| Requerimiento | Apartado 3.9.1 (segunda capa) · RD-05 · RNF-07 · Tabla 31 |
+| Tipo | Unitaria y de integración con IndexedDB simulada, automática |
+| Especificación | [docs/tecnica/07-codigo-de-desbloqueo.md](../tecnica/07-codigo-de-desbloqueo.md), sección 9 |
+| Código | [`src/sesion/desbloqueo.ts`](../../src/sesion/desbloqueo.ts) · pruebas [`src/sesion/desbloqueo.test.ts`](../../src/sesion/desbloqueo.test.ts) y [`src/ui/pantallas/PantallaInicioSesion.test.ts`](../../src/ui/pantallas/PantallaInicioSesion.test.ts) |
+| Pasos | Ejecutar `npm run test:informe` |
+| Resultado obtenido | 31 verificaciones aprobadas ([informe](resultados/2026-10-07_215005_3c351fe.md)). Total del conjunto automático: 179 de 179 |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-07 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Formato: se aceptan 4, 5 y 6 dígitos; se rechazan 3 y 7 dígitos, letras, espacios y el texto vacío | ✅ |
+| 2 | Triviales: se rechazan `0000`, `11111`, `999999`, `1234`, `23456`, `6543` y `987654`; no se puede definir un código inválido | ✅ |
+| 3 | Guardado: lo guardado no contiene el código (solo `sal`, `iteraciones`, `derivado` e `intentos_fallidos`), y dos definiciones del mismo código producen sales y derivados distintos | ✅ |
+| 4 | El código correcto desbloquea | ✅ |
+| 5 | Cada error suma un intento e informa cuántos quedan; un acierto reinicia el contador | ✅ |
+| 6 | Al quinto error se borran el código y la sesión local, y el código correcto deja de servir; con pendientes se conserva el usuario anterior, sin pendientes no | ✅ |
+| 7 | Reingreso: con pendientes, otro usuario es rechazado con el nombre del anterior y la cantidad de pendientes; el mismo usuario es admitido; sin pendientes, cualquiera es admitido y se descarta el usuario anterior | ✅ |
+| 7b | El aviso de rechazo dice: «Este teléfono tiene 3 registros de Daniel Ramos que aún no se han enviado. Solo Daniel Ramos puede ingresar hasta que se envíen, para que no se pierdan. Pídale que ingrese con su cuenta y sincronice.», con singular para un solo registro | ✅ |
+| 8 | La aplicación define el código con 600.000 iteraciones y lo verifica correctamente (alrededor de medio segundo en el equipo de desarrollo) | ✅ |
+
+**Pruebas de mutación.**
+
+| Mutación | Pruebas que fallaron |
+|---|---|
+| Guardar el código en claro junto al derivado | 5, entre ellas «lo guardado no contiene el código» |
+| No bloquear nunca | 1: «se borran el código y la sesión local» |
+| Permitir el reingreso de cualquier usuario | 1: «con pendientes, otro usuario no puede ingresar» |
+
+En los tres casos se restauró el código y las 28 verificaciones del módulo aprobaron.
+
+## PE-14 · Código de desbloqueo en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar en Chrome, con la versión de producción y un usuario real, la definición del código, el desbloqueo sin conexión, el contador de intentos, el bloqueo al quinto error y «Olvidé mi código» |
+| Requerimiento | Apartado 3.9.1 (segunda capa) · Tabla 31 · RD-03 |
+| Tipo | Verificación manual en Chrome (`npm run build` y `npm run preview`) |
+| Condiciones iniciales | Sesión local del trabajador abierta en PE-13, sin código definido |
+| Resultado obtenido | Los ocho pasos se comportaron como se esperaba |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-07 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Al abrir, la aplicación pide elegir un código; se escribe `1234` | «Ese código es muy fácil de adivinar…» | [captura](evidencias/iteracion-1/PE-14-1-codigo-trivial-rechazado.png) |
+| 2 | Se elige un código válido y se repite uno distinto | «Los códigos no coinciden. Elija el código de nuevo.» | [captura](evidencias/iteracion-1/PE-14-2-codigos-no-coinciden.png) |
+| 3 | Se define el código correctamente | La aplicación se abre con el nombre y el perfil en el encabezado | captura del paso 4 |
+| 4 | Red en «Sin conexión», recarga y código correcto | **Se desbloquea sin red**: 0 kB transferidos | [captura](evidencias/iteracion-1/PE-14-4-desbloqueo-sin-conexion.png) |
+| 5 | Con red, recarga y dos códigos incorrectos | «Código incorrecto. Le quedan 3 intentos.» | [captura](evidencias/iteracion-1/PE-14-5-intentos-restantes.png) |
+| 6 | Quinto código incorrecto | Vuelve al ingreso: «Se superaron los 5 intentos del código. Ingrese con su correo y contraseña.» | [captura](evidencias/iteracion-1/PE-14-6-bloqueo-quinto-intento.png) |
+| 7 | Ingreso con la cuenta del mismo trabajador | Pide definir un código nuevo | Confirmado por el responsable de la prueba, sin captura |
+| 8 | Recarga y «Olvidé mi código» | Vuelve al ingreso: «Ingrese con su correo y contraseña para definir un código nuevo.» | [captura](evidencias/iteracion-1/PE-14-8-olvide-mi-codigo.png) |
+
+**Pendiente.** El rechazo del reingreso de otro usuario con pendientes no puede probarse a mano
+todavía, porque ninguna pantalla crea registros. Lo verifica PU-08 (criterios 7 y 7b) y se probará
+a mano en la Iteración 2, cuando exista el registro de animales.

@@ -40,7 +40,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.5 | Solicitud de almacenamiento persistente | RNF-15, 3.8.7 | ✅ |
 | 1.6 | Esquema remoto en Supabase: tablas, permisos e inmutabilidad de autoría | 3.8.3, 3.9.4 | ✅ |
 | 1.7 | Autenticación: ingreso, perfil en el token, verificación sin red | 3.9.1 | ✅ |
-| 1.8 | Código de desbloqueo local | 3.9.1 | ⬜ |
+| 1.8 | Código de desbloqueo local | 3.9.1 | ✅ |
 | 1.9 | Gestor de sesión y permisos, y reglas a nivel de fila | 3.9.2, 3.9.3, Tabla 27 | ⬜ |
 | 1.10 | Motor de sincronización: subida, bajada, marca de avance, idempotencia | 3.7.3 – 3.7.8 | ⬜ |
 | 1.11 | Indicador de sincronización (contador y marca por registro) | 3.7.4, 3.10.4.5 | ⬜ |
@@ -139,6 +139,9 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-07 | El nombre del usuario viaja en el token junto con el perfil | Permite mostrarlo desde el primer ingreso, antes de que las reglas del paso 1.9 permitan consultar la tabla `usuario` |
 | 2026-10-07 | Los datos personales de los usuarios (nombres y correos) se cargan desde el panel de Supabase y no se versionan | Privacidad: no quedan en el repositorio ni en la documentación |
 | 2026-10-07 | La regla de arquitectura de PU-05 excluye los archivos de prueba | Las pruebas necesitan manipular la base de datos para simular fallas y ataques |
+| 2026-10-07 | Código de desbloqueo derivado con PBKDF2-SHA-256, sal aleatoria y 600.000 iteraciones; se rechazan códigos triviales | Valor recomendado por OWASP; el código nunca se guarda en claro (3.9.1) |
+| 2026-10-07 | Tras un bloqueo, con pendientes solo el mismo usuario puede reingresar, y el aviso nombra al usuario y la cantidad de pendientes | Evita que los registros de otro autor queden atascados en la cola; el aviso explica el motivo (decisión del propietario del proyecto) |
+| 2026-10-07 | Tras cada ingreso con credenciales se define un código nuevo | El código pertenece a la sesión que lo definió |
 
 ## Pendientes de diseño
 
@@ -147,6 +150,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | Paso | Pendiente | Origen |
 |---|---|---|
 | 6.4 | Verificar en un teléfono Android si instalar la aplicación concede el almacenamiento persistente (en Windows no lo concedió, PE-12) | Documento técnico 04, sección 3 |
+| 2.x | Probar a mano el rechazo del reingreso de otro usuario con pendientes (PU-08 lo cubre de forma automática) | PE-14, pendiente |
 | 2.1 | Cómo resuelve el propietario un conflicto de chapeta. Si son dos animales distintos, corregir el código (3.9.5). Si es el mismo animal registrado dos veces, anular el duplicado; falta definir qué pasa con los eventos que ya se le registraron al duplicado en ese teléfono. Consultar con el propietario | 3.7.3, tercera regla · conversación del 2026-10-06 |
 
 ## Pendientes para el documento
@@ -172,4 +176,5 @@ la pregunte. Cada tema tiene su documento técnico.
 | Servidor de solo inserciones | Por qué sin privilegio UPDATE ninguna política futura puede habilitar una sobrescritura (3.7.8), y cómo eso obligó a deducir la ruta de la foto y el estado del animal | [05-esquema-remoto.md](docs/tecnica/05-esquema-remoto.md), sección 2 |
 | Conflicto entre las Tablas 21 y 24 | Ejemplo de una contradicción del diseño descubierta al implementarlo, y su resolución | [05-esquema-remoto.md](docs/tecnica/05-esquema-remoto.md), sección 5.3 |
 | Token firmado con clave asimétrica | Cómo el teléfono confía en el perfil sin preguntarle al servidor, y por qué una sesión alterada se detecta (3.9.1, RD-03) | [06-autenticacion.md](docs/tecnica/06-autenticacion.md), secciones 3 a 5 |
+| Código de desbloqueo con PBKDF2 | Por qué un código corto no se puede guardar con un resumen simple, qué aportan la sal y las iteraciones, y qué no protege (3.9.1) | [07-codigo-de-desbloqueo.md](docs/tecnica/07-codigo-de-desbloqueo.md), secciones 4 y 7 |
 | Unicidad de la chapeta sin índice único local | Decisión que parece un descuido y en realidad evita que un teléfono deje de sincronizar para siempre (3.7.3, tercera regla) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6 |

@@ -247,3 +247,10 @@ body {
 .tarjeta + .tarjeta {
   margin-top: var(--separacion);
 }
+
+/* Campo del código de desbloqueo: dígitos grandes y espaciados para leerlos con una mano. */
+.campo input.campo__codigo {
+  font-size: 1.6rem;
+  letter-spacing: 0.5em;
+  text-align: center;
+}

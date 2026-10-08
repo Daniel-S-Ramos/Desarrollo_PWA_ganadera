@@ -2,14 +2,27 @@ import { useState, type FormEvent } from 'react';
 import { iniciarSesion, type ResultadoIngreso } from '../../sesion/autenticacion';
 import type { Identidad } from '../../sesion/token';
 
-type MotivoFalla = Extract<ResultadoIngreso, { ok: false }>['motivo'];
+type Falla = Extract<ResultadoIngreso, { ok: false }>;
+type MotivoSimple = Exclude<Falla['motivo'], 'otro_usuario_con_pendientes'>;
 
-const MENSAJES: Record<MotivoFalla, string> = {
+const MENSAJES: Record<MotivoSimple, string> = {
   sin_conexion: 'El primer ingreso en este teléfono requiere conexión a internet.',
   credenciales: 'Correo o contraseña incorrectos.',
   sin_perfil: 'Esta cuenta no tiene un perfil asignado en la Ganadería JR. Consulte al propietario.',
   error: 'No fue posible iniciar sesión. Intente de nuevo.',
 };
+
+/**
+ * Texto del rechazo. Cuando otro usuario intenta ingresar con pendientes de una sesión bloqueada, el
+ * aviso explica el motivo y qué hacer (documento técnico 07, sección 6).
+ */
+export function mensajeDeFalla(falla: Falla): string {
+  if (falla.motivo === 'otro_usuario_con_pendientes') {
+    const registros = falla.pendientes === 1 ? '1 registro' : `${falla.pendientes} registros`;
+    return `Este teléfono tiene ${registros} de ${falla.anterior.nombre} que aún no se han enviado. Solo ${falla.anterior.nombre} puede ingresar hasta que se envíen, para que no se pierdan. Pídale que ingrese con su cuenta y sincronice.`;
+  }
+  return MENSAJES[falla.motivo];
+}
 
 /** Inicio de sesión con credenciales: primer ingreso en el dispositivo (CU-01, Tabla 28). */
 export function PantallaInicioSesion({ alIngresar }: { alIngresar: (identidad: Identidad) => void }) {
@@ -25,7 +38,7 @@ export function PantallaInicioSesion({ alIngresar }: { alIngresar: (identidad: I
     const resultado = await iniciarSesion(correo, contrasena);
     setEnviando(false);
     if (resultado.ok) alIngresar(resultado.identidad);
-    else setError(MENSAJES[resultado.motivo]);
+    else setError(mensajeDeFalla(resultado));
   }
 
   return (

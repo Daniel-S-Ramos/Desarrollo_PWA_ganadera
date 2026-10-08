@@ -53,7 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
-| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 10 | 10 aprobadas |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 12 | 12 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -68,7 +68,8 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | RF-27 | Registrar el autor y la fecha de creación de cada registro | PU-05 (los fija el repositorio y prevalecen sobre valores falsos); PI-01 (inalterables en el servicio) | 🔄 Parcial: falta verificar que el autor coincida con el usuario autenticado (paso 1.9) |
 | RNF-15 | Almacenamiento persistente y aviso cuando se niega | PU-06 (todos los caminos de la solicitud y texto del aviso); PE-12 (Chrome para Windows: el aviso aparece cuando se niega) | 🔄 Parcial: falta verificar en un teléfono Android (paso 6.4) |
 | RNF-01 | Operación en condiciones de campo | PU-01 (contraste 7:1 en todas las combinaciones de texto) | 🔄 Parcial: falta el tamaño de los controles y la prueba en campo |
-| RNF-07 | Acceso condicionado a autenticación | PE-04 (registro abierto cerrado); PU-07 (solo tokens firmados por el servicio); PE-13 (ingreso real) | 🔄 Parcial: falta el código de desbloqueo (paso 1.8) |
+| RNF-07 | Acceso condicionado a autenticación | PE-04 (registro abierto cerrado); PU-07 (solo tokens firmados por el servicio); PE-13 (ingreso real); PU-08 y PE-14 (código de desbloqueo en cada apertura) | ✅ Verificado |
+| RD-05 | El trabajador no interviene los registros del propietario | PU-08 y PE-14 (la identidad del autor se confirma con el código en cada apertura) | 🔄 Parcial: faltan las reglas de permisos en el dispositivo y en el servidor (paso 1.9) |
 | RF-24 | Requerir autenticación antes de acceder | PU-07; PE-13 (sin sesión se muestra la pantalla de ingreso, que exige conexión la primera vez) | ✅ Verificado |
 | RF-25 | Dos perfiles: propietario y trabajador | PU-07 (perfil firmado y validado); PI-02 (perfil en el token); PE-13 (ambos perfiles con usuarios reales) | 🔄 Parcial: faltan los permisos de cada perfil (paso 1.9) |
 | RD-03 | Autenticación sin conexión | PU-07 (verificación de la firma sin red, token vencido aceptado); PE-13 (recarga sin conexión sigue identificado) | ✅ Verificado |

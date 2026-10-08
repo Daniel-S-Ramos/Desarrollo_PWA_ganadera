@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { formatearBytes } from '../datos/almacenamiento';
 import { AvisoActualizacion } from '../ui/componentes/AvisoActualizacion';
 import { cerrarSesion, escucharRenovaciones } from '../sesion/autenticacion';
+import { hayCodigoDefinido } from '../sesion/desbloqueo';
 import { restaurarSesionLocal } from '../sesion/sesionLocal';
 import type { Identidad } from '../sesion/token';
 import { AvisoAlmacenamiento } from '../ui/componentes/AvisoAlmacenamiento';
+import { PantallaDefinirCodigo } from '../ui/pantallas/PantallaDefinirCodigo';
+import { PantallaDesbloqueo } from '../ui/pantallas/PantallaDesbloqueo';
 import { PantallaInicioSesion } from '../ui/pantallas/PantallaInicioSesion';
 import { useAlmacenamiento } from '../ui/useAlmacenamiento';
 
@@ -18,12 +21,13 @@ type EstadoConexion = 'verificando' | 'conectado' | 'sin_red' | 'error';
 export function App() {
   const estado = useEstadoSupabase();
   const almacenamiento = useAlmacenamiento();
-  const { identidad, setIdentidad } = useSesion();
+  const { identidad, cerradura, ingresar, desbloquear, salirAlIngreso } = useSesion();
+  const [avisoIngreso, setAvisoIngreso] = useState<string | null>(null);
   const [avisoCierre, setAvisoCierre] = useState<string | null>(null);
 
   async function salir() {
     const resultado = await cerrarSesion();
-    if (resultado.ok) setIdentidad(null);
+    if (resultado.ok) salirAlIngreso();
     else setAvisoCierre(`Hay ${resultado.pendientes} registros sin enviar. Sincronice antes de cerrar la sesión.`);
   }
 
@@ -31,7 +35,7 @@ export function App() {
     <div className="marco">
       <header className="encabezado">
         <h1>Ganadería JR</h1>
-        {identidad && (
+        {identidad && cerradura === 'abierta' && (
           <span className="encabezado__usuario">
             {identidad.nombre}
             <br />
@@ -45,9 +49,40 @@ export function App() {
 
         {identidad === undefined && <p className="texto-secundario">Cargando…</p>}
 
-        {identidad === null && <PantallaInicioSesion alIngresar={setIdentidad} />}
+        {identidad === null && (
+          <>
+            {avisoIngreso && (
+              <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
+                <p>⚠ {avisoIngreso}</p>
+              </div>
+            )}
+            <PantallaInicioSesion
+              alIngresar={(nueva) => {
+                setAvisoIngreso(null);
+                ingresar(nueva);
+              }}
+            />
+          </>
+        )}
 
-        {identidad && (
+        {identidad && cerradura === 'definir' && <PantallaDefinirCodigo alDefinir={desbloquear} />}
+
+        {identidad && cerradura === 'bloqueada' && (
+          <PantallaDesbloqueo
+            identidad={identidad}
+            alDesbloquear={desbloquear}
+            alSalir={(motivo) => {
+              setAvisoIngreso(
+                motivo === 'bloqueo'
+                  ? 'Se superaron los 5 intentos del código. Ingrese con su correo y contraseña.'
+                  : 'Ingrese con su correo y contraseña para definir un código nuevo.',
+              );
+              salirAlIngreso();
+            }}
+          />
+        )}
+
+        {identidad && cerradura === 'abierta' && (
           <>
             <p className="titulo-seccion">Prototipo en construcción</p>
             <p className="texto-secundario">Iteración 1 · Fundación técnica</p>
@@ -66,7 +101,7 @@ export function App() {
           <p>{TEXTO_ESTADO[estado]}</p>
         </section>
 
-        {identidad && (
+        {identidad && cerradura === 'abierta' && (
           <>
             {avisoCierre && (
               <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
@@ -102,26 +137,50 @@ const TEXTO_ESTADO: Record<EstadoConexion, string> = {
   error: '⚠ Configurada, pero el servicio no respondió. Revise la URL y la clave en .env.local.',
 };
 
+/** Estado de la cerradura del dispositivo (documento técnico 07, sección 3). */
+type Cerradura = 'definir' | 'bloqueada' | 'abierta';
+
 /**
- * Sesión del usuario. undefined mientras se consulta la sesión local al abrir; null si no hay sesión
- * y hay que iniciarla. La sesión local se verifica sin red (documento técnico 06, sección 6.2).
+ * Sesión del usuario y cerradura del dispositivo.
+ * identidad: undefined mientras se consulta la sesión local al abrir; null si hay que iniciar sesión.
+ * La sesión local se verifica sin red (documento técnico 06, sección 6.2); al abrir la aplicación,
+ * siempre empieza bloqueada y pide el código (documento técnico 07, sección 3.2).
  */
 function useSesion() {
   const [identidad, setIdentidad] = useState<Identidad | null | undefined>(undefined);
+  const [cerradura, setCerradura] = useState<Cerradura>('bloqueada');
 
   useEffect(() => {
     let vigente = true;
-    void restaurarSesionLocal().then((restaurada) => {
-      if (vigente) setIdentidad(restaurada);
-    });
-    const dejarDeEscuchar = escucharRenovaciones((renovada) => setIdentidad(renovada));
+    void (async () => {
+      const restaurada = await restaurarSesionLocal();
+      const conCodigo = restaurada ? await hayCodigoDefinido() : false;
+      if (!vigente) return;
+      setCerradura(conCodigo ? 'bloqueada' : 'definir');
+      setIdentidad(restaurada);
+    })();
+    // La renovación del token actualiza la identidad, pero nunca abre la cerradura.
+    const dejarDeEscuchar = escucharRenovaciones((renovada) => setIdentidad((actual) => (actual ? renovada : actual)));
     return () => {
       vigente = false;
       dejarDeEscuchar();
     };
   }, []);
 
-  return { identidad, setIdentidad };
+  return {
+    identidad,
+    cerradura,
+    /** Tras un ingreso con credenciales siempre se define un código nuevo. */
+    ingresar: (nueva: Identidad) => {
+      setCerradura('definir');
+      setIdentidad(nueva);
+    },
+    desbloquear: () => setCerradura('abierta'),
+    salirAlIngreso: () => {
+      setCerradura('bloqueada');
+      setIdentidad(null);
+    },
+  };
 }
 
 /** Consulta la configuración pública del servicio de autenticación para confirmar la conexión. */

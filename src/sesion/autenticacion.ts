@@ -5,8 +5,9 @@
 import { decodeProtectedHeader, type JWK } from 'jose';
 import { contarPendientes } from '../datos/repositorio';
 import { supabase } from '../servicios/supabase';
+import { bloquear, borrarCodigo, olvidarUsuarioAnterior, verificarReingreso, type UsuarioAnterior } from './desbloqueo';
 import { actualizarTokenLocal, borrarSesionLocal, guardarSesionLocal } from './sesionLocal';
-import type { Identidad } from './token';
+import { verificarToken, type Identidad } from './token';
 
 const URL_SERVICIO = import.meta.env.VITE_SUPABASE_URL;
 const CLAVE_PUBLICABLE = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -15,7 +16,8 @@ const EMISOR = `${URL_SERVICIO}/auth/v1`;
 
 export type ResultadoIngreso =
   | { ok: true; identidad: Identidad }
-  | { ok: false; motivo: 'sin_conexion' | 'credenciales' | 'sin_perfil' | 'error' };
+  | { ok: false; motivo: 'sin_conexion' | 'credenciales' | 'sin_perfil' | 'error' }
+  | { ok: false; motivo: 'otro_usuario_con_pendientes'; anterior: UsuarioAnterior; pendientes: number };
 
 /** Descarga la clave pública con que el servicio firma los tokens y elige la que corresponde al token. */
 async function obtenerClavePublica(token: string): Promise<JWK | null> {
@@ -47,12 +49,26 @@ export async function iniciarSesion(correo: string, contrasena: string): Promise
     const clave = await obtenerClavePublica(token);
     if (!clave) throw new Error('No se encontró la clave pública del token');
 
-    const resultado = await guardarSesionLocal(token, clave, EMISOR);
-    if (!resultado.valido) {
+    const verificacion = await verificarToken(token, clave, EMISOR);
+    if (!verificacion.valido) {
       await supabase.auth.signOut({ scope: 'local' });
-      const sinPerfil = resultado.motivo === 'sin_perfil' || resultado.motivo === 'perfil_invalido';
+      const sinPerfil = verificacion.motivo === 'sin_perfil' || verificacion.motivo === 'perfil_invalido';
       return { ok: false, motivo: sinPerfil ? 'sin_perfil' : 'error' };
     }
+
+    // Con pendientes de una sesión bloqueada, solo su dueño puede volver a ingresar
+    // (docs/tecnica/07-codigo-de-desbloqueo.md, sección 6).
+    const reingreso = await verificarReingreso(verificacion.identidad.usuario_id);
+    if (!reingreso.permitido) {
+      await supabase.auth.signOut({ scope: 'local' });
+      return { ok: false, motivo: 'otro_usuario_con_pendientes', anterior: reingreso.anterior, pendientes: reingreso.pendientes };
+    }
+
+    const resultado = await guardarSesionLocal(token, clave, EMISOR);
+    if (!resultado.valido) throw new Error('El token dejó de ser válido al guardarlo');
+    await olvidarUsuarioAnterior();
+    // Tras cada ingreso con credenciales se define un código nuevo (documento técnico 07, sección 3.1).
+    await borrarCodigo();
     return { ok: true, identidad: resultado.identidad };
   } catch {
     await supabase.auth.signOut({ scope: 'local' });
@@ -90,6 +106,22 @@ export async function cerrarSesion(): Promise<ResultadoCierre> {
   const pendientes = await contarPendientes();
   if (pendientes > 0) return { ok: false, pendientes };
   await supabase.auth.signOut({ scope: 'local' });
+  await borrarCodigo();
   await borrarSesionLocal();
   return { ok: true };
+}
+
+/**
+ * «Olvidé mi código» y quinto intento fallido: borra el código y la sesión local y exige un ingreso
+ * completo. Si hay pendientes, solo el mismo usuario podrá volver a ingresar
+ * (docs/tecnica/07-codigo-de-desbloqueo.md, secciones 3.3 y 6).
+ */
+export async function salirPorBloqueo(): Promise<void> {
+  await bloquear();
+  await supabase.auth.signOut({ scope: 'local' });
+}
+
+/** Cierra la sesión de supabase-js en este dispositivo. Se usa tras un bloqueo por intentos fallidos. */
+export async function cerrarSesionServicio(): Promise<void> {
+  await supabase.auth.signOut({ scope: 'local' });
 }
