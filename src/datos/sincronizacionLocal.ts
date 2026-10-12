@@ -115,6 +115,15 @@ export async function convertirOrdenoEnCorreccion(
   });
 }
 
+/** Registros en conflicto en todas las tablas: requieren la revisión del propietario (documento 11). */
+export async function contarConflictos(): Promise<number> {
+  let total = 0;
+  for (const tabla of TABLAS_SINCRONIZABLES) {
+    total += await tablaDe(tabla).where('estado_sync').equals('conflicto').count();
+  }
+  return total;
+}
+
 // ---------------------------------------------------------------------------
 // Bajada
 // ---------------------------------------------------------------------------

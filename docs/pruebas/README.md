@@ -53,7 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
-| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 17 | 17 aprobadas |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 19 | 19 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -81,6 +81,6 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | RNF-06 | Ningún registro puede modificarse ni eliminarse | PI-01 (ningún rol tiene UPDATE ni DELETE); PI-03 (ni el propietario modifica ni elimina) | 🔄 Parcial: falta la corrección y anulación (paso 4.3) |
 | RNF-05 | Restaurar la información ante la pérdida del dispositivo | PI-01 (esquema remoto que conserva la copia); PU-11 y PI-04 (un teléfono vacío recupera la información con la carga inicial) | ✅ Verificado |
 | RF-29 | Sincronizar lo registrado sin conexión al restablecerse la señal | PU-10 (subida, reintentos, conflictos); PU-11 (bajada incremental); PI-04 (extremo a extremo con el servicio real) | ✅ Verificado |
-| RF-30 | Indicar si un registro está sincronizado o pendiente | PU-10 (estados de la Tabla 22 según la respuesta del servicio) | 🔄 Parcial: falta el indicador en la interfaz (paso 1.11) |
+| RF-30 | Indicar si un registro está sincronizado o pendiente | PU-10 (estados de la Tabla 22 según la respuesta del servicio); PU-12 (textos de la barra y distintivos); PE-15 (barra inferior en el navegador real) | 🔄 Parcial: falta ver el distintivo junto a cada registro en las listas y la ficha (Iteración 2) |
 | RD-02 | Identificadores sin contador central | PU-03 (UUID v7: unicidad, orden y dos dispositivos sin coincidencias) | ✅ Verificado |
 | RD-01 | Almacenamiento primario en el dispositivo | PE-10 (recursos servidos desde el dispositivo); PU-04 (esquema local de 18 tablas) | ✅ Verificado |

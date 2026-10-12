@@ -43,7 +43,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.8 | Código de desbloqueo local | 3.9.1 | ✅ |
 | 1.9 | Gestor de sesión y permisos, y reglas a nivel de fila | 3.9.2, 3.9.3, Tabla 27 | ✅ |
 | 1.10 | Motor de sincronización: subida, bajada, marca de avance, idempotencia | 3.7.3 – 3.7.8 | ✅ |
-| 1.11 | Indicador de sincronización (contador y marca por registro) | 3.7.4, 3.10.4.5 | ⬜ |
+| 1.11 | Indicador de sincronización (contador y marca por registro) | 3.7.4, 3.10.4.5 | ✅ |
 | 1.12 | Cierre de sesión con cola vacía | 3.9.1 | ⬜ |
 | 1.13 | Pruebas y verificación de criterios de aceptación de la iteración | 1.6.3.9 | ⬜ |
 
@@ -163,6 +163,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | 2.x | Probar a mano el rechazo del reingreso de otro usuario con pendientes (PU-08 lo cubre de forma automática) | PE-14, pendiente |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
+| 2.3 | Mostrar el distintivo de sincronización junto a cada registro en el listado y la ficha, y observar a mano los estados con pendientes y conflictos | PE-15, observación 1 |
 | 2.1 | Cómo resuelve el propietario un conflicto de chapeta. Si son dos animales distintos, corregir el código (3.9.5). Si es el mismo animal registrado dos veces, anular el duplicado; falta definir qué pasa con los eventos que ya se le registraron al duplicado en ese teléfono. Consultar con el propietario | 3.7.3, tercera regla · conversación del 2026-10-06 |
 
 ## Pendientes para el documento

@@ -19,3 +19,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 08 | [Permisos por perfil](08-permisos.md) | 1.9 | 3.9.2 · 3.9.3 · 3.9.5 · Tabla 27 |
 | 09 | [Sincronización (parte 1): subida y conflictos](09-sincronizacion-subida.md) | 1.10 | 3.7.2 – 3.7.5 · 3.7.8 · 3.8.6 |
 | 10 | [Sincronización (parte 2): bajada y carga inicial](10-sincronizacion-bajada.md) | 1.10 | 3.7.5 – 3.7.8 |
+| 11 | [Indicador de sincronización](11-indicador-de-sincronizacion.md) | 1.11 | 3.7.4 · 3.10.4.5 · RF-30 |

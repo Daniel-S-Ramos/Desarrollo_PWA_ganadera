@@ -254,3 +254,38 @@ body {
   letter-spacing: 0.5em;
   text-align: center;
 }
+
+/* Indicador de sincronización (documento técnico 11). El estado nunca depende solo del color. */
+.barra-inferior__linea + .barra-inferior__linea {
+  margin-top: 6px;
+}
+
+.barra-inferior__linea--advertencia {
+  color: var(--rojo-oscuro);
+}
+
+.distintivo {
+  display: inline-flex;
+  flex-direction: column;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.distintivo--atencion {
+  background: var(--amarillo-claro);
+  border-color: var(--amarillo);
+  color: var(--texto);
+}
+
+.distintivo--riesgo {
+  background: var(--rojo-fondo);
+  border-color: var(--rojo-oscuro);
+  color: var(--rojo-oscuro);
+}
+
+.distintivo__detalle {
+  font-weight: 400;
+}

@@ -26,6 +26,8 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PU-10 | Sincronización: subida y conflictos | 1.10 | 3.7.2 – 3.7.8 · 3.8.6 · RF-29 · RF-30 | ✅ |
 | PU-11 | Sincronización: bajada y carga inicial | 1.10 | 3.7.5 – 3.7.8 · RF-29 · RNF-05 | ✅ |
 | PI-04 | Sincronización de extremo a extremo contra el servicio real | 1.10 | RF-29 · RNF-05 · RD-04 | ✅ |
+| PU-12 | Indicador de sincronización | 1.11 | RF-30 · 3.10.4.5 · Tablas 22 y 31 | ✅ |
+| PE-15 | Indicador de sincronización en el navegador real | 1.11 | RF-30 · 3.10.4.5 | ⚠️ Aprobada con observaciones |
 
 ---
 
@@ -644,3 +646,56 @@ de prueba.
 | Efecto | Ninguna pérdida de información («All data, including backups and storage objects, remains safe»). Mientras dura la pausa, el servicio no responde |
 | Acción | Se reactivó con «Resume project» y se verificó la conexión con `npm run verificar:supabase` |
 | Relevancia para el prototipo | Es la situación que el diseño contempla: los teléfonos siguen registrando y consultando sin conexión, y la información queda en la cola hasta que el servicio vuelve a responder. Durante la evaluación en el predio, el uso diario de la aplicación mantiene el proyecto activo. Se registra como riesgo en el plan (paso 6.4) |
+
+## PU-12 · Indicador de sincronización
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que la barra inferior y el distintivo por registro comunican cada situación de sincronización con el texto, el ícono y el tono definidos, y que el motor avisa cuándo empieza y termina |
+| Requerimiento | RF-30 · apartados 3.7.4 (Tabla 22) y 3.10.4.5 · Tabla 31 · RNF-01 |
+| Tipo | Unitaria, automática (funciones puras de texto) e integración con el motor y el servicio simulado |
+| Especificación | [docs/tecnica/11-indicador-de-sincronizacion.md](../tecnica/11-indicador-de-sincronizacion.md), sección 7 |
+| Código | [`src/ui/estadoSincronizacion.ts`](../../src/ui/estadoSincronizacion.ts), [`src/ui/componentes/BarraEstado.tsx`](../../src/ui/componentes/BarraEstado.tsx), [`src/ui/componentes/DistintivoSync.tsx`](../../src/ui/componentes/DistintivoSync.tsx) · prueba [`src/ui/estadoSincronizacion.test.ts`](../../src/ui/estadoSincronizacion.test.ts) |
+| Resultado obtenido | 20 verificaciones aprobadas ([informe](resultados/2026-10-12_145510_4e41aed.md)). Total del conjunto automático: 264 de 264, incluida una verificación nueva de PU-01 (texto rojo oscuro sobre blanco, usado en las advertencias de la barra, cumple 7:1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-12 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Las ocho situaciones de la sección 3 producen su texto, detalle y tono: todo enviado, enviando, pendientes con y sin señal, sin señal y sin pendientes, sesión vencida, descarga fallida y conflictos | ✅ |
+| 2 | Singular y plural: «1 registro pendiente de enviar», «1 registro en conflicto» | ✅ |
+| 3 | Con pendientes y sin red, el tono es de información y no de advertencia (Tabla 31) | ✅ |
+| 4 | Distintivos de la Tabla 22: pendiente, enviando, en conflicto con su causa; ninguno para un registro sincronizado | ✅ |
+| 5 | «hace unos segundos», «hace 5 min», «hace 2 h», «hace 1 día», «hace 3 días» | ✅ |
+| 6 | El motor avisa al empezar y al terminar una sincronización, con el resultado y la hora | ✅ |
+
+**Pruebas de mutación.** Tratar «sin conexión» como advertencia hizo fallar la verificación 3;
+mostrar un distintivo en los registros sincronizados hizo fallar la verificación 4.
+
+## PE-15 · Indicador de sincronización en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Observar en Chrome, con la versión de producción y el servicio real, la barra inferior al sincronizar, al perder la señal, al recuperarla y con el paso del tiempo |
+| Requerimiento | RF-30 · 3.10.4.5 · Tabla 31 |
+| Tipo | Verificación manual en Chrome (`npm run build` y `npm run preview`) |
+| Condiciones iniciales | Sesión del trabajador desbloqueada; sin registros pendientes |
+| Resultado obtenido | Los cuatro pasos se comportaron como se esperaba |
+| Estado | ⚠️ Aprobada con observaciones |
+| Fecha | 2026-10-12 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Desbloquear la aplicación | «✓ Todo enviado · Última sincronización: hace unos segundos» | [captura](evidencias/iteracion-1/PE-15-1-todo-enviado.png) |
+| 2 | Red en «Sin conexión», sin recargar | «✓ Todo enviado · Sin conexión» | [captura](evidencias/iteracion-1/PE-15-2-sin-conexion.png) |
+| 3 | Volver a «Sin limitaciones» | La aplicación sincroniza sola: «↻ Enviando…» y luego «✓ Todo enviado · Última sincronización: hace unos segundos» | [enviando](evidencias/iteracion-1/PE-15-3a-enviando.png) · [al volver la señal](evidencias/iteracion-1/PE-15-3c-al-volver-la-senal.png) |
+| 4 | Esperar unos dos minutos sin tocar nada | «Última sincronización: hace 2 min» | [captura](evidencias/iteracion-1/PE-15-4-hace-2-min.png) |
+
+**Observaciones.**
+
+1. Los estados con pendientes y conflictos no pueden observarse a mano todavía, porque ninguna
+   pantalla crea registros; los verifica PU-12 y se observarán en la Iteración 2.
+2. En la captura del paso 3, con la señal ya restablecida, la tarjeta «Conexión con Supabase»
+   seguía diciendo «Sin conexión». Es una tarjeta de diagnóstico de la Fase 0 que solo consulta al
+   abrir la aplicación y no reacciona a los cambios de conexión. Ahora que la barra inferior informa
+   la conexión en tiempo real, la tarjeta sobra y puede confundir: se retira en el paso 1.12.
