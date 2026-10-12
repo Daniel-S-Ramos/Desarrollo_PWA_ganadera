@@ -24,7 +24,8 @@ const contrasena = process.env['PRUEBAS_CONTRASENA'];
 const cliente = createClient(url, clave, { auth: { persistSession: false, autoRefreshToken: false } });
 let servicio: ServicioRemoto;
 let usuarioId: string;
-const chapeta = `PI04-${Date.now()}`;
+// Serie Z900 a Z999, reservada para pruebas (docs/tecnica/13-registro-de-animal.md, sección 2.4). La limpieza la borra al terminar.
+const chapeta = `Z${950 + Math.floor(Math.random() * 50)}`;
 let animalId: string;
 let pesajeId: string;
 
@@ -53,6 +54,7 @@ describe('PI-04 · Sincronización de extremo a extremo', () => {
         procedencia: 'Prueba PI-04',
         peso_inicial: null,
         madre_id: null,
+        madre_externa: null,
         padre_id: null,
         padre_externo: null,
       },

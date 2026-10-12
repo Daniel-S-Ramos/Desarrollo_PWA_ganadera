@@ -1,0 +1,7 @@
+PI-01 · Primera versión del formato de chapeta (migración 20261012000100_formato_chapeta.sql)
+Ejecutada el 2026-10-12 tras `npm run db:push`. Salida de `npm run prueba:pi-01` (verificaciones 1 a 11 sin cambios, todas APROBADAS):
+
+│ 12 │ Chapeta con minúsculas o espacios se rechaza; normalizada se admite │ APROBADA │ minúsculas: 23514 · con espacio: 23514 · normalizada: OK │
+
+Resultado: 12 de 12 APROBADAS.
+Este formato fue reemplazado el mismo día por la numeración del predio (ver PI-01-6).

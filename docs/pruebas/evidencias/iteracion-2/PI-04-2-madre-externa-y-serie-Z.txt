@@ -1,0 +1,31 @@
+PI-04 repetida el 2026-10-12 con una chapeta de la serie de pruebas Z950–Z999 (antes PI04-…) y con
+la columna nueva madre_externa en el animal que viaja por la sincronización.
+
+PS C:\Users\dsram\Desarrollo_PWA_ganadera> npm run prueba:pi-04
+
+> ganaderia-jr-pwa@0.1.0 prueba:pi-04
+> node scripts/prueba-pi-04.mjs
+
+
+ RUN  v5.0.3 C:/Users/dsram/Desarrollo_PWA_ganadera
+
+ ✓ src/sync/sincronizacion.pi.ts (4 tests) 9410ms
+   ✓ PI-04 · Sincronización de extremo a extremo (4)
+     ✓ 1. un animal y un pesaje creados en el teléfono llegan al servicio con su autor 1741ms
+     ✓ 2. reenviar los mismos registros no los duplica (3.7.8) 1079ms
+     ✓ 3. un teléfono vacío recupera el animal y el pesaje con la carga inicial 5457ms
+     ✓ 4. el trabajador de prueba no recibe información económica 2ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  18:15:50
+   Duration  9.80s (tests 97%, import 1%, transform 1%)
+
+
+Limpieza de los registros de la cuenta de prueba en el servicio…
+Initialising login role...
+┌────────────────────┬───────────────────┬───────────────────┬───────────────────┬────────────────────────┐
+│ animales_restantes │ pesajes_restantes │ ordenos_restantes │ eventos_restantes │ correcciones_restantes │
+├────────────────────┼───────────────────┼───────────────────┼───────────────────┼────────────────────────┤
+│ 0                  │ 0                 │ 0                 │ 0                 │ 0                      │
+└────────────────────┴───────────────────┴───────────────────┴───────────────────┴────────────────────────┘

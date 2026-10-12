@@ -78,7 +78,7 @@ begin
     insert into public.usuario (id, nombre, perfil) values
       (p, 'Propietario PI-03', 'propietario'), (t, 'Trabajador PI-03', 'trabajador'), (t2, 'Trabajador 2 PI-03', 'trabajador');
     insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta)
-      values (vaca, p, now(), 'PI03-VACA', 'hembra', true);
+      values (vaca, p, now(), 'Z911', 'hembra', true);
     insert into public.pesaje (id, autor_id, creado_en, animal_id, fecha, peso, metodo) values
       (pp_hoy,    p,  now(),                      vaca, current_date, 300, 'cinta'),
       (pt2_hoy,   t2, now(),                      vaca, current_date, 301, 'cinta'),
@@ -90,9 +90,9 @@ begin
 
     -- ------------------------------------------------------------ 1. Autoría
     c := array[
-      pg_temp.como('authenticated', p, format(animal_de, p, 'PI03-P1')),
-      pg_temp.como('authenticated', t, format(animal_de, t, 'PI03-T1')),
-      pg_temp.como('authenticated', t, format(animal_de, p, 'PI03-SUPLANTA'))];
+      pg_temp.como('authenticated', p, format(animal_de, p, 'Z912')),
+      pg_temp.como('authenticated', t, format(animal_de, t, 'Z913')),
+      pg_temp.como('authenticated', t, format(animal_de, p, 'Z914'))];
     r := r || jsonb_build_object('n',1,'v','Cada perfil registra con su propia autoría; nadie registra a nombre de otro',
            'ok', c = array['OK','OK','42501'], 'd', 'propietario: ' || c[1] || ' · trabajador: ' || c[2] || ' · trabajador a nombre del propietario: ' || c[3]);
 
@@ -156,7 +156,7 @@ begin
            'ok', c = array['OK','OK'], 'd', 'de un trabajador hace 30 días: ' || c[1] || ' · de otro trabajador hoy: ' || c[2]);
 
     -- ------------------------------------------------------------ 9. Cuenta sin perfil
-    c := array[pg_temp.como('authenticated', sp, format(animal_de, sp, 'PI03-SINPERFIL'))];
+    c := array[pg_temp.como('authenticated', sp, format(animal_de, sp, 'Z915'))];
     v := array[pg_temp.contar_como('authenticated', sp, 'select count(*) from public.animal')];
     r := r || jsonb_build_object('n',9,'v','Una cuenta sin perfil no registra ni lee información del predio',
            'ok', c[1] = '42501' and v[1] = 0, 'd', 'registrar: ' || c[1] || ' · animales que ve: ' || v[1]);
@@ -164,7 +164,7 @@ begin
     -- ------------------------------------------------------------ 10. Visitante sin sesión
     c := array[
       pg_temp.como('anon', null, 'select count(*) from public.animal'),
-      pg_temp.como('anon', null, format(animal_de, p, 'PI03-ANON'))];
+      pg_temp.como('anon', null, format(animal_de, p, 'Z916'))];
     r := r || jsonb_build_object('n',10,'v','Sin sesión no se lee ni se registra nada',
            'ok', c = array['42501','42501'], 'd', 'leer: ' || c[1] || ' · registrar: ' || c[2]);
 

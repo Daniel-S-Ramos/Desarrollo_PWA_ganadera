@@ -32,6 +32,7 @@ function animal(codigo: string): DatosNuevos<'animal'> {
     procedencia: null,
     peso_inicial: null,
     madre_id: null,
+    madre_externa: null,
     padre_id: null,
     padre_externo: null,
   };

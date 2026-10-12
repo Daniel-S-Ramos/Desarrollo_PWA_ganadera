@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link, Navigate, Route, Routes } from 'react-router';
+import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
+import { puedeUsar } from '../sesion/permisos';
 import { crearServicioRemoto } from '../servicios/servicioRemotoSupabase';
 import { supabase } from '../servicios/supabase';
 import { iniciarSincronizacionAutomatica } from '../sync/motor';
@@ -77,26 +80,49 @@ export function App() {
         )}
 
         {identidad && cerradura === 'abierta' && (
-          <>
-            <p className="titulo-seccion">Prototipo en construcción</p>
-            <p className="texto-secundario">Iteración 1 · Fundación técnica</p>
-
-            <section className="tarjeta tarjeta--correcto">
-              <h2>Sesión</h2>
-              <p>
-                {identidad.nombre} · {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
-              </p>
-            </section>
-          </>
+          <Routes>
+            <Route path="/" element={<Inicio identidad={identidad} alCerrar={salirAlIngreso} />} />
+            <Route
+              path="/animales/nuevo"
+              element={puedeUsar(identidad.perfil, 'CU-02') ? <PantallaRegistrarAnimal identidad={identidad} /> : <Navigate to="/" replace />}
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         )}
-
-        {identidad && cerradura === 'abierta' && <ConfirmacionCierre alCerrar={salirAlIngreso} />}
       </main>
 
       <AvisoActualizacion />
 
       <BarraEstado espacio={almacenamiento.espacio} conSesion={!!identidad && cerradura === 'abierta'} />
     </div>
+  );
+}
+
+/**
+ * Pantalla de inicio. Los accesos se muestran solo a los perfiles que pueden usarlos (Tabla 27);
+ * los recordatorios llegarán en la Iteración 5 (3.10.4.4).
+ */
+function Inicio({ identidad, alCerrar }: { identidad: Identidad; alCerrar: () => void }) {
+  return (
+    <>
+      <p className="titulo-seccion">Prototipo en construcción</p>
+      <p className="texto-secundario">Iteración 2 · Identificación animal y ficha</p>
+
+      {puedeUsar(identidad.perfil, 'CU-02') && (
+        <Link className="boton boton--principal boton--ancho" to="/animales/nuevo">
+          Registrar animal
+        </Link>
+      )}
+
+      <section className="tarjeta tarjeta--correcto separado">
+        <h2>Sesión</h2>
+        <p>
+          {identidad.nombre} · {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
+        </p>
+      </section>
+
+      <ConfirmacionCierre alCerrar={alCerrar} />
+    </>
   );
 }
 

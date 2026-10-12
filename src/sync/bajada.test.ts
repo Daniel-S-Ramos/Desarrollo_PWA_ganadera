@@ -43,7 +43,7 @@ describe('PU-11 · 1 y 2. Filas nuevas y existentes', () => {
   it('el registro propio que vuelve no se duplica ni cambia sus datos', async () => {
     const vaca = await crear(
       'animal',
-      { codigo_chapeta: '012', sexo: 'hembra', fecha_nacimiento: null, fecha_nacimiento_exacta: false, fecha_ingreso: null, procedencia: null, peso_inicial: null, madre_id: null, padre_id: null, padre_externo: null },
+      { codigo_chapeta: '012', sexo: 'hembra', fecha_nacimiento: null, fecha_nacimiento_exacta: false, fecha_ingreso: null, procedencia: null, peso_inicial: null, madre_id: null, madre_externa: null, padre_id: null, padre_externo: null },
       PROPIETARIO,
     );
     await subir(servicio);
@@ -55,7 +55,7 @@ describe('PU-11 · 1 y 2. Filas nuevas y existentes', () => {
   it('si el envío llegó pero la confirmación se perdió, la bajada lo marca sincronizado y retira su operación', async () => {
     const vaca = await crear(
       'animal',
-      { codigo_chapeta: '012', sexo: 'hembra', fecha_nacimiento: null, fecha_nacimiento_exacta: false, fecha_ingreso: null, procedencia: null, peso_inicial: null, madre_id: null, padre_id: null, padre_externo: null },
+      { codigo_chapeta: '012', sexo: 'hembra', fecha_nacimiento: null, fecha_nacimiento_exacta: false, fecha_ingreso: null, procedencia: null, peso_inicial: null, madre_id: null, madre_externa: null, padre_id: null, padre_externo: null },
       PROPIETARIO,
     );
     servicio.sembrar('animal', { ...vaca, estado_sync: undefined });

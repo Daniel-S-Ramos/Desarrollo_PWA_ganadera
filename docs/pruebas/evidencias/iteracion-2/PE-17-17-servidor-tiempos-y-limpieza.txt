@@ -1,0 +1,25 @@
+PE-17 · Consulta en el servicio de los animales registrados durante la prueba (2026-10-12)
+Hora de Colombia. «Espera» = recibido_en (lo fija el servicio) − creado_en (lo fija el teléfono).
+
+| Chapeta | Sexo   | Origen               | Genealogía                                         | Guardado en el teléfono | Recibido en el servicio | Espera |
+|---------|--------|----------------------|----------------------------------------------------|-------------------------|-------------------------|--------|
+| Z920    | hembra | comprado (ingreso 2026-10-12, procedencia «Finca la esperanza»), nacimiento 2025-12-10 aproximado (edad 10 meses) | —   | 18:19:47 | 18:19:51 | 4 s   |
+| Z921    | hembra | nacida en el predio el 2026-10-12, exacta, 120 kg | madre Z920 · padre externo «Reproductor fina la esperanza» | 18:22:28 | 18:22:32 | 3 s   |
+| 1       | macho  | nacido en el predio el 2026-10-12 | —                                     | 18:35:30                | 18:38:55                | 205 s |
+
+Lectura:
+- Z920 y Z921 llegaron 3 a 4 s después de guardarse: la pestaña tenía conexión (sincronización
+  automática 3 s después de guardar, documento técnico 09). No prueban el registro sin conexión.
+- El animal «1» esperó 205 s: se guardó con la pestaña sin conexión y se envió al quitar el modo
+  sin conexión. Es la evidencia del registro sin conexión, pero se registró por error con un número
+  real del predio.
+
+Limpieza autorizada por el autor del proyecto (supabase/pruebas/limpiar-animal-pe-17.sql):
+
+PS C:\Users\dsram\Desarrollo_PWA_ganadera> npx supabase db query --linked -f supabase/pruebas/limpiar-animal-pe-17.sql
+Initialising login role...
+┌────────────────────────┐
+│ animales_con_chapeta_1 │
+├────────────────────────┤
+│ 0                      │
+└────────────────────────┘

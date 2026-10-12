@@ -54,6 +54,7 @@ se editan a mano.
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
 | [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (cerrada, `v0.1`) | 21 | 21 aprobadas · 12 criterios de aceptación cumplidos (8 de extremo a extremo, 4 a nivel técnico) |
+| [iteracion-2.md](iteracion-2.md) | Iteración 2: identificación animal y ficha (en curso) | 5 | 5 aprobadas (1 con observaciones) |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -62,7 +63,10 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 
 | Requerimiento | Descripción breve | Pruebas | Estado |
 |---|---|---|---|
-| RF-28 | Registrar y consultar sin conexión | PE-07, PE-10 (la aplicación abre sin red); PU-04 (base de datos local y consultas por índice) | 🔄 Parcial: falta el registro desde la interfaz |
+| RF-28 | Registrar y consultar sin conexión | PE-07, PE-10 (la aplicación abre sin red); PU-04 (base de datos local y consultas por índice); PE-17 (registro de un animal sin conexión, enviado 205 s después al volver la señal) | 🔄 Parcial: falta la consulta desde la interfaz (pasos 2.3 y 2.4) |
+| RF-01 | Registrar un animal con un identificador único: la chapeta | PU-14 (normalización, numeración del predio, unicidad en el teléfono y dentro de la transacción); PI-01 (formato y unicidad en el servicio); PE-17 (aviso con el animal que ya tiene la chapeta) | ✅ Verificado |
+| RF-03 | Datos de origen: fechas exacta o estimada, sexo, procedencia y peso | PU-14 (origen, edad aproximada, validaciones); PE-17 (animal comprado con edad aproximada llegó al servicio con fecha estimada) | ✅ Verificado |
+| RF-04 | Genealogía con madre y padre, del predio o externos | PU-14 (cada progenitor de una sola forma, sexo correcto); PI-01 (madre de una sola forma en el servicio); PE-17 (madre del predio y padre externo) | ✅ Verificado |
 | RNF-09 | Consultas de la ficha contra el almacenamiento local | PU-04 (consultas por índice simple, compuesto y por rango) | 🔄 Parcial: falta la pantalla de la ficha |
 | RNF-04 | La información sin conexión no se pierde ante un cierre inesperado | PU-05 (registro y cola en una sola transacción; fallas simuladas entre escrituras; persistencia tras reabrir); PU-10 (una operación sale de la cola solo con la confirmación del servicio; registros en transmisión recuperados); PU-13 (el cierre de sesión no descarta sin doble confirmación) | 🔄 Parcial: falta la prueba con la aplicación real cerrada a mitad de un registro |
 | RF-27 | Registrar el autor y la fecha de creación de cada registro | PU-05 (los fija el repositorio y prevalecen sobre valores falsos); PI-01 (inalterables en el servicio); PI-03 (el servicio rechaza un autor distinto de quien envía) | ✅ Verificado |
