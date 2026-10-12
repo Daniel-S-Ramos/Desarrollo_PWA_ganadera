@@ -4,6 +4,9 @@
  *
  * Uso: npm run test:informe
  *
+ * Primero ejecuta la verificación de tipos de TypeScript, que es la que evalúa las afirmaciones
+ * de tipos (expectTypeOf) de las pruebas, y después Vitest.
+ *
  * El informe registra la fecha, el commit evaluado, el resumen y el resultado de cada prueba.
  * El proceso termina con el mismo código que Vitest, de modo que una falla sigue siendo una falla.
  */
@@ -19,7 +22,14 @@ const CARPETA_INFORMES = 'docs/pruebas/resultados';
 mkdirSync('node_modules/.cache', { recursive: true });
 rmSync(JSON_TEMPORAL, { force: true });
 
-// 1. Ejecutar Vitest con dos salidas: la normal en la terminal y una en JSON para el informe.
+// 1. Verificación de tipos. Las afirmaciones expectTypeOf de las pruebas solo se evalúan aquí.
+console.log('Verificación de tipos (tsc --noEmit)…');
+const tipos = spawnSync('npx', ['tsc', '--noEmit'], { encoding: 'utf8', shell: true });
+const tiposAprobados = tipos.status === 0;
+const erroresTipos = `${tipos.stdout}${tipos.stderr}`.trim();
+console.log(tiposAprobados ? '✓ Sin errores de tipos\n' : `✗ Errores de tipos:\n${erroresTipos}\n`);
+
+// 2. Ejecutar Vitest con dos salidas: la normal en la terminal y una en JSON para el informe.
 const ejecucion = spawnSync(
   'npx',
   ['vitest', 'run', '--reporter=default', '--reporter=json', `--outputFile.json=${JSON_TEMPORAL}`],
@@ -31,10 +41,10 @@ try {
   resultados = JSON.parse(readFileSync(JSON_TEMPORAL, 'utf8'));
 } catch {
   console.error('\n✗ Vitest no produjo resultados; no se generó el informe.');
-  process.exit(ejecucion.status ?? 1);
+  process.exit(1);
 }
 
-// 2. Datos de contexto: fecha local del predio, commit y versiones.
+// 3. Datos de contexto: fecha local del predio, commit y versiones.
 const ahora = new Date(resultados.startTime);
 const partes = Object.fromEntries(
   new Intl.DateTimeFormat('es-CO', {
@@ -64,7 +74,7 @@ const commit = git('rev-parse --short HEAD') || 'sin commit';
 const hayCambiosSinCommit = git('status --porcelain') !== '';
 const versionVitest = JSON.parse(readFileSync('node_modules/vitest/package.json', 'utf8')).version;
 
-// 3. Construcción del informe.
+// 4. Construcción del informe.
 const ICONO = { passed: '✅', failed: '❌', skipped: '⏭️', pending: '⏭️', todo: '📝' };
 const TEXTO = { passed: 'Aprobada', failed: 'Fallida', skipped: 'Omitida', pending: 'Omitida', todo: 'Pendiente' };
 
@@ -78,7 +88,8 @@ lineas.push('|---|---|');
 lineas.push(`| Fecha y hora | ${fecha} ${hora} (hora de Colombia) |`);
 lineas.push(`| Commit evaluado | \`${commit}\`${hayCambiosSinCommit ? ' con cambios aún sin commit' : ''} |`);
 lineas.push(`| Herramienta | Vitest ${versionVitest} · Node.js ${process.versions.node} |`);
-lineas.push(`| Resultado global | ${resultados.success ? '✅ Todas las pruebas aprobadas' : '❌ Hay pruebas fallidas'} |`);
+lineas.push(`| Verificación de tipos | ${tiposAprobados ? '✅ Sin errores (incluye las afirmaciones de tipos de las pruebas)' : '❌ Con errores'} |`);
+lineas.push(`| Resultado global | ${resultados.success && tiposAprobados ? '✅ Todas las pruebas aprobadas' : '❌ Hay pruebas fallidas'} |`);
 lineas.push('');
 lineas.push('## Resumen');
 lineas.push('');
@@ -114,12 +125,20 @@ for (const archivo of resultados.testResults) {
     }
   }
 }
+if (!tiposAprobados) {
+  lineas.push('');
+  lineas.push('## Errores de tipos');
+  lineas.push('');
+  lineas.push('```');
+  lineas.push(erroresTipos);
+  lineas.push('```');
+}
 lineas.push('');
 
-// 4. Escritura del informe. El nombre ordena los informes cronológicamente.
+// 5. Escritura del informe. El nombre ordena los informes cronológicamente.
 mkdirSync(CARPETA_INFORMES, { recursive: true });
 const nombre = `${fecha}_${hora.replaceAll(':', '')}_${commit}.md`;
 writeFileSync(`${CARPETA_INFORMES}/${nombre}`, lineas.join('\n'), 'utf8');
 console.log(`\n📄 Informe guardado en ${CARPETA_INFORMES}/${nombre}`);
 
-process.exit(ejecucion.status ?? 1);
+process.exit(tiposAprobados ? (ejecucion.status ?? 1) : 1);

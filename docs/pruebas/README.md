@@ -41,8 +41,9 @@ identificador del caso como prefijo del nombre del archivo.
 
 ## Informes de las pruebas automáticas
 
-Las pruebas unitarias y de integración se ejecutan con `npm run test:informe`, que además de
-mostrar el resultado en la terminal guarda un informe en [`resultados/`](resultados/). El nombre
+Las pruebas unitarias y de integración se ejecutan con `npm run test:informe`. Primero verifica
+los tipos con TypeScript, que es la que evalúa las afirmaciones de tipos de las pruebas, y
+después ejecuta Vitest. Además de mostrar el resultado en la terminal guarda un informe en [`resultados/`](resultados/). El nombre
 del archivo lleva la fecha, la hora y el commit evaluado, así que los informes se ordenan solos
 y cada uno puede vincularse con la versión exacta del código. Se generan automáticamente y no
 se editan a mano.
@@ -52,6 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (cerrada, `v0.1`) | 21 | 21 aprobadas · 12 criterios de aceptación cumplidos (8 de extremo a extremo, 4 a nivel técnico) |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -60,10 +62,25 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 
 | Requerimiento | Descripción breve | Pruebas | Estado |
 |---|---|---|---|
-| RF-28 | Registrar y consultar sin conexión | PE-07, PE-10 (base técnica: la aplicación abre sin red) | 🔄 Parcial: falta registrar y consultar datos |
+| RF-28 | Registrar y consultar sin conexión | PE-07, PE-10 (la aplicación abre sin red); PU-04 (base de datos local y consultas por índice) | 🔄 Parcial: falta el registro desde la interfaz |
+| RNF-09 | Consultas de la ficha contra el almacenamiento local | PU-04 (consultas por índice simple, compuesto y por rango) | 🔄 Parcial: falta la pantalla de la ficha |
+| RNF-04 | La información sin conexión no se pierde ante un cierre inesperado | PU-05 (registro y cola en una sola transacción; fallas simuladas entre escrituras; persistencia tras reabrir); PU-10 (una operación sale de la cola solo con la confirmación del servicio; registros en transmisión recuperados); PU-13 (el cierre de sesión no descarta sin doble confirmación) | 🔄 Parcial: falta la prueba con la aplicación real cerrada a mitad de un registro |
+| RF-27 | Registrar el autor y la fecha de creación de cada registro | PU-05 (los fija el repositorio y prevalecen sobre valores falsos); PI-01 (inalterables en el servicio); PI-03 (el servicio rechaza un autor distinto de quien envía) | ✅ Verificado |
+| RNF-15 | Almacenamiento persistente y aviso cuando se niega | PU-06 (todos los caminos de la solicitud y texto del aviso); PE-12 (Chrome para Windows: el aviso aparece cuando se niega) | 🔄 Parcial: falta verificar en un teléfono Android (paso 6.4) |
 | RNF-01 | Operación en condiciones de campo | PU-01 (contraste 7:1 en todas las combinaciones de texto) | 🔄 Parcial: falta el tamaño de los controles y la prueba en campo |
-| RNF-07 | Acceso condicionado a autenticación | PE-04 (registro abierto cerrado en el servicio) | 🔄 Parcial: falta el inicio de sesión |
+| RNF-07 | Acceso condicionado a autenticación | PE-04 (registro abierto cerrado); PU-07 (solo tokens firmados por el servicio); PE-13 (ingreso real); PU-08 y PE-14 (código de desbloqueo en cada apertura) | ✅ Verificado |
+| RD-05 | El trabajador no interviene los registros del propietario | PU-08 y PE-14 (identidad confirmada en cada apertura); PU-09 (el teléfono no ofrece la corrección); PI-03 (el servicio la rechaza) | ✅ Verificado |
+| RF-26 | El trabajador no corrige registros del propietario y solo corrige los de trabajadores del mismo día | PU-09; PI-03 (incluido el reloj atrasado) | ✅ Verificado |
+| RF-24 | Requerir autenticación antes de acceder | PU-07; PE-13 (sin sesión se muestra la pantalla de ingreso, que exige conexión la primera vez) | ✅ Verificado |
+| RF-25 | Dos perfiles: propietario y trabajador | PU-07 (perfil firmado y validado); PI-02 (perfil en el token); PE-13 (ambos perfiles con usuarios reales); PU-09 y PI-03 (permisos de cada perfil en el teléfono y en el servicio) | ✅ Verificado |
+| RD-03 | Autenticación sin conexión | PU-07 (verificación de la firma sin red, token vencido aceptado); PE-13 (recarga sin conexión sigue identificado) | ✅ Verificado |
 | RNF-10 | Navegadores móviles y de escritorio | PE-06, PE-11 | 🔄 Parcial: falta la prueba en un teléfono real |
 | RNF-11 | Instalable sin tienda de aplicaciones | PE-11 | ✅ Verificado |
-| RNF-13 | Arquitectura modular | PE-02 (estructura por capas y módulos) | 🔄 Parcial: se verifica con cada módulo construido |
-| RD-01 | Almacenamiento primario en el dispositivo | PE-10 (recursos servidos desde el dispositivo) | 🔄 Parcial: falta el almacenamiento de datos |
+| RNF-13 | Arquitectura modular | PE-02 (estructura por capas y módulos); PU-05 (prueba de arquitectura: una sola vía de escritura) | 🔄 Parcial: se verifica con cada módulo construido |
+| RNF-08 | Autoría y fecha de creación inalterables | PU-02 (campos de solo lectura en el tipo); PI-01 (sin privilegio de modificación en el servicio) | ✅ Verificado |
+| RNF-06 | Ningún registro puede modificarse ni eliminarse | PI-01 (ningún rol tiene UPDATE ni DELETE); PI-03 (ni el propietario modifica ni elimina) | 🔄 Parcial: falta la corrección y anulación (paso 4.3) |
+| RNF-05 | Restaurar la información ante la pérdida del dispositivo | PI-01 (esquema remoto que conserva la copia); PU-11 y PI-04 (un teléfono vacío recupera la información con la carga inicial) | ✅ Verificado |
+| RF-29 | Sincronizar lo registrado sin conexión al restablecerse la señal | PU-10 (subida, reintentos, conflictos); PU-11 (bajada incremental); PI-04 (extremo a extremo con el servicio real) | ✅ Verificado |
+| RF-30 | Indicar si un registro está sincronizado o pendiente | PU-10 (estados de la Tabla 22 según la respuesta del servicio); PU-12 (textos de la barra y distintivos); PE-15 (barra inferior en el navegador real) | 🔄 Parcial: falta ver el distintivo junto a cada registro en las listas y la ficha (Iteración 2) |
+| RD-02 | Identificadores sin contador central | PU-03 (UUID v7: unicidad, orden y dos dispositivos sin coincidencias) | ✅ Verificado |
+| RD-01 | Almacenamiento primario en el dispositivo | PE-10 (recursos servidos desde el dispositivo); PU-04 (esquema local de 18 tablas) | ✅ Verificado |

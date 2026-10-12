@@ -1,0 +1,12 @@
+Revisor de seguridad de Supabase (npx supabase db advisors --linked), 2026-10-06,
+tras aplicar las migraciones 20261006000100 y 20261006000200.
+
+Hallazgo 1 · WARN · SECURITY · anon_security_definer_function_executable
+  Function `public.rls_auto_enable()` can be executed by the `anon` role as a `SECURITY DEFINER`
+  function via `/rest/v1/rpc/rls_auto_enable`.
+
+Hallazgo 2 · WARN · SECURITY · authenticated_security_definer_function_executable
+  Function `public.rls_auto_enable()` can be executed by the `authenticated` role as a
+  `SECURITY DEFINER` function via `/rest/v1/rpc/rls_auto_enable`.
+
+Origen: la función la crea la opción «Habilitar RLS automático» del proyecto de Supabase.

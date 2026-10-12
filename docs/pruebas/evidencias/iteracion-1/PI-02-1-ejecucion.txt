@@ -1,0 +1,14 @@
+PI-02 · Ejecución (2026-10-07), tras aplicar 20261007000100_gancho_perfil_token.sql y activar el gancho
+en Authentication → Auth Hooks. Ejecutada por D. S. Ramos Pintor. Comando: npm run prueba:pi-02
+
+┌───┬───────────────────────────────────────────────────────────────────────┬───────────┬─────────────────────────────────────────────────────────────────────────────────────────┐
+│ n │ verificacion                                                          │ resultado │ detalle                                                                                 │
+├───┼───────────────────────────────────────────────────────────────────────┼───────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│ 1 │ Usuario con fila en usuario: el token incluye perfil y nombre         │ APROBADA  │ perfil: trabajador · nombre: Trabajador PI-02                                           │
+│ 2 │ Usuario sin fila en usuario: el token sale sin perfil ni nombre       │ APROBADA  │ declaraciones: {"sub": "019011f4-aa47-4514-9353-4d1fdc26bba9", "role": "authenticated"} │
+│ 3 │ Solo supabase_auth_admin puede ejecutar la función                    │ APROBADA  │ auth_admin: true · authenticated: false · anon: false                                   │
+│ 4 │ supabase_auth_admin puede leer usuario (privilegio y política de RLS) │ APROBADA  │ privilegio y política presentes                                                         │
+│ 5 │ La función no es SECURITY DEFINER                                     │ APROBADA  │ SECURITY INVOKER                                                                        │
+└───┴───────────────────────────────────────────────────────────────────────┴───────────┴─────────────────────────────────────────────────────────────────────────────────────────┘
+
+PI-01 repetida a continuación: 11 de 11 aprobadas (la función nueva no quedó expuesta).

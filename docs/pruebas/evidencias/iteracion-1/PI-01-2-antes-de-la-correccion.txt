@@ -1,0 +1,18 @@
+PI-01 · Ejecución 2 (2026-10-06), con la verificación 11 agregada y ANTES de aplicar la migración 20261006000300
+Comando: npx supabase db query --linked -o table -f supabase/pruebas/pi-01-esquema.sql
+
+┌────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────┬───────────┬───────────────────────────────────────────────────────────────────────┐
+│ n  │ verificacion                                                                                              │ resultado │ detalle                                                               │
+├────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┼───────────┼───────────────────────────────────────────────────────────────────────┤
+│ 1  │ Existen las 14 tablas con RLS activada                                                                    │ APROBADA  │ 14 de 14 tablas con RLS                                               │
+│ 2  │ authenticated: solo SELECT e INSERT (predio) o SELECT (referencia); anon: ninguno; nadie UPDATE ni DELETE │ APROBADA  │ 14 tablas verificadas                                                 │
+│ 3  │ recibido_en la fija el servicio aunque el dispositivo envíe otra                                          │ APROBADA  │ enviado 2000-01-01, guardado 2026-10-07 04:48:47.454341+00            │
+│ 4  │ Mismo id: se rechaza; con ON CONFLICT DO NOTHING se ignora sin error (3.7.8)                              │ APROBADA  │ inserción repetida: 23505 · con ON CONFLICT: OK · filas con ese id: 1 │
+│ 5  │ Un segundo animal con la misma chapeta se rechaza                                                         │ APROBADA  │ código: 23505                                                         │
+│ 6  │ Un segundo ordeño de la misma vaca en la misma fecha se rechaza                                           │ APROBADA  │ código: 23505                                                         │
+│ 7  │ Se rechazan valores fuera del dominio (8 casos de la Tabla 24)                                            │ APROBADA  │ códigos: 23514, 23514, 23514, 23514, 23514, 23514, 23514, 23514       │
+│ 8  │ «ivermectina» se rechaza si ya existe «Ivermectina» (3.8.9)                                               │ APROBADA  │ código: 23505                                                         │
+│ 9  │ Segunda compra del mismo animal se rechaza; segunda alimentación se admite                                │ APROBADA  │ compra: 23505 · alimentación: OK                                      │
+│ 10 │ Están cargados los seis parámetros de la Tabla 30                                                         │ APROBADA  │ 6 de 6                                                                │
+│ 11 │ Ninguna función SECURITY DEFINER de public es ejecutable por anon ni authenticated                        │ FALLIDA   │ expuestas: rls_auto_enable                                            │
+└────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────┴───────────┴───────────────────────────────────────────────────────────────────────┘

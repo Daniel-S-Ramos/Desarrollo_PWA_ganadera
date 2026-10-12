@@ -169,3 +169,141 @@ body {
   background: var(--verde-claro);
   border-color: var(--verde-oscuro);
 }
+
+/* Aviso dentro del contenido de la pantalla (no sobre la barra inferior). */
+.aviso--en-contenido {
+  margin: 0 0 var(--separacion);
+}
+
+.aviso .aviso__detalle {
+  font-weight: 400;
+  margin-bottom: 0;
+}
+
+.barra-inferior__detalle {
+  display: block;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--texto-secundario);
+}
+
+/* Formularios (apartado 3.10.4.2): campos de la misma altura que los botones principales. */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--separacion);
+  margin-bottom: var(--separacion);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.campo input {
+  min-height: var(--alto-control);
+  padding: 0 16px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  font: inherit;
+  font-weight: 400;
+  color: var(--texto);
+  background: var(--blanco);
+}
+
+.campo input:focus {
+  outline: 3px solid var(--amarillo);
+  border-color: var(--verde-oscuro);
+}
+
+.boton--ancho {
+  width: 100%;
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.separado {
+  margin-top: var(--separacion);
+}
+
+.encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--separacion);
+}
+
+.encabezado__usuario {
+  font-size: 0.85rem;
+  text-align: right;
+  line-height: 1.3;
+}
+
+.tarjeta + .tarjeta {
+  margin-top: var(--separacion);
+}
+
+/* Campo del código de desbloqueo: dígitos grandes y espaciados para leerlos con una mano. */
+.campo input.campo__codigo {
+  font-size: 1.6rem;
+  letter-spacing: 0.5em;
+  text-align: center;
+}
+
+/* Indicador de sincronización (documento técnico 11). El estado nunca depende solo del color. */
+.barra-inferior__linea + .barra-inferior__linea {
+  margin-top: 6px;
+}
+
+.barra-inferior__linea--advertencia {
+  color: var(--rojo-oscuro);
+}
+
+.distintivo {
+  display: inline-flex;
+  flex-direction: column;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.distintivo--atencion {
+  background: var(--amarillo-claro);
+  border-color: var(--amarillo);
+  color: var(--texto);
+}
+
+.distintivo--riesgo {
+  background: var(--rojo-fondo);
+  border-color: var(--rojo-oscuro);
+  color: var(--rojo-oscuro);
+}
+
+.distintivo__detalle {
+  font-weight: 400;
+}
+
+/* Confirmación del cierre de sesión (documento técnico 12). */
+.aviso__acciones--columna {
+  flex-direction: column;
+}
+
+.aviso--riesgo {
+  background: var(--rojo-fondo);
+  border-color: var(--rojo-oscuro);
+  color: var(--rojo-oscuro);
+}
+
+/* Reservado para la acción con consecuencia grave (3.10.4.1): descartar registros sin enviar. */
+.boton--peligro {
+  background: var(--rojo-oscuro);
+  color: var(--blanco);
+  border: 2px solid var(--rojo-oscuro);
+}

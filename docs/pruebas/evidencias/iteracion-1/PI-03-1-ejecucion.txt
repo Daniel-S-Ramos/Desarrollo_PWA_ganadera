@@ -1,0 +1,24 @@
+PI-03 · Ejecución (2026-10-07), tras aplicar 20261007000200_politicas_rls.sql
+Ejecutada por D. S. Ramos Pintor. Comando: npm run prueba:pi-03
+
+┌────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────┬───────────┬───────────────────────────────────────────────────────────────────────────────┐
+│ n  │ verificacion                                                                                             │ resultado │ detalle                                                                       │
+├────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┼───────────┼───────────────────────────────────────────────────────────────────────────────┤
+│ 1  │ Cada perfil registra con su propia autoría; nadie registra a nombre de otro                              │ APROBADA  │ propietario: OK · trabajador: OK · trabajador a nombre del propietario: 42501 │
+│ 2  │ El trabajador no registra destino, salida, movimiento económico ni posposición (Tabla 27)                │ APROBADA  │ códigos: 42501, 42501, 42501, 42501                                           │
+│ 3  │ El propietario registra destino, salida, movimiento económico y posposición                              │ APROBADA  │ códigos: OK, OK, OK, OK                                                       │
+│ 4  │ Solo el propietario lee los movimientos económicos (2.8.6, 3.8.12)                                       │ APROBADA  │ filas que ve el trabajador: 0 · el propietario: 2                             │
+│ 5  │ El trabajador lee pesajes, salidas, destinos, los usuarios del predio y los parámetros (sección 2)       │ APROBADA  │ pesajes 5 · salidas 1 · destinos 1 · ve al propietario 1 · parámetros 7       │
+│ 6  │ El trabajador corrige un registro de otro trabajador del mismo día, también si sincroniza 3 días después │ APROBADA  │ mismo día: OK · hecha hace 3 días y recibida hoy: OK                          │
+│ 7  │ El trabajador no corrige un registro del propietario, ni de otro día, ni con el reloj atrasado 30 días   │ APROBADA  │ del propietario: 42501 · de otro día: 42501 · reloj atrasado: 42501           │
+│ 8  │ El propietario corrige cualquier registro, sin límite de tiempo                                          │ APROBADA  │ de un trabajador hace 30 días: OK · de otro trabajador hoy: OK                │
+│ 9  │ Una cuenta sin perfil no registra ni lee información del predio                                          │ APROBADA  │ registrar: 42501 · animales que ve: 0                                         │
+│ 10 │ Sin sesión no se lee ni se registra nada                                                                 │ APROBADA  │ leer: 42501 · registrar: 42501                                                │
+│ 11 │ Ni el propietario puede modificar ni eliminar un registro (RNF-06)                                       │ APROBADA  │ modificar: 42501 · eliminar: 42501                                            │
+└────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────┴───────────┴───────────────────────────────────────────────────────────────────────────────┘
+
+Repeticiones a continuación: PI-01 11 de 11 aprobadas · PI-02 5 de 5 aprobadas.
+
+Revisor de seguridad (npx supabase db advisors --linked):
+WARN · SECURITY · auth_leaked_password_protection · «Leaked password protection is currently disabled.»
+Sin hallazgos sobre el esquema, las funciones ni las políticas.
