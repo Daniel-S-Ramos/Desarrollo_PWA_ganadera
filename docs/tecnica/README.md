@@ -20,3 +20,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 09 | [Sincronización (parte 1): subida y conflictos](09-sincronizacion-subida.md) | 1.10 | 3.7.2 – 3.7.5 · 3.7.8 · 3.8.6 |
 | 10 | [Sincronización (parte 2): bajada y carga inicial](10-sincronizacion-bajada.md) | 1.10 | 3.7.5 – 3.7.8 |
 | 11 | [Indicador de sincronización](11-indicador-de-sincronizacion.md) | 1.11 | 3.7.4 · 3.10.4.5 · RF-30 |
+| 12 | [Cierre de sesión con la cola vacía](12-cierre-de-sesion.md) | 1.12 | 3.9.1 · Tabla 31 |

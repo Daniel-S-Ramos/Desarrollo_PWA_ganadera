@@ -53,7 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
-| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 19 | 19 aprobadas |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 21 | 21 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -64,7 +64,7 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 |---|---|---|---|
 | RF-28 | Registrar y consultar sin conexión | PE-07, PE-10 (la aplicación abre sin red); PU-04 (base de datos local y consultas por índice) | 🔄 Parcial: falta el registro desde la interfaz |
 | RNF-09 | Consultas de la ficha contra el almacenamiento local | PU-04 (consultas por índice simple, compuesto y por rango) | 🔄 Parcial: falta la pantalla de la ficha |
-| RNF-04 | La información sin conexión no se pierde ante un cierre inesperado | PU-05 (registro y cola en una sola transacción; fallas simuladas entre escrituras; persistencia tras reabrir); PU-10 (una operación sale de la cola solo con la confirmación del servicio; registros en transmisión recuperados) | 🔄 Parcial: falta la prueba con la aplicación real cerrada a mitad de un registro |
+| RNF-04 | La información sin conexión no se pierde ante un cierre inesperado | PU-05 (registro y cola en una sola transacción; fallas simuladas entre escrituras; persistencia tras reabrir); PU-10 (una operación sale de la cola solo con la confirmación del servicio; registros en transmisión recuperados); PU-13 (el cierre de sesión no descarta sin doble confirmación) | 🔄 Parcial: falta la prueba con la aplicación real cerrada a mitad de un registro |
 | RF-27 | Registrar el autor y la fecha de creación de cada registro | PU-05 (los fija el repositorio y prevalecen sobre valores falsos); PI-01 (inalterables en el servicio); PI-03 (el servicio rechaza un autor distinto de quien envía) | ✅ Verificado |
 | RNF-15 | Almacenamiento persistente y aviso cuando se niega | PU-06 (todos los caminos de la solicitud y texto del aviso); PE-12 (Chrome para Windows: el aviso aparece cuando se niega) | 🔄 Parcial: falta verificar en un teléfono Android (paso 6.4) |
 | RNF-01 | Operación en condiciones de campo | PU-01 (contraste 7:1 en todas las combinaciones de texto) | 🔄 Parcial: falta el tamaño de los controles y la prueba en campo |

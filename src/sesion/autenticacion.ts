@@ -3,10 +3,9 @@
  * Especificación: docs/tecnica/06-autenticacion.md, secciones 6.1 y 6.3
  */
 import { decodeProtectedHeader, type JWK } from 'jose';
-import { contarPendientes } from '../datos/repositorio';
 import { supabase } from '../servicios/supabase';
 import { bloquear, borrarCodigo, olvidarUsuarioAnterior, verificarReingreso, type UsuarioAnterior } from './desbloqueo';
-import { actualizarTokenLocal, borrarSesionLocal, guardarSesionLocal } from './sesionLocal';
+import { actualizarTokenLocal, guardarSesionLocal } from './sesionLocal';
 import { verificarToken, type Identidad } from './token';
 
 const URL_SERVICIO = import.meta.env.VITE_SUPABASE_URL;
@@ -94,21 +93,6 @@ export function escucharRenovaciones(alActualizar: (identidad: Identidad) => voi
     })();
   });
   return () => data.subscription.unsubscribe();
-}
-
-export type ResultadoCierre = { ok: true } | { ok: false; pendientes: number };
-
-/**
- * Cierre de sesión preliminar: solo procede con la cola vacía. La experiencia completa (ofrecer
- * sincronizar o confirmar el descarte) se construye en el paso 1.12 (apartado 3.9.1).
- */
-export async function cerrarSesion(): Promise<ResultadoCierre> {
-  const pendientes = await contarPendientes();
-  if (pendientes > 0) return { ok: false, pendientes };
-  await supabase.auth.signOut({ scope: 'local' });
-  await borrarCodigo();
-  await borrarSesionLocal();
-  return { ok: true };
 }
 
 /**

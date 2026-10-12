@@ -44,7 +44,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.9 | Gestor de sesión y permisos, y reglas a nivel de fila | 3.9.2, 3.9.3, Tabla 27 | ✅ |
 | 1.10 | Motor de sincronización: subida, bajada, marca de avance, idempotencia | 3.7.3 – 3.7.8 | ✅ |
 | 1.11 | Indicador de sincronización (contador y marca por registro) | 3.7.4, 3.10.4.5 | ✅ |
-| 1.12 | Cierre de sesión con cola vacía | 3.9.1 | ⬜ |
+| 1.12 | Cierre de sesión con cola vacía | 3.9.1 | ✅ |
 | 1.13 | Pruebas y verificación de criterios de aceptación de la iteración | 1.6.3.9 | ⬜ |
 
 ## Iteración 2 — Identificación animal y ficha (HU-01, HU-02, HU-15 · 15 puntos)
@@ -152,6 +152,9 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-08 | Ventana de solapamiento de 2 minutos al inicio de cada descarga, y paginación por cursor (recibido_en, id) | Evita saltarse filas cuya transacción terminó después de leer la marca, sin entrar en un ciclo sin fin (documento técnico 10, sección 3) |
 | 2026-10-08 | Cuenta de prueba «Usuario de pruebas» (trabajador) para la prueba de extremo a extremo, con limpieza automática | Las pantallas de registro llegan en la Iteración 2; se eliminará al cerrar la evaluación |
 | 2026-10-08 | Sincronización también tras guardar y cada 5 minutos, además de al abrir y al volver la señal | Reduce el tiempo que la información pasa solo en el teléfono |
+| 2026-10-12 | Ambos perfiles pueden descartar pendientes al cerrar sesión, con doble confirmación | Lo establece el 3.9.1; restringirlo al propietario podría dejar a un trabajador sin poder entregar el teléfono |
+| 2026-10-12 | Al descartar se borran también los registros pendientes, no solo la cola | Evita registros marcados como pendientes que nada podría enviar |
+| 2026-10-12 | Se retira la tarjeta de diagnóstico «Conexión con Supabase» | Solo consultaba al abrir y podía quedar desactualizada (PE-15); la barra inferior informa la conexión en tiempo real |
 
 ## Pendientes de diseño
 
@@ -163,6 +166,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | 2.x | Probar a mano el rechazo del reingreso de otro usuario con pendientes (PU-08 lo cubre de forma automática) | PE-14, pendiente |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
+| 2.x | Probar a mano el cierre de sesión con pendientes: «Enviar y cerrar sesión» y el descarte con doble confirmación (PU-13 lo cubre de forma automática) | PE-16, pendiente |
 | 2.3 | Mostrar el distintivo de sincronización junto a cada registro en el listado y la ficha, y observar a mano los estados con pendientes y conflictos | PE-15, observación 1 |
 | 2.1 | Cómo resuelve el propietario un conflicto de chapeta. Si son dos animales distintos, corregir el código (3.9.5). Si es el mismo animal registrado dos veces, anular el duplicado; falta definir qué pasa con los eventos que ya se le registraron al duplicado en ese teléfono. Consultar con el propietario | 3.7.3, tercera regla · conversación del 2026-10-06 |
 

@@ -289,3 +289,21 @@ body {
 .distintivo__detalle {
   font-weight: 400;
 }
+
+/* Confirmación del cierre de sesión (documento técnico 12). */
+.aviso__acciones--columna {
+  flex-direction: column;
+}
+
+.aviso--riesgo {
+  background: var(--rojo-fondo);
+  border-color: var(--rojo-oscuro);
+  color: var(--rojo-oscuro);
+}
+
+/* Reservado para la acción con consecuencia grave (3.10.4.1): descartar registros sin enviar. */
+.boton--peligro {
+  background: var(--rojo-oscuro);
+  color: var(--blanco);
+  border: 2px solid var(--rojo-oscuro);
+}

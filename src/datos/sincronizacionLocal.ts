@@ -115,6 +115,28 @@ export async function convertirOrdenoEnCorreccion(
   });
 }
 
+/**
+ * Descarta lo pendiente al cerrar sesión con confirmación explícita (docs/tecnica/12-cierre-de-sesion.md,
+ * sección 3): vacía la cola y borra los registros que nunca llegaron al servicio. Los sincronizados y
+ * los que están en conflicto no se tocan. Devuelve cuántos registros se descartaron.
+ */
+export async function descartarPendientes(): Promise<number> {
+  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones];
+  return db.transaction('rw', tablas, async () => {
+    const operaciones = await db.cola_operaciones.toArray();
+    let descartados = 0;
+    for (const operacion of operaciones) {
+      const registro = await tablaDe(operacion.entidad).get(operacion.registro_id);
+      if (registro && (registro['estado_sync'] === 'pendiente' || registro['estado_sync'] === 'en_transmision')) {
+        await tablaDe(operacion.entidad).delete(operacion.registro_id);
+        descartados++;
+      }
+    }
+    await db.cola_operaciones.clear();
+    return descartados;
+  });
+}
+
 /** Registros en conflicto en todas las tablas: requieren la revisión del propietario (documento 11). */
 export async function contarConflictos(): Promise<number> {
   let total = 0;

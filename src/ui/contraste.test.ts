@@ -66,6 +66,7 @@ describe('PU-01 · Todas las combinaciones de texto del sistema alcanzan el nive
     ['texto-secundario', 'fondo', 'textos secundarios'],
     ['verde-oscuro', 'blanco', 'botones secundarios'],
     ['rojo-oscuro', 'blanco', 'advertencias de la barra de estado'],
+    ['blanco', 'rojo-oscuro', 'botón de descartar registros'],
   ];
 
   it.each(combinaciones)('%s sobre %s (%s)', (texto, fondo) => {

@@ -28,6 +28,8 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PI-04 | Sincronización de extremo a extremo contra el servicio real | 1.10 | RF-29 · RNF-05 · RD-04 | ✅ |
 | PU-12 | Indicador de sincronización | 1.11 | RF-30 · 3.10.4.5 · Tablas 22 y 31 | ✅ |
 | PE-15 | Indicador de sincronización en el navegador real | 1.11 | RF-30 · 3.10.4.5 | ⚠️ Aprobada con observaciones |
+| PU-13 | Cierre de sesión con la cola vacía | 1.12 | 3.9.1 · Tabla 31 · RNF-04 | ✅ |
+| PE-16 | Cierre de sesión en el navegador real | 1.12 | 3.9.1 | ✅ |
 
 ---
 
@@ -699,3 +701,53 @@ mostrar un distintivo en los registros sincronizados hizo fallar la verificació
    seguía diciendo «Sin conexión». Es una tarjeta de diagnóstico de la Fase 0 que solo consulta al
    abrir la aplicación y no reacciona a los cambios de conexión. Ahora que la barra inferior informa
    la conexión en tiempo real, la tarjeta sobra y puede confundir: se retira en el paso 1.12.
+
+## PU-13 · Cierre de sesión con la cola vacía
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que la sesión solo se cierra con la cola vacía o con el descarte confirmado, que «Enviar y cerrar sesión» cierra solo si la cola quedó vacía y que el descarte borra lo pendiente sin tocar lo sincronizado ni lo que está en conflicto |
+| Requerimiento | Apartado 3.9.1 · Tabla 31 · RNF-04 |
+| Tipo | Integración con IndexedDB simulada y el servicio simulado, automática |
+| Especificación | [docs/tecnica/12-cierre-de-sesion.md](../tecnica/12-cierre-de-sesion.md), sección 6 |
+| Código | [`src/sesion/cierre.ts`](../../src/sesion/cierre.ts), [`src/ui/componentes/ConfirmacionCierre.tsx`](../../src/ui/componentes/ConfirmacionCierre.tsx) · prueba [`src/sesion/cierre.test.ts`](../../src/sesion/cierre.test.ts) |
+| Resultado obtenido | 10 verificaciones aprobadas ([informe](resultados/2026-10-12_151459_021b44f.md)). Total del conjunto automático: 275 de 275, incluida una verificación nueva de PU-01 (texto blanco sobre el botón rojo de descarte, 7:1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-12 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Sin pendientes se cierra: se borran la sesión local, el código y la sesión del servicio; la información del predio se conserva | ✅ |
+| 2 | Con 2 pendientes no se cierra y se informa la cantidad | ✅ |
+| 3 | «Enviar y cerrar sesión» sincroniza, vacía la cola y cierra | ✅ |
+| 4 | Sin red, con la sesión vencida o con un registro que aún no puede enviarse, no se cierra y se informa el motivo | ✅ |
+| 5 | El descarte borra los 2 registros pendientes y vacía la cola; conserva el sincronizado y el que está en conflicto; cierra la sesión | ✅ |
+| 6 | Textos de la sección 2 en singular y plural | ✅ |
+
+**Pruebas de mutación.** Descartar solo la cola, sin borrar los registros pendientes, hizo fallar la
+verificación 5; cerrar aunque el envío falle hizo fallar las tres verificaciones del criterio 4.
+
+**Corrección durante la implementación.** La primera versión del mensaje decía «quedan 1 registro»;
+se corrigió a «queda 1 registro» y la prueba fija ahora la forma correcta.
+
+## PE-16 · Cierre de sesión en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar en Chrome que, sin pendientes, la sesión se cierra directamente, que se borran la sesión y el código del dispositivo, que la información del predio se conserva, y que la tarjeta de diagnóstico de la Fase 0 ya no aparece |
+| Requerimiento | Apartado 3.9.1 · documento técnico 12, secciones 3 y 4 |
+| Tipo | Verificación manual en Chrome (`npm run build` y `npm run preview`) |
+| Resultado obtenido | Los cuatro pasos se comportaron como se esperaba |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-12 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Desbloquear | Pide el código; al entrar, la pantalla de inicio no tiene la tarjeta «Conexión con Supabase» | [desbloqueo](evidencias/iteracion-1/PE-16-1-desbloqueo.png) · [inicio](evidencias/iteracion-1/PE-16-4-inicio-sin-tarjeta-de-diagnostico.png) |
+| 2 | «Cerrar sesión» sin pendientes | Va directamente a la pantalla de ingreso | [captura](evidencias/iteracion-1/PE-16-2-ingreso-tras-cerrar.png) |
+| 3 | Revisar `meta` y `usuario` en IndexedDB | `meta` sin entradas (se borraron la sesión y el código); `usuario` conserva los 4 usuarios | [meta](evidencias/iteracion-1/PE-16-3a-meta-vacia.png) · [usuario](evidencias/iteracion-1/PE-16-3b-usuarios-conservados.png) |
+| 4 | Ingresar de nuevo | Pide definir un código nuevo y abre la aplicación con «✓ Todo enviado» | [captura](evidencias/iteracion-1/PE-16-4-inicio-sin-tarjeta-de-diagnostico.png) |
+
+**Pendiente.** El cierre con pendientes («Enviar y cerrar sesión» y el descarte con doble
+confirmación) no puede probarse a mano todavía, porque ninguna pantalla crea registros. Lo verifica
+PU-13 y se probará a mano en la Iteración 2.
