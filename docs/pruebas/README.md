@@ -53,7 +53,7 @@ se editan a mano.
 | Documento | Alcance | Casos | Resultado |
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
-| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (en curso) | 21 | 21 aprobadas |
+| [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (cerrada, `v0.1`) | 21 | 21 aprobadas · 12 criterios de aceptación cumplidos (8 de extremo a extremo, 4 a nivel técnico) |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 

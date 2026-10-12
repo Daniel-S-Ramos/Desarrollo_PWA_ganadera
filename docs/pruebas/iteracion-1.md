@@ -4,6 +4,7 @@ Historias de usuario: HU-08 (autenticación), HU-06 (registro por el trabajador)
 sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 
 **Responsable:** Daniel Santiago Ramos Pintor
+**Estado:** cerrada el 2026-10-12 como versión `v0.1` (ver el [acta de cierre](#acta-de-cierre-de-la-iteración-1) al final)
 
 ## Resumen de resultados
 
@@ -751,3 +752,78 @@ se corrigió a «queda 1 registro» y la prueba fija ahora la forma correcta.
 **Pendiente.** El cierre con pendientes («Enviar y cerrar sesión» y el descarte con doble
 confirmación) no puede probarse a mano todavía, porque ninguna pantalla crea registros. Lo verifica
 PU-13 y se probará a mano en la Iteración 2.
+
+---
+
+## Acta de cierre de la Iteración 1
+
+| Campo | Contenido |
+|---|---|
+| Iteración | 1 · Fundación técnica (Tabla 13) |
+| Historias | HU-08 (5 puntos) · HU-06 (3 puntos) · HU-07 (8 puntos) · **16 puntos** |
+| Periodo | 6 al 12 de octubre de 2026 (7 días calendario) |
+| Rama | `iteracion-1`, 13 commits (pasos 1.1 a 1.12), fusionada en `main` como versión `v0.1` |
+| Pruebas de la iteración | 21 casos: 12 unitarias o de integración automáticas (PU-02 a PU-13), 4 de integración contra el servicio real (PI-01 a PI-04) y 5 verificaciones manuales en el navegador (PE-12 a PE-16) |
+| Conjunto automático al cierre | 275 de 275 aprobadas, con verificación de tipos sin errores ([informe](resultados/2026-10-12_152758_533aba4.md)) |
+| Documentación técnica | 12 documentos (01 a 12), escritos antes de implementar cada componente |
+| Fecha del acta | 2026-10-12 |
+
+### Verificación de los criterios de aceptación
+
+El apartado 1.6.3 establece que cada iteración se cierra únicamente cuando los criterios de
+aceptación de sus historias han sido verificados. Los criterios son los de las tarjetas del Anexo B.
+
+**HU-08 · Acceso autenticado y perfiles de usuario (Tabla B8)**
+
+| # | Criterio | Evidencia | Estado |
+|---|---|---|---|
+| 1 | El acceso a la aplicación exige autenticación previa | PU-07 · PE-13 | ✅ Verificado |
+| 2 | El sistema distingue los perfiles de propietario y de trabajador | PI-02 · PE-13 (propietario y trabajador reales) | ✅ Verificado |
+| 3 | Cada perfil accede únicamente a las funciones que le corresponden | PU-09 (Tabla 27 completa) · PI-03 (servicio real, incluido un teléfono manipulado) | ✅ Verificado |
+| 4 | La sesión se mantiene disponible sin conexión a internet | PU-07 · PE-13 (recarga sin conexión) · PE-14 (desbloqueo sin conexión) | ✅ Verificado |
+
+**HU-06 · Registro de información por parte del trabajador (Tabla B6)**
+
+| # | Criterio | Evidencia | Estado |
+|---|---|---|---|
+| 1 | El trabajador puede crear registros y consultar información | PU-09 (`crearAutorizado`) · PI-03 · PI-04 (la cuenta de prueba de perfil trabajador creó, envió y descargó registros reales) | ⚙️ Verificado a nivel técnico |
+| 2 | El sistema le impide modificar o eliminar registros existentes | PI-01 · PI-03 (verificación 11) | ✅ Verificado |
+| 3 | Cada registro conserva la identificación de su autor | PU-05 · PI-03 · PI-04 | ✅ Verificado |
+| 4 | Las opciones no habilitadas para su perfil no se presentan en la interfaz | PU-09 (`puedeUsar`, Tabla 27) | ⚙️ Verificado a nivel técnico |
+
+El criterio 2 está redactado en la tarjeta según la regla anterior al refinamiento del apartado
+2.8.10. La regla vigente admite que el trabajador corrija registros de trabajadores del mismo día
+mediante registros nuevos, sin modificar ni eliminar el original, de modo que el criterio se
+cumple en su sentido: ningún registro se modifica ni se elimina (PI-01, PI-03) y la corrección del
+trabajador está limitada (PU-09, PI-03).
+
+**HU-07 · Operación sin conexión y sincronización diferida (Tabla B7)**
+
+| # | Criterio | Evidencia | Estado |
+|---|---|---|---|
+| 1 | El registro y la consulta operan sin conexión a internet | PE-10 (la aplicación abre sin conexión) · PU-04 · PU-05 | ⚙️ Verificado a nivel técnico |
+| 2 | La información pendiente se sincroniza automáticamente al restablecerse la conexión | PU-10 · PU-11 · PI-04 · PE-15 (sincronización automática al volver la señal) | ✅ Verificado |
+| 3 | La aplicación indica si un registro se encuentra sincronizado o pendiente | PU-12 · PE-15 (barra inferior) | ✅ Verificado (barra); el distintivo por registro se verá en las listas de la Iteración 2 |
+| 4 | La información no se pierde si la aplicación se cierra de manera inesperada | PU-05 (apagado simulado entre escrituras) · PU-10 (registros en transmisión recuperados) | ✅ Verificado |
+
+### Decisión de cierre
+
+**Se cierra la Iteración 1 con los 12 criterios cumplidos: 8 verificados de extremo a extremo y 4
+verificados a nivel técnico.** Los cuatro criterios marcados ⚙️ se cumplen en la lógica, el
+almacenamiento local y el servicio remoto, y están verificados con pruebas automáticas y contra el
+servicio real; lo que falta es observarlos en una pantalla de registro o de consulta, que no forma
+parte del alcance de esta iteración. La Tabla 13 lo anticipa: la fundación técnica «no produce una
+pantalla que el usuario reconozca como útil».
+
+Por decisión del 2026-10-12, la verificación en pantalla de esos cuatro criterios (HU-06.1, HU-06.4,
+HU-07.1 y la marca por registro de HU-07.3) pasa a ser **criterio de cierre de la Iteración 2**,
+junto con las pruebas manuales que quedaron pendientes por la misma razón (PE-14: reingreso de otro
+usuario con pendientes; PE-16: cierre de sesión con pendientes).
+
+### Velocidad medida
+
+La Iteración 1 entregó **16 puntos en 7 días calendario**. Es el dato que el apartado 2.8.7 reserva
+para fijar el calendario de la Fase 3, que se registra en el [plan](../../PLAN.md). Debe leerse con
+una salvedad: esta iteración incluyó trabajo que no se repetirá (preparación del servicio, cuentas,
+claves de firma, documentación de la estrategia de pruebas), mientras que las siguientes tienen más
+pantallas, cuyo ritmo aún no se ha medido. El calendario se recalibrará al cierre de cada iteración.

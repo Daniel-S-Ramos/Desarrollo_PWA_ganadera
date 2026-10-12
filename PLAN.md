@@ -29,7 +29,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 0.7 | Configuración PWA: manifiesto, íconos, Service Worker; instalación en el teléfono | ✅ |
 | 0.8 | Entorno de pruebas con Vitest y una primera prueba | ✅ |
 
-## Iteración 1 — Fundación técnica (HU-08, HU-06, HU-07 · 16 puntos)
+## Iteración 1 — Fundación técnica (HU-08, HU-06, HU-07 · 16 puntos) · cerrada el 2026-10-12 · `v0.1`
 
 | Paso | Contenido | Referencia | Estado |
 |---|---|---|---|
@@ -45,9 +45,30 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.10 | Motor de sincronización: subida, bajada, marca de avance, idempotencia | 3.7.3 – 3.7.8 | ✅ |
 | 1.11 | Indicador de sincronización (contador y marca por registro) | 3.7.4, 3.10.4.5 | ✅ |
 | 1.12 | Cierre de sesión con cola vacía | 3.9.1 | ✅ |
-| 1.13 | Pruebas y verificación de criterios de aceptación de la iteración | 1.6.3.9 | ⬜ |
+| 1.13 | Pruebas y verificación de criterios de aceptación de la iteración | 1.6.3.9 | ✅ |
+
+## Calendario de la Fase 3
+
+El apartado 2.8.7 fija el calendario al disponer de la velocidad medida en la primera iteración:
+**16 puntos en 7 días** (6 al 12 de octubre de 2026). Con iteraciones de entre 13 y 16 puntos, se
+estima una semana por iteración. Es una estimación: la Iteración 1 incluyó preparación que no se
+repite, y las siguientes tienen más pantallas. Se recalibra al cierre de cada iteración.
+
+| Iteración | Puntos | Inicio | Cierre estimado | Cierre real | Velocidad |
+|---|---|---|---|---|---|
+| 1 · Fundación técnica | 16 | 2026-10-06 | — | 2026-10-12 | 16 puntos / 7 días |
+| 2 · Identificación y ficha | 15 | 2026-10-13 | 2026-10-19 | | |
+| 3 · Sanidad, leche y destino | 16 | 2026-10-20 | 2026-10-26 | | |
+| 4 · Peso, partos y correcciones | 13 | 2026-10-27 | 2026-11-02 | | |
+| 5 · Consultas, alertas y economía | 16 | 2026-11-03 | 2026-11-09 | | |
+| Cierre · Evaluación del prototipo | — | 2026-11-10 | 2026-11-23 | | |
 
 ## Iteración 2 — Identificación animal y ficha (HU-01, HU-02, HU-15 · 15 puntos)
+
+**Criterios de cierre heredados de la Iteración 1:** verificar en pantalla HU-06.1 (el trabajador
+crea y consulta), HU-06.4 (opciones ocultas según el perfil), HU-07.1 (registro y consulta sin
+conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendientes de PE-14
+(reingreso de otro usuario con pendientes) y PE-16 (cierre de sesión con pendientes).
 
 | Paso | Contenido | Estado |
 |---|---|---|
@@ -155,6 +176,8 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-12 | Ambos perfiles pueden descartar pendientes al cerrar sesión, con doble confirmación | Lo establece el 3.9.1; restringirlo al propietario podría dejar a un trabajador sin poder entregar el teléfono |
 | 2026-10-12 | Al descartar se borran también los registros pendientes, no solo la cola | Evita registros marcados como pendientes que nada podría enviar |
 | 2026-10-12 | Se retira la tarjeta de diagnóstico «Conexión con Supabase» | Solo consultaba al abrir y podía quedar desactualizada (PE-15); la barra inferior informa la conexión en tiempo real |
+| 2026-10-12 | La Iteración 1 se cierra con 8 criterios verificados de extremo a extremo y 4 a nivel técnico; la verificación en pantalla de estos últimos pasa a la Iteración 2 | Las pantallas de registro y consulta no forman parte de la fundación técnica (Tabla 13) |
+| 2026-10-12 | Calendario de la Fase 3: una semana por iteración | Velocidad medida en la Iteración 1: 16 puntos en 7 días (2.8.7) |
 
 ## Pendientes de diseño
 
