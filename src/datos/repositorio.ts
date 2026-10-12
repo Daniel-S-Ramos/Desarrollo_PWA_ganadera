@@ -9,6 +9,10 @@
 import type { EntityTable, Table } from 'dexie';
 import type { DatosNuevos, NombreTabla, Parametro, RegistroLocal, Usuario, Uuid } from '../dominio/tipos';
 import { db, TABLAS_SINCRONIZABLES, type OperacionPendiente } from './db';
+import { avisarGuardadoLocal } from './eventos';
+
+// Lo que otras capas pueden conocer del esquema sin importar la base de datos (prueba de arquitectura de PU-05).
+export { TABLAS_SINCRONIZABLES, type OperacionPendiente } from './db';
 import { uuidv7 } from './uuidv7';
 
 // ---------------------------------------------------------------------------
@@ -34,7 +38,7 @@ export interface Transaccion {
 export async function unidadDeTrabajo<R>(autor: Uuid, trabajo: (tx: Transaccion) => Promise<R>): Promise<R> {
   const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones];
 
-  return db.transaction('rw', tablas, async () => {
+  const resultado = await db.transaction('rw', tablas, async () => {
     const tx: Transaccion = {
       async crear<T extends NombreTabla>(tabla: T, datos: DatosNuevos<T>) {
         const ahora = new Date().toISOString();
@@ -62,6 +66,9 @@ export async function unidadDeTrabajo<R>(autor: Uuid, trabajo: (tx: Transaccion)
     };
     return trabajo(tx);
   });
+  // Solo después de confirmada la transacción: lo guardado ya está a salvo y puede enviarse.
+  avisarGuardadoLocal();
+  return resultado;
 }
 
 /** Tabla del esquema por su nombre, con el tipo general que admite cualquier registro. */

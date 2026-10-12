@@ -216,7 +216,8 @@ describe('PU-05 · 8. Solo lectura', () => {
 });
 
 describe('PU-05 · 9. Arquitectura', () => {
-  // La regla protege el código de la aplicación. Los archivos de prueba quedan excluidos porque
+  // La regla protege el código de la aplicación. Los archivos de prueba (*.test.ts y las pruebas de
+  // integración *.pi.ts) quedan excluidos porque
   // necesitan manipular la base de datos directamente para simular fallas y ataques (por ejemplo,
   // alterar la sesión guardada en PU-07), igual que las pruebas que viven dentro de src/datos/.
   it('ningún archivo de la aplicación fuera de src/datos/ importa directamente la base de datos (db.ts)', () => {
@@ -225,7 +226,7 @@ describe('PU-05 · 9. Arquitectura', () => {
       .filter((ruta) => /\.(ts|tsx)$/.test(ruta))
       .map((ruta) => ruta.replaceAll('\\', '/'))
       .filter((ruta) => !ruta.startsWith('datos/'))
-      .filter((ruta) => !/\.test\.tsx?$/.test(ruta));
+      .filter((ruta) => !/\.(test|pi)\.tsx?$/.test(ruta));
 
     const infractores = archivos.filter((ruta) => {
       const codigo = readFileSync(join(raiz, ruta), 'utf8');

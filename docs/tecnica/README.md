@@ -17,3 +17,5 @@ actualiza si la implementación obliga a cambiar algo.
 | 06 | [Autenticación con conexión y sin ella](06-autenticacion.md) | 1.7 | 3.9.1 · RF-24 · RD-03 |
 | 07 | [Código de desbloqueo](07-codigo-de-desbloqueo.md) | 1.8 | 3.9.1 · RD-05 · Tabla 31 |
 | 08 | [Permisos por perfil](08-permisos.md) | 1.9 | 3.9.2 · 3.9.3 · 3.9.5 · Tabla 27 |
+| 09 | [Sincronización (parte 1): subida y conflictos](09-sincronizacion-subida.md) | 1.10 | 3.7.2 – 3.7.5 · 3.7.8 · 3.8.6 |
+| 10 | [Sincronización (parte 2): bajada y carga inicial](10-sincronizacion-bajada.md) | 1.10 | 3.7.5 – 3.7.8 |

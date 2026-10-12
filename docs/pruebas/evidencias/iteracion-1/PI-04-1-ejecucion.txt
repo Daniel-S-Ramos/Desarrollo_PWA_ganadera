@@ -1,0 +1,23 @@
+PI-04 · Ejecución (2026-10-12) contra el servicio real, con la cuenta de prueba de perfil trabajador.
+Ejecutada por D. S. Ramos Pintor. Comando: npm run prueba:pi-04
+
+ ✓ src/sync/sincronizacion.pi.ts (4 tests) 7953ms
+   ✓ PI-04 · Sincronización de extremo a extremo (4)
+     ✓ 1. un animal y un pesaje creados en el teléfono llegan al servicio con su autor 1808ms
+     ✓ 2. reenviar los mismos registros no los duplica (3.7.8) 1016ms
+     ✓ 3. un teléfono vacío recupera el animal y el pesaje con la carga inicial 4083ms
+     ✓ 4. el trabajador de prueba no recibe información económica 1ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+
+Limpieza de los registros de la cuenta de prueba en el servicio…
+┌───────────────────┬───────────────────────┐
+│ animales_borrados │ medicamentos_borrados │
+├───────────────────┼───────────────────────┤
+│ 1                 │ 0                     │
+└───────────────────┴───────────────────────┘
+
+Verificación posterior (npx supabase db query --linked):
+animales 0 · pesajes 0 · correcciones 0 de la cuenta de prueba · fila en usuario 1 (se conserva)
+· animales totales del servicio 0 · pesajes totales 0

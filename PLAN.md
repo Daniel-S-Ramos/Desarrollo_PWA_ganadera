@@ -42,7 +42,7 @@ Estado: ⬜ pendiente · 🔄 en curso · ✅ terminado
 | 1.7 | Autenticación: ingreso, perfil en el token, verificación sin red | 3.9.1 | ✅ |
 | 1.8 | Código de desbloqueo local | 3.9.1 | ✅ |
 | 1.9 | Gestor de sesión y permisos, y reglas a nivel de fila | 3.9.2, 3.9.3, Tabla 27 | ✅ |
-| 1.10 | Motor de sincronización: subida, bajada, marca de avance, idempotencia | 3.7.3 – 3.7.8 | ⬜ |
+| 1.10 | Motor de sincronización: subida, bajada, marca de avance, idempotencia | 3.7.3 – 3.7.8 | ✅ |
 | 1.11 | Indicador de sincronización (contador y marca por registro) | 3.7.4, 3.10.4.5 | ⬜ |
 | 1.12 | Cierre de sesión con cola vacía | 3.9.1 | ⬜ |
 | 1.13 | Pruebas y verificación de criterios de aceptación de la iteración | 1.6.3.9 | ⬜ |
@@ -146,6 +146,12 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-07 | «Mismo día» de una corrección del trabajador: misma fecha del predio según el teléfono y llegada al servicio a más tardar 7 días después | Admite correcciones hechas sin conexión y cierra la puerta al reloj atrasado (documento técnico 08, sección 4.1) |
 | 2026-10-07 | Las políticas leen el perfil de la tabla `usuario`, no del token | Un cambio de perfil se aplica de inmediato |
 | 2026-10-07 | La lectura de `usuario` se abre a cualquier usuario autenticado | Condicionarla al perfil provocaría una recursión infinita en la política; el registro abierto está deshabilitado |
+| 2026-10-07 | Contraseñas de al menos 10 caracteres con minúsculas, mayúsculas y dígitos; sin protección contra contraseñas filtradas | Esa protección solo existe en los planes de pago de Supabase (advertencia del revisor de seguridad); los requisitos más estrictos la mitigan |
+| 2026-10-08 | Rechazos definitivos del servicio: salen de la cola y quedan en conflicto con la causa | Evita que un registro bloquee la subida para siempre y que se pierda en silencio (documento técnico 09, sección 4) |
+| 2026-10-08 | Ordeño duplicado que choca con un permiso: la corrección queda en conflicto conservando el valor, y decide el propietario | Respeta a la vez el 3.8.6 y la regla de corrección del trabajador |
+| 2026-10-08 | Ventana de solapamiento de 2 minutos al inicio de cada descarga, y paginación por cursor (recibido_en, id) | Evita saltarse filas cuya transacción terminó después de leer la marca, sin entrar en un ciclo sin fin (documento técnico 10, sección 3) |
+| 2026-10-08 | Cuenta de prueba «Usuario de pruebas» (trabajador) para la prueba de extremo a extremo, con limpieza automática | Las pantallas de registro llegan en la Iteración 2; se eliminará al cerrar la evaluación |
+| 2026-10-08 | Sincronización también tras guardar y cada 5 minutos, además de al abrir y al volver la señal | Reduce el tiempo que la información pasa solo en el teléfono |
 
 ## Pendientes de diseño
 
@@ -155,6 +161,8 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 |---|---|---|
 | 6.4 | Verificar en un teléfono Android si instalar la aplicación concede el almacenamiento persistente (en Windows no lo concedió, PE-12) | Documento técnico 04, sección 3 |
 | 2.x | Probar a mano el rechazo del reingreso de otro usuario con pendientes (PU-08 lo cubre de forma automática) | PE-14, pendiente |
+| 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
+| 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
 | 2.1 | Cómo resuelve el propietario un conflicto de chapeta. Si son dos animales distintos, corregir el código (3.9.5). Si es el mismo animal registrado dos veces, anular el duplicado; falta definir qué pasa con los eventos que ya se le registraron al duplicado en ese teléfono. Consultar con el propietario | 3.7.3, tercera regla · conversación del 2026-10-06 |
 
 ## Pendientes para el documento
@@ -184,4 +192,5 @@ la pregunte. Cada tema tiene su documento técnico.
 | Token firmado con clave asimétrica | Cómo el teléfono confía en el perfil sin preguntarle al servidor, y por qué una sesión alterada se detecta (3.9.1, RD-03) | [06-autenticacion.md](docs/tecnica/06-autenticacion.md), secciones 3 a 5 |
 | Código de desbloqueo con PBKDF2 | Por qué un código corto no se puede guardar con un resumen simple, qué aportan la sal y las iteraciones, y qué no protege (3.9.1) | [07-codigo-de-desbloqueo.md](docs/tecnica/07-codigo-de-desbloqueo.md), secciones 4 y 7 |
 | Doble aplicación de permisos y funciones frente a datos | Por qué el teléfono no es confiable, qué decide el servicio y por qué el trabajador recibe datos de pantallas que no ve (3.9.3) | [08-permisos.md](docs/tecnica/08-permisos.md), secciones 1, 2 y 4 |
+| Motor de sincronización | Clasificación de respuestas, ordeño duplicado convertido en corrección, marca de avance con ventana de solapamiento y paginación por cursor (3.7.3 a 3.7.8) | [09](docs/tecnica/09-sincronizacion-subida.md) y [10](docs/tecnica/10-sincronizacion-bajada.md) |
 | Unicidad de la chapeta sin índice único local | Decisión que parece un descuido y en realidad evita que un teléfono deje de sincronizar para siempre (3.7.3, tercera regla) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6 |

@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { formatearBytes } from '../datos/almacenamiento';
+import { crearServicioRemoto } from '../servicios/servicioRemotoSupabase';
+import { supabase } from '../servicios/supabase';
+import { iniciarSincronizacionAutomatica, type ResultadoSincronizacion } from '../sync/motor';
 import { AvisoActualizacion } from '../ui/componentes/AvisoActualizacion';
 import { cerrarSesion, escucharRenovaciones } from '../sesion/autenticacion';
 import { hayCodigoDefinido } from '../sesion/desbloqueo';
@@ -23,6 +26,7 @@ export function App() {
   const almacenamiento = useAlmacenamiento();
   const { identidad, cerradura, ingresar, desbloquear, salirAlIngreso } = useSesion();
   const [avisoIngreso, setAvisoIngreso] = useState<string | null>(null);
+  const sincronizacion = useSincronizacion(cerradura === 'abierta');
   const [avisoCierre, setAvisoCierre] = useState<string | null>(null);
 
   async function salir() {
@@ -86,6 +90,11 @@ export function App() {
           <>
             <p className="titulo-seccion">Prototipo en construcción</p>
             <p className="texto-secundario">Iteración 1 · Fundación técnica</p>
+
+            <section className="tarjeta">
+              <h2>Sincronización</h2>
+              <p>{textoSincronizacion(sincronizacion)}</p>
+            </section>
 
             <section className="tarjeta tarjeta--correcto">
               <h2>Sesión</h2>
@@ -181,6 +190,38 @@ function useSesion() {
       setIdentidad(null);
     },
   };
+}
+
+/**
+ * Sincronización automática mientras la aplicación está abierta y desbloqueada
+ * (docs/tecnica/09-sincronizacion-subida.md, sección 2). El indicador definitivo se construye en el
+ * paso 1.11; por ahora se muestra el resultado de la última sincronización.
+ */
+function useSincronizacion(activa: boolean): ResultadoSincronizacion | null {
+  const [ultima, setUltima] = useState<ResultadoSincronizacion | null>(null);
+  useEffect(() => {
+    if (!activa) return;
+    return iniciarSincronizacionAutomatica(crearServicioRemoto(supabase), (resultado) => {
+      if (resultado.estado !== 'omitida') setUltima(resultado);
+    });
+  }, [activa]);
+  return ultima;
+}
+
+function textoSincronizacion(resultado: ResultadoSincronizacion | null): string {
+  if (!resultado) return 'Pendiente de la primera sincronización…';
+  switch (resultado.estado) {
+    case 'completa':
+      return `Al día · ${resultado.subida.enviadas} enviados · ${resultado.bajada.filas} recibidos`;
+    case 'sin_red':
+      return 'Sin conexión: lo registrado se enviará cuando vuelva la señal.';
+    case 'sesion_vencida':
+      return 'La sesión con el servicio venció. Ingrese de nuevo con conexión para enviar lo pendiente.';
+    case 'error_bajada':
+      return `Enviado, pero no se pudo descargar: ${resultado.mensaje}`;
+    case 'omitida':
+      return '';
+  }
 }
 
 /** Consulta la configuración pública del servicio de autenticación para confirmar la conexión. */

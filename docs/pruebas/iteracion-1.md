@@ -23,6 +23,9 @@ sin conexión). Pasos 1.1 a 1.13 del [plan](../../PLAN.md). Rama `iteracion-1`.
 | PE-14 | Código de desbloqueo en el navegador real | 1.8 | 3.9.1 · Tabla 31 | ✅ |
 | PU-09 | Gestor de permisos del teléfono | 1.9 | 3.9.2 · 3.9.3 · 3.9.5 · Tabla 27 | ✅ |
 | PI-03 | Políticas de seguridad a nivel de fila contra el servicio real | 1.9 | 3.9.2 · 3.9.3 · 3.9.5 · RF-27 · RD-05 · RNF-06 | ⚠️ Aprobada con observaciones |
+| PU-10 | Sincronización: subida y conflictos | 1.10 | 3.7.2 – 3.7.8 · 3.8.6 · RF-29 · RF-30 | ✅ |
+| PU-11 | Sincronización: bajada y carga inicial | 1.10 | 3.7.5 – 3.7.8 · RF-29 · RNF-05 | ✅ |
+| PI-04 | Sincronización de extremo a extremo contra el servicio real | 1.10 | RF-29 · RNF-05 · RD-04 | ✅ |
 
 ---
 
@@ -527,4 +530,117 @@ documento técnico 08 (sección 5).
 **Observación: revisor de seguridad.** Tras aplicar las políticas, el revisor no reportó hallazgos
 sobre el esquema, las funciones ni las políticas. Reportó una advertencia de configuración de la
 autenticación, ajena al código: la protección contra contraseñas filtradas (verificación contra
-HaveIBeenPwned) está desactivada. Se registra su tratamiento en la tabla de decisiones del plan.
+HaveIBeenPwned) está desactivada. Esa protección solo está disponible en los planes de pago de
+Supabase. Se aceptó como limitación del plan gratuito y se mitigó endureciendo los requisitos de
+contraseña: longitud mínima de 10 caracteres (antes 6) y obligación de incluir minúsculas,
+mayúsculas y dígitos ([captura](evidencias/iteracion-1/PI-03-2-requisitos-de-contrasena.png)). Los
+requisitos se aplican a las contraseñas nuevas y a los cambios; las existentes siguen siendo válidas.
+
+## PU-10 · Sincronización: subida y conflictos
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que la subida envía la cola en orden, clasifica cada respuesta del servicio y aplica la acción que corresponde, incluidos los conflictos de chapeta y de ordeño duplicado |
+| Requerimiento | Apartados 3.7.2 a 3.7.8 y 3.8.6 · RF-29 · RF-30 · RNF-04 · Tablas 21 y 22 |
+| Tipo | Integración con IndexedDB simulada y un servicio remoto simulado en memoria, automática |
+| Especificación | [docs/tecnica/09-sincronizacion-subida.md](../tecnica/09-sincronizacion-subida.md), sección 9 |
+| Código | [`src/sync/subida.ts`](../../src/sync/subida.ts), [`src/sync/motor.ts`](../../src/sync/motor.ts), [`src/datos/sincronizacionLocal.ts`](../../src/datos/sincronizacionLocal.ts) · prueba [`src/sync/subida.test.ts`](../../src/sync/subida.test.ts) · servicio simulado [`src/test/servicioSimulado.ts`](../../src/test/servicioSimulado.ts) |
+| Resultado obtenido | 13 verificaciones aprobadas ([informe](resultados/2026-10-12_143803_248e738.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-08 · informe del 2026-10-12 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Un animal y dos pesajes se envían en el orden de la cola, salen de ella y quedan sincronizados con el `recibido_en` del servicio | ✅ |
+| 2 | Lo que viaja no lleva atributos locales y conserva el autor y la fecha de creación | ✅ |
+| 3 | Un identificador que el servicio ya tenía se trata como aceptado, sin duplicar | ✅ |
+| 4 | Ante una falla de red la subida se detiene, la operación suma un intento y el registro vuelve a pendiente; un error 5xx es transitorio | ✅ |
+| 5 | Un pesaje cuyo animal no está en el servicio queda pendiente y la subida continúa con el siguiente registro | ✅ |
+| 6 | Un rechazo de política sale de la cola y queda en conflicto con la causa | ✅ |
+| 7 | Un animal con chapeta repetida queda en conflicto, no se descarta, y sale de la cola | ✅ |
+| 8 | Un ordeño duplicado se convierte en corrección del campo litros (valores 6,5 y 7, motivo «registro duplicado») que se envía en la misma subida; si el servicio la rechaza por permisos, queda en conflicto conservando el valor | ✅ |
+| 9 | Un registro que quedó en transmisión vuelve a pendiente | ✅ |
+| 10 | Dos sincronizaciones simultáneas: una se ejecuta y la otra se omite | ✅ |
+| 11 | Sin sesión vigente la subida se suspende sin tocar la cola | ✅ |
+
+## PU-11 · Sincronización: bajada y carga inicial
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que la bajada incorpora lo que registraron otros dispositivos sin duplicar, con la marca de avance, la ventana de solapamiento, la paginación y la reanudación tras una interrupción |
+| Requerimiento | Apartados 3.7.5 a 3.7.8 · RF-29 · RNF-05 · Tabla 21 |
+| Tipo | Integración con IndexedDB simulada y el servicio simulado, automática |
+| Especificación | [docs/tecnica/10-sincronizacion-bajada.md](../tecnica/10-sincronizacion-bajada.md), sección 8 |
+| Código | [`src/sync/bajada.ts`](../../src/sync/bajada.ts) · prueba [`src/sync/bajada.test.ts`](../../src/sync/bajada.test.ts) |
+| Resultado obtenido | 12 verificaciones aprobadas ([informe](resultados/2026-10-12_143803_248e738.md)). Total del conjunto automático: 243 de 243 |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-08 · informe del 2026-10-12 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 y 2 | Una fila de otro dispositivo se agrega sincronizada; el registro propio que vuelve no se duplica ni cambia; si la confirmación se perdió, la bajada lo marca sincronizado y retira su operación | ✅ |
+| 3 | La marca es el mayor `recibido_en`, con los microsegundos del servicio | ✅ |
+| 4 | La descarga siguiente pide desde la marca menos 2 minutos | ✅ |
+| 5 | Una fila con marca anterior (0,100 s) que no estaba visible cuando se leyó la de 0,300 s llega en la descarga siguiente, y la marca no retrocede | ✅ |
+| 6 | 2.350 filas llegan en 3 páginas; 2.500 filas con el mismo `recibido_en` llegan en 3 páginas encadenadas por cursor, sin repetir | ✅ |
+| 7 | Si la segunda página falla, la primera queda aplicada con su marca y el intento siguiente completa la tabla sin perder ni duplicar | ✅ |
+| 8 | Las tablas se descargan en el orden de sus dependencias | ✅ |
+| 9 | `usuario` y `parametro` reemplazan la copia local | ✅ |
+| 10 | Con el teléfono vacío se descarga todo el estado, desde el inicio | ✅ |
+
+**Pruebas de mutación (PU-10 y PU-11).**
+
+| Mutación | Pruebas que fallaron |
+|---|---|
+| Sin ventana de solapamiento | 1: la fila saltada no llega |
+| Margen en cada página en lugar de cursor | 3, **por tiempo agotado**: la descarga entra en un ciclo sin fin, que es el defecto descrito en la sección 3.3 del documento técnico 10 |
+| Dependencia tratada como falla de red | 1: la subida se detiene en lugar de continuar |
+| Ordeño duplicado sin convertir en corrección | 2 |
+
+**Hallazgos de la prueba de arquitectura.** Durante la implementación, la prueba de arquitectura de
+PU-05 detectó dos veces importaciones indebidas de `db.ts`: primero desde `subida.ts` y
+`bajada.ts`, que solo usaban un tipo y la lista de tablas, y después desde la prueba de
+integración `sincronizacion.pi.ts`. En el primer caso se corrigió el código, exponiendo esos dos
+elementos a través del repositorio; en el segundo se extendió la exclusión de la regla a las
+pruebas de integración (`*.pi.ts`), que, como las automáticas, necesitan manipular la base de datos.
+
+**Corrección del diseño antes de implementar.** Al diseñar la paginación se advirtió que aplicar el
+margen de solapamiento en cada página provocaría un ciclo sin fin con más de 1.000 filas recibidas en
+2 minutos. Se corrigió el documento técnico 10 (sección 3.3) antes de escribir el código, y la
+mutación correspondiente confirmó el defecto.
+
+## PI-04 · Sincronización de extremo a extremo contra el servicio real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar con el servicio real que lo creado en un teléfono llega con su autor, que reenviar no duplica y que un teléfono vacío recupera la información con la carga inicial |
+| Requerimiento | RF-29 · RNF-05 · RD-04 · 3.7.6 · 3.7.8 |
+| Tipo | Integración de extremo a extremo. Programa de prueba que usa los módulos de la aplicación (repositorio, subida, bajada y el servicio remoto sobre Supabase) con una cuenta de prueba de perfil trabajador |
+| Código | [`src/sync/sincronizacion.pi.ts`](../../src/sync/sincronizacion.pi.ts) · [`vitest.pi.config.ts`](../../vitest.pi.config.ts) · [`scripts/prueba-pi-04.mjs`](../../scripts/prueba-pi-04.mjs) · limpieza [`supabase/pruebas/limpiar-usuario-pruebas.sql`](../../supabase/pruebas/limpiar-usuario-pruebas.sql) |
+| Condiciones iniciales | Cuenta `pruebas@ganaderiajr.test` con perfil trabajador («Usuario de pruebas»). Sus credenciales están en `.env.local`, fuera del repositorio |
+| Pasos | Ejecutar `npm run prueba:pi-04`, que al terminar borra del servicio los registros de la cuenta de prueba |
+| Resultado obtenido | **4 de 4 aprobadas** ([evidencia](evidencias/iteracion-1/PI-04-1-ejecucion.txt)). La verificación posterior confirmó 0 registros residuales de la cuenta de prueba |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-12 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Un animal y un pesaje creados en el teléfono llegan al servicio con su autor; la fecha de creación es la del teléfono (RD-04) y el servicio fija `recibido_en` | ✅ |
+| 2 | Al reenviar ambos registros (confirmación perdida simulada), el servicio sigue teniendo un solo animal con esa chapeta | ✅ |
+| 3 | Un teléfono vacío recupera el animal y el pesaje con la carga inicial, además de los usuarios del predio y los parámetros | ✅ |
+| 4 | El trabajador de prueba no recibe movimientos económicos | ✅ |
+
+**Observación.** El script de limpieza solo mostraba el resultado de su última consulta, de modo que
+la salida no evidenciaba el borrado del pesaje. Se verificó aparte con una consulta (0 registros
+residuales) y se agregó al final del script una verificación que muestra lo que quede de la cuenta
+de prueba.
+
+## Incidente de operación: pausa del proyecto de Supabase
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-12 |
+| Qué ocurrió | Al retomar el trabajo tras varios días sin actividad, el panel de Supabase mostró el proyecto en pausa: el plan gratuito pausa los proyectos inactivos |
+| Efecto | Ninguna pérdida de información («All data, including backups and storage objects, remains safe»). Mientras dura la pausa, el servicio no responde |
+| Acción | Se reactivó con «Resume project» y se verificó la conexión con `npm run verificar:supabase` |
+| Relevancia para el prototipo | Es la situación que el diseño contempla: los teléfonos siguen registrando y consultando sin conexión, y la información queda en la cola hasta que el servicio vuelve a responder. Durante la evaluación en el predio, el uso diario de la aplicación mantiene el proyecto activo. Se registra como riesgo en el plan (paso 6.4) |
