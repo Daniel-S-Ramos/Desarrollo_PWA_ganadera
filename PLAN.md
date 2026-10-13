@@ -186,6 +186,7 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-12 | Vista principal de la fotografía: costado izquierdo, si falta el derecho y por último el frente | Indicación del propietario; es la que reconoce en campo (3.8.10) |
 | 2026-10-12 | Se suben al servicio la versión completa y la reducida de cada fotografía | Un teléfono nuevo descarga ~2,5 MB de reducidas en lugar de ~15 MB de completas (3.7.6) |
 | 2026-10-12 | La publicación con HTTPS se adelanta al paso 2.2b | La cámara del teléfono exige un contexto seguro; es el primer componente que necesita el teléfono real |
+| 2026-10-12 | Alojamiento en Vercel (plan Hobby), con una dirección por rama | Se conecta con GitHub y publica cada rama por separado; la aplicación son archivos estáticos (~660 KB) y los datos van directo a Supabase. El plan Hobby es no comercial: si la ganadería la adopta después de la evaluación, plan pago o Cloudflare Pages (README, «Publicación») |
 | 2026-10-12 | El origen se pregunta como «nacido en el predio» o «comprado», con edad aproximada para los comprados; no se almacena, se deduce de la fecha de ingreso | El propietario conoce de manera aproximada la edad de un animal comprado (3.8.10) |
 | 2026-10-12 | La genealogía se captura al registrar el animal, opcional | La ficha no se modifica; en la carga inicial se perdería la madre de los nacidos en el predio |
 | 2026-10-12 | El destino productivo inicial se agrega al formulario de registro en el paso 3.2 | Es exclusivo del propietario (CU-12) y su historial se construye en la Iteración 3 |

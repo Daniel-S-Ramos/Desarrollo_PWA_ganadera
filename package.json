@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "description": "Prototipo de aplicación web progresiva para la trazabilidad bovina y el seguimiento productivo de la Ganadería JR",
   "scripts": {
     "dev": "vite",
