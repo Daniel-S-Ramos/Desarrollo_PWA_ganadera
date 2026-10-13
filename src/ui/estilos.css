@@ -522,3 +522,201 @@ a.boton {
   cursor: pointer;
   text-align: left;
 }
+
+/* Listado de animales (documento técnico 15, sección 7). */
+.listado {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listado__filas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fila-animal {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+  min-height: 88px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fila-animal--exacta {
+  border: 2px solid var(--verde-oscuro);
+  background: var(--verde-claro);
+}
+
+.fila-animal__foto {
+  width: 96px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.fila-animal__sin-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fondo);
+  border: 1px dashed var(--borde);
+  color: var(--texto-secundario);
+  font-size: 0.8rem;
+}
+
+.fila-animal__datos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fila-animal__chapeta {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.fila-animal__detalle {
+  color: var(--texto-secundario);
+  font-size: 0.95rem;
+}
+
+/* Sin rojo: el rojo oscuro se reserva para advertencias con consecuencia sanitaria (3.10.4.1). */
+.fila-animal__retirado {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--texto);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Ficha del animal (documento técnico 16). La foto y la chapeta, juntas en el encabezado (3.10.4.4). */
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--separacion);
+}
+
+.ficha__encabezado {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.ficha__foto {
+  width: 128px;
+  height: 96px;
+  border-radius: var(--radio);
+  object-fit: cover;
+}
+
+.ficha__identidad {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.ficha__chapeta {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ficha__fotos-resumen {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ficha__fotos-resumen p {
+  margin: 0;
+}
+
+.ficha__datos {
+  margin: 0;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.ficha__dato {
+  padding: 12px var(--separacion);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ficha__dato + .ficha__dato {
+  border-top: 1px solid var(--borde);
+}
+
+.ficha__dato dt {
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+}
+
+/* El valor que sostiene la decisión, más grande que su etiqueta (3.10.4.3). */
+.ficha__dato dd {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.ficha__autoria {
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.ficha__vista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ficha__vista + .ficha__vista {
+  border-top: 1px solid var(--borde);
+  padding-top: var(--separacion);
+}
+
+.ficha__vista-nombre {
+  font-weight: 600;
+  margin: 0;
+}
+
+.ficha__figura {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ficha__completa {
+  width: 100%;
+  border-radius: var(--radio);
+}
+
+.ficha__vacia {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radio);
+}

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { TIPOS_FOTOGRAFIA, type TipoFotografia } from '../../dominio/tipos';
+import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
 import { comprimirFoto } from './fotografias';
 import type { FotosCapturadas } from './registroAnimal';
 
@@ -117,19 +118,4 @@ function CasillaFoto({
       {entrada(galeria, false)}
     </div>
   );
-}
-
-/** Dirección temporal para mostrar una imagen guardada en memoria; se libera al cambiar o desaparecer. */
-function useUrlDeImagen(imagen: Blob | undefined): string | null {
-  const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => {
-    if (!imagen) {
-      setUrl(null);
-      return;
-    }
-    const nueva = URL.createObjectURL(imagen);
-    setUrl(nueva);
-    return () => URL.revokeObjectURL(nueva);
-  }, [imagen]);
-  return url;
 }

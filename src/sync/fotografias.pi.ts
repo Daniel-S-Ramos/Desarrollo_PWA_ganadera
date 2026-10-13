@@ -113,4 +113,18 @@ describe('PI-05 · Fotografías en el servicio de archivos', () => {
     expect(pesada.ok).toBe(false);
     expect(clasificarImagen(pesada)).toBe('definitiva');
   });
+
+  it('6. un teléfono vacío recibe el animal y baja la reducida de su vista principal (documento 15, sección 6)', async () => {
+    db.close();
+    await db.delete();
+    await db.open();
+
+    const resultado = await sincronizar(servicio);
+    expect(resultado).toMatchObject({ estado: 'completa', imagenesBajadas: { estado: 'completa' } });
+    const imagen = await db.imagen.get(izquierdoId);
+    expect(imagen).toMatchObject({ animal_id: animalId, completa: null });
+    expect(imagen?.reducida?.size).toBe(40_000);
+    // El derecho no tiene imagen en el servicio y no es la principal: no se pidió.
+    expect(await db.imagen.get(derechoId)).toBeUndefined();
+  });
 });

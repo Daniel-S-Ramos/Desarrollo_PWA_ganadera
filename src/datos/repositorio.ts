@@ -157,6 +157,17 @@ export function contarImagenesPendientes(): Promise<number> {
   return db.cola_imagenes.count();
 }
 
+/** Las imágenes reducidas guardadas en el teléfono, por fotografía (documento 15, sección 4). */
+export async function reducidasLocales(): Promise<Map<Uuid, Blob>> {
+  const imagenes = await db.imagen.toArray();
+  return new Map(imagenes.filter((i) => i.reducida !== null).map((i) => [i.fotografia_id, i.reducida!]));
+}
+
+/** Versión completa de una fotografía que todavía no se ha subido (documento 16, sección 5.1). */
+export async function imagenCompletaLocal(fotografiaId: Uuid): Promise<Blob | null> {
+  return (await db.imagen.get(fotografiaId))?.completa ?? null;
+}
+
 /** Imagen reducida de una fotografía guardada en el teléfono, si la hay. */
 export async function imagenReducida(fotografiaId: Uuid): Promise<Blob | null> {
   return (await db.imagen.get(fotografiaId))?.reducida ?? null;

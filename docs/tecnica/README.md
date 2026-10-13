@@ -23,3 +23,5 @@ actualiza si la implementación obliga a cambiar algo.
 | 12 | [Cierre de sesión con la cola vacía](12-cierre-de-sesion.md) | 1.12 | 3.9.1 · Tabla 31 |
 | 13 | [Registro de un animal](13-registro-de-animal.md) | 2.1 | CU-02 · HU-01 · 3.8.10 · Tabla 31 |
 | 14 | [Fotografías: captura, compresión y cola de imágenes](14-fotografias.md) | 2.2 | RF-02 · RNF-12 · 3.8.5 · Tabla 25 |
+| 15 | [Listado de animales, búsqueda por chapeta y bajada de imágenes](15-listado-de-animales.md) | 2.3 | RF-06 · CU-03 · 3.11.1 · Tabla 25 |
+| 16 | [Ficha del animal con autoría visible](16-ficha-del-animal.md) | 2.4 | RF-05 · HU-02 · HU-15 · 3.10.4.4 |

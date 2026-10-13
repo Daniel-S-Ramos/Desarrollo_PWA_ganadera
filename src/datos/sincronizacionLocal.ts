@@ -177,16 +177,89 @@ export async function imagenesPendientes(): Promise<ImagenPorSubir[]> {
 export async function confirmarImagen(entrada: ImagenPendiente, animalId: Uuid): Promise<void> {
   await db.transaction('rw', [db.cola_imagenes, db.imagen, db.fotografia], async () => {
     await db.cola_imagenes.delete(entrada.seq!);
+    await conservarSoloPrincipal(animalId);
+  });
+}
 
-    const principal = vistaPrincipal(await db.fotografia.where('animal_id').equals(animalId).toArray());
-    const enCola = new Set((await db.cola_imagenes.toArray()).map((e) => e.fotografia_id));
+/**
+ * Regla de retención de la Tabla 25, compartida por la subida y la bajada de imágenes (documento 15,
+ * sección 6.2): de las imágenes que ya no esperan en la cola, se borran las completas y solo se
+ * conserva la reducida de la vista principal vigente. Debe llamarse dentro de una transacción que
+ * abarque cola_imagenes, imagen y fotografia.
+ */
+async function conservarSoloPrincipal(animalId: Uuid): Promise<void> {
+  const principal = vistaPrincipal(await db.fotografia.where('animal_id').equals(animalId).toArray());
+  const enCola = new Set((await db.cola_imagenes.toArray()).map((e) => e.fotografia_id));
 
-    for (const imagen of await db.imagen.where('animal_id').equals(animalId).toArray()) {
-      if (enCola.has(imagen.fotografia_id)) continue;
-      const reducida = imagen.fotografia_id === principal?.id ? imagen.reducida : null;
-      if (reducida === null) await db.imagen.delete(imagen.fotografia_id);
-      else if (imagen.completa !== null) await db.imagen.update(imagen.fotografia_id, { completa: null });
+  for (const imagen of await db.imagen.where('animal_id').equals(animalId).toArray()) {
+    if (enCola.has(imagen.fotografia_id)) continue;
+    const reducida = imagen.fotografia_id === principal?.id ? imagen.reducida : null;
+    if (reducida === null) await db.imagen.delete(imagen.fotografia_id);
+    else if (imagen.completa !== null) await db.imagen.update(imagen.fotografia_id, { completa: null });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bajada de imágenes (docs/tecnica/15-listado-de-animales.md, sección 6)
+// ---------------------------------------------------------------------------
+
+const CLAVE_DESCARGAS_FALLIDAS = 'descargas_fallidas';
+/** Una imagen que el servicio aún no tiene se vuelve a pedir pasada 1 hora (sección 6.3). */
+export const ESPERA_REINTENTO_DESCARGA_MS = 60 * 60 * 1000;
+
+async function descargasFallidas(): Promise<Record<Uuid, string>> {
+  return ((await db.meta.get(CLAVE_DESCARGAS_FALLIDAS))?.valor as Record<Uuid, string> | undefined) ?? {};
+}
+
+/**
+ * Fotografías principales de los animales activos cuya reducida falta en el teléfono, sin las que
+ * fallaron hace menos de 1 hora. Los animales retirados no conservan foto (Tabla 25).
+ */
+export async function imagenesPorBajar(ahora: Date = new Date()): Promise<{ animal_id: Uuid; fotografia_id: Uuid }[]> {
+  const [fotografias, salidas, imagenes, fallidas] = await Promise.all([
+    db.fotografia.toArray(),
+    db.salida.toArray(),
+    db.imagen.toArray(),
+    descargasFallidas(),
+  ]);
+  const retirados = new Set(salidas.map((s) => s.animal_id));
+  const conReducida = new Set(imagenes.filter((i) => i.reducida !== null).map((i) => i.fotografia_id));
+
+  const porAnimal = new Map<Uuid, RegistroLocal<'fotografia'>[]>();
+  for (const foto of fotografias) porAnimal.set(foto.animal_id, [...(porAnimal.get(foto.animal_id) ?? []), foto]);
+
+  const faltantes: { animal_id: Uuid; fotografia_id: Uuid }[] = [];
+  for (const [animalId, fotos] of porAnimal) {
+    if (retirados.has(animalId)) continue;
+    const principal = vistaPrincipal(fotos);
+    // Solo las que ya están en el servicio: una foto pendiente de este teléfono tiene su reducida local.
+    if (!principal || principal.estado_sync !== 'sincronizado' || conReducida.has(principal.id)) continue;
+    const fallo = fallidas[principal.id];
+    if (fallo && ahora.getTime() - Date.parse(fallo) < ESPERA_REINTENTO_DESCARGA_MS) continue;
+    faltantes.push({ animal_id: animalId, fotografia_id: principal.id });
+  }
+  return faltantes;
+}
+
+/** Guarda la reducida bajada del servicio y aplica la retención (sección 6.2). */
+export async function guardarImagenBajada(animalId: Uuid, fotografiaId: Uuid, reducida: Blob): Promise<void> {
+  await db.transaction('rw', [db.cola_imagenes, db.imagen, db.fotografia, db.meta], async () => {
+    await db.imagen.put({ fotografia_id: fotografiaId, animal_id: animalId, reducida, completa: null });
+    const fallidas = await descargasFallidas();
+    if (fallidas[fotografiaId]) {
+      delete fallidas[fotografiaId];
+      await db.meta.put({ clave: CLAVE_DESCARGAS_FALLIDAS, valor: fallidas });
     }
+    await conservarSoloPrincipal(animalId);
+  });
+}
+
+/** La imagen no está (todavía) en el servicio: se anota la hora para no pedirla antes de 1 hora. */
+export async function anotarDescargaFallida(fotografiaId: Uuid, ahora: Date = new Date()): Promise<void> {
+  await db.transaction('rw', db.meta, async () => {
+    const fallidas = await descargasFallidas();
+    fallidas[fotografiaId] = ahora.toISOString();
+    await db.meta.put({ clave: CLAVE_DESCARGAS_FALLIDAS, valor: fallidas });
   });
 }
 

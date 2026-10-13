@@ -19,6 +19,8 @@ export type ResultadoEnvio =
       mensaje: string;
     };
 
+export type ResultadoDescarga = { ok: true; imagen: Blob } | Extract<ResultadoEnvio, { ok: false }>;
+
 /** Desde dónde pedir filas (documento 10, secciones 2 y 3.3). */
 export type Desde =
   | { tipo: 'inicio' }
@@ -40,5 +42,7 @@ export interface ServicioRemoto {
    * El código es el del servicio de archivos (por ejemplo, «409» si el archivo ya existe).
    */
   subirImagen(ruta: string, imagen: Blob): Promise<ResultadoEnvio>;
+  /** Descarga una imagen del servicio de archivos (documento 15, sección 6). */
+  descargarImagen(ruta: string): Promise<ResultadoDescarga>;
   parametros(): Promise<Parametro[]>;
 }

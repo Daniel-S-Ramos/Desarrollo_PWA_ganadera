@@ -8,7 +8,7 @@
  */
 import type { FilaRemota } from '../datos/sincronizacionLocal';
 import type { NombreTabla, Parametro, Usuario, Uuid } from '../dominio/tipos';
-import type { Desde, ResultadoEnvio, ServicioRemoto } from '../sync/servicioRemoto';
+import type { Desde, ResultadoDescarga, ResultadoEnvio, ServicioRemoto } from '../sync/servicioRemoto';
 
 type Forzado = (tabla: NombreTabla, fila: Record<string, unknown>) => ResultadoEnvio | undefined;
 
@@ -113,6 +113,18 @@ export class ServicioSimulado implements ServicioRemoto {
     }
     this.archivos.set(ruta, imagen);
     return { ok: true };
+  }
+
+  /** Si devuelve un resultado, reemplaza la respuesta normal de descargarImagen. */
+  forzarDescarga: ((ruta: string) => ResultadoDescarga | undefined) | undefined;
+  descargas: string[] = [];
+
+  async descargarImagen(ruta: string): Promise<ResultadoDescarga> {
+    this.descargas.push(ruta);
+    const forzado = this.forzarDescarga?.(ruta);
+    if (forzado) return forzado;
+    const imagen = this.archivos.get(ruta);
+    return imagen ? { ok: true, imagen } : { ok: false, codigo: '404', estado: 400, mensaje: 'Object not found' };
   }
 
   async usuarios() {

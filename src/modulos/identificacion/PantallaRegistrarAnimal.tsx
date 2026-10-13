@@ -1,11 +1,12 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { consulta } from '../../datos/repositorio';
 import { fechaDelPredio } from '../../dominio/fechas';
 import type { RegistroLocal } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
+import { etiquetaPeso } from '../../dominio/origen';
 import { SeccionFotografias } from './SeccionFotografias';
 import {
   buscarPorChapeta,
@@ -33,7 +34,12 @@ import {
 export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad }) {
   const navegar = useNavigate();
   const [hoy] = useState(() => fechaDelPredio());
-  const [formulario, setFormulario] = useState<FormularioAnimal>(() => formularioVacio(hoy));
+  const [parametros] = useSearchParams();
+  // Desde el listado, una chapeta no registrada llega ya escrita (documento técnico 15, sección 2.4).
+  const [formulario, setFormulario] = useState<FormularioAnimal>(() => ({
+    ...formularioVacio(hoy),
+    chapeta: normalizarChapeta(parametros.get('chapeta') ?? ''),
+  }));
   const [tocados, setTocados] = useState<ReadonlySet<CampoFormulario>>(new Set());
   const [intentado, setIntentado] = useState(false);
   const [erroresDeGuardado, setErroresDeGuardado] = useState<ErroresFormulario>({});
@@ -112,7 +118,7 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
         animal={registrado.animal}
         fotografias={registrado.fotografias}
         alRegistrarOtro={registrarOtro}
-        alVolver={() => void navegar('/')}
+        alVerFicha={() => void navegar(`/animales/${registrado.animal.id}`)}
       />
     );
   }
@@ -277,7 +283,8 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
       {/* 4. Peso inicial */}
       <label className="campo">
         <span>
-          Peso inicial en kg <span className="campo__ayuda">(opcional)</span>
+          {etiquetaPeso(formulario.origen)}{' '}
+          <span className="campo__ayuda">(opcional)</span>
         </span>
         <input
           type="text"
@@ -407,12 +414,12 @@ function AnimalRegistrado({
   animal,
   fotografias,
   alRegistrarOtro,
-  alVolver,
+  alVerFicha,
 }: {
   animal: RegistroLocal<'animal'>;
   fotografias: number;
   alRegistrarOtro: () => void;
-  alVolver: () => void;
+  alVerFicha: () => void;
 }) {
   // El distintivo cambia solo cuando el motor envía el registro.
   const actual = useLiveQuery(() => consulta.animal.get(animal.id), [animal.id], animal);
@@ -431,12 +438,13 @@ function AnimalRegistrado({
           <p className="aviso__detalle">Podrá completarlo desde la ficha del animal.</p>
         </div>
       )}
+      {/* 3.10.3: después de guardar se vuelve a la ficha del animal. */}
       <div className="acciones-formulario">
-        <button className="boton boton--principal boton--ancho" type="button" onClick={alRegistrarOtro}>
-          Registrar otro
+        <button className="boton boton--principal boton--ancho" type="button" onClick={alVerFicha}>
+          Ver la ficha
         </button>
-        <button className="boton boton--secundario boton--ancho" type="button" onClick={alVolver}>
-          Volver al inicio
+        <button className="boton boton--secundario boton--ancho" type="button" onClick={alRegistrarOtro}>
+          Registrar otro
         </button>
       </div>
     </div>

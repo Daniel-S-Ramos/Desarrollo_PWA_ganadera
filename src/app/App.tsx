@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router';
+import { PantallaFicha } from '../modulos/consulta/PantallaFicha';
+import { PantallaListado } from '../modulos/consulta/PantallaListado';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
 import { puedeUsar } from '../sesion/permisos';
 import { crearServicioRemoto } from '../servicios/servicioRemotoSupabase';
@@ -86,6 +88,14 @@ export function App() {
               path="/animales/nuevo"
               element={puedeUsar(identidad.perfil, 'CU-02') ? <PantallaRegistrarAnimal identidad={identidad} /> : <Navigate to="/" replace />}
             />
+            <Route
+              path="/animales"
+              element={puedeUsar(identidad.perfil, 'CU-03') ? <PantallaListado puedeRegistrar={puedeUsar(identidad.perfil, 'CU-02')} /> : <Navigate to="/" replace />}
+            />
+            <Route
+              path="/animales/:id"
+              element={puedeUsar(identidad.perfil, 'CU-03') ? <PantallaFicha identidad={identidad} /> : <Navigate to="/" replace />}
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         )}
@@ -108,8 +118,14 @@ function Inicio({ identidad, alCerrar }: { identidad: Identidad; alCerrar: () =>
       <p className="titulo-seccion">Prototipo en construcción</p>
       <p className="texto-secundario">Iteración 2 · Identificación animal y ficha</p>
 
+      {puedeUsar(identidad.perfil, 'CU-03') && (
+        <Link className="boton boton--principal boton--ancho" to="/animales">
+          Animales
+        </Link>
+      )}
+
       {puedeUsar(identidad.perfil, 'CU-02') && (
-        <Link className="boton boton--principal boton--ancho" to="/animales/nuevo">
+        <Link className="boton boton--secundario boton--ancho separado" to="/animales/nuevo">
           Registrar animal
         </Link>
       )}

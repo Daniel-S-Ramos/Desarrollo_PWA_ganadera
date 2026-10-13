@@ -1,0 +1,131 @@
+import { useLiveQuery } from 'dexie-react-hooks';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { describirEdad } from '../../dominio/edad';
+import { fechaDelPredio } from '../../dominio/fechas';
+import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
+import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
+import { normalizarChapeta } from '../identificacion/registroAnimal';
+import { buscar, cargarListado, type AnimalListado, type FiltroEstado } from './listado';
+
+const FILTROS: [FiltroEstado, string][] = [
+  ['activos', 'Activos'],
+  ['retirados', 'Retirados'],
+  ['todos', 'Todos'],
+];
+
+const NOMBRE_FILTRO: Record<FiltroEstado, [string, string]> = {
+  activos: ['animal activo', 'animales activos'],
+  retirados: ['animal retirado', 'animales retirados'],
+  todos: ['animal', 'animales'],
+};
+
+/**
+ * Listado de animales con búsqueda por chapeta (CU-03, RF-06).
+ * Especificación: docs/tecnica/15-listado-de-animales.md, secciones 2 a 4 y 7
+ */
+export function PantallaListado({ puedeRegistrar }: { puedeRegistrar: boolean }) {
+  const navegar = useNavigate();
+  const [texto, setTexto] = useState('');
+  const [filtro, setFiltro] = useState<FiltroEstado>('activos');
+  const [hoy] = useState(() => fechaDelPredio());
+  // La lista observa la base local: se actualiza sola cuando llega un animal o una foto.
+  const animales = useLiveQuery(() => cargarListado(), []);
+
+  if (!animales) return <p className="texto-secundario">Cargando…</p>;
+
+  const resultado = buscar(animales, texto, filtro);
+  const buscada = normalizarChapeta(texto);
+  const [singular, plural] = NOMBRE_FILTRO[filtro];
+
+  return (
+    <div className="listado">
+      <p className="titulo-seccion">Animales</p>
+
+      <label className="campo">
+        <span>Buscar por chapeta</span>
+        <input
+          className="campo__chapeta"
+          type="search"
+          autoCapitalize="characters"
+          autoComplete="off"
+          spellCheck={false}
+          placeholder="Número de chapeta"
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+        />
+      </label>
+
+      <div className="opciones" role="group" aria-label="Estado">
+        {FILTROS.map(([clave, nombre]) => (
+          <button key={clave} type="button" className="opcion" aria-pressed={filtro === clave} onClick={() => setFiltro(clave)}>
+            {nombre}
+          </button>
+        ))}
+      </div>
+
+      <p className="texto-secundario" aria-live="polite">
+        {resultado.animales.length === 1 ? `1 ${singular}` : `${resultado.animales.length} ${plural}`}
+      </p>
+
+      {resultado.errorFormato && <p className="campo__error">{resultado.errorFormato}</p>}
+
+      <ul className="listado__filas">
+        {resultado.animales.map((animal) => (
+          <FilaAnimal
+            key={animal.id}
+            animal={animal}
+            hoy={hoy}
+            exacta={animal.codigo_chapeta === buscada}
+            alAbrir={() => void navegar(`/animales/${animal.id}`)}
+          />
+        ))}
+      </ul>
+
+      {resultado.ofrecerRegistro && (
+        // CU-03, 2a, y 3.11.1: si el animal no aparece, se registra en ese momento.
+        <div className="aviso aviso--atencion aviso--en-contenido">
+          <p>
+            La chapeta <strong>{resultado.ofrecerRegistro}</strong> no está registrada en este teléfono.
+          </p>
+          {puedeRegistrar && (
+            <div className="aviso__acciones">
+              <Link className="boton boton--principal boton--ancho" to={`/animales/nuevo?chapeta=${encodeURIComponent(resultado.ofrecerRegistro)}`}>
+                Registrar el animal {resultado.ofrecerRegistro}
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
+      {puedeRegistrar && !resultado.ofrecerRegistro && (
+        <Link className="boton boton--secundario boton--ancho separado" to="/animales/nuevo">
+          Registrar animal
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function FilaAnimal({ animal, hoy, exacta, alAbrir }: { animal: AnimalListado; hoy: string; exacta: boolean; alAbrir: () => void }) {
+  const foto = useUrlDeImagen(animal.foto);
+  return (
+    <li>
+      <button type="button" className={`fila-animal${exacta ? ' fila-animal--exacta' : ''}`} onClick={alAbrir}>
+        {foto ? (
+          <img className="fila-animal__foto" src={foto} alt="" />
+        ) : (
+          <span className="fila-animal__foto fila-animal__sin-foto">Sin foto</span>
+        )}
+        <span className="fila-animal__datos">
+          <span className="fila-animal__chapeta">{animal.codigo_chapeta}</span>
+          <span className="fila-animal__detalle">
+            {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'} · {describirEdad(animal.fecha_nacimiento, animal.fecha_nacimiento_exacta, hoy)}
+          </span>
+          {animal.retirado && <span className="fila-animal__retirado">{animal.sexo === 'hembra' ? 'Retirada' : 'Retirado'}</span>}
+          <DistintivoSync estado={animal.estado_sync} {...(animal.detalle_conflicto ? { detalle: animal.detalle_conflicto } : {})} />
+        </span>
+      </button>
+    </li>
+  );
+}

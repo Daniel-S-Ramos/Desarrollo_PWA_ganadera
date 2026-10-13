@@ -21,3 +21,17 @@ const formatoLargo = new Intl.DateTimeFormat('es-CO', { timeZone: 'UTC', day: 'n
 export function formatearFecha(fecha: FechaPredio): string {
   return formatoLargo.format(new Date(`${fecha}T00:00:00Z`));
 }
+
+const formatoInstante = new Intl.DateTimeFormat('es-CO', {
+  timeZone: ZONA_DEL_PREDIO,
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
+/** Un instante en la hora del predio: «12 de octubre de 2026, 10:33 p. m.» (autoría, HU-15). */
+export function formatearInstante(instante: string | Date): string {
+  return formatoInstante.format(new Date(instante));
+}

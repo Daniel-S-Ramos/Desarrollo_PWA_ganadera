@@ -1,6 +1,6 @@
 /**
- * Motor de sincronización: ejecuta la subida de datos, la bajada y la subida de imágenes, una sola vez a
- * la vez, en los momentos definidos (docs/tecnica/09-sincronizacion-subida.md, sección 2, y
+ * Motor de sincronización: ejecuta la subida de datos, la bajada, la subida de imágenes y la bajada de
+ * imágenes, una sola vez a la vez, en los momentos definidos (docs/tecnica/09-sincronizacion-subida.md, sección 2, y
  * 14-fotografias.md, sección 6.1).
  */
 import { alGuardarLocalmente } from '../datos/eventos';
@@ -8,13 +8,14 @@ import { bajar, type ResumenBajada } from './bajada';
 import type { ServicioRemoto } from './servicioRemoto';
 import { subir, type ResumenSubida } from './subida';
 import { subirImagenes, type ResumenImagenes } from './subidaImagenes';
+import { bajarImagenes, type ResumenBajadaImagenes } from './bajadaImagenes';
 
 export type ResultadoSincronizacion =
   | { estado: 'omitida' }
   | { estado: 'sesion_vencida'; subida: ResumenSubida }
   | { estado: 'sin_red'; subida: ResumenSubida }
-  | { estado: 'completa'; subida: ResumenSubida; bajada: ResumenBajada; imagenes: ResumenImagenes }
-  | { estado: 'error_bajada'; subida: ResumenSubida; mensaje: string; imagenes: ResumenImagenes };
+  | { estado: 'completa'; subida: ResumenSubida; bajada: ResumenBajada; imagenes: ResumenImagenes; imagenesBajadas?: ResumenBajadaImagenes }
+  | { estado: 'error_bajada'; subida: ResumenSubida; mensaje: string; imagenes: ResumenImagenes; imagenesBajadas?: ResumenBajadaImagenes };
 
 let enCurso = false;
 
@@ -95,7 +96,12 @@ async function sincronizarSinCandado(servicio: ServicioRemoto): Promise<Resultad
   }
   // Las imágenes van al final, porque son lo más pesado (3.8.5), y aunque la bajada falle: no dependen de ella.
   const imagenes = await subirImagenes(servicio);
-  return bajada ? { estado: 'completa', subida, bajada, imagenes } : { estado: 'error_bajada', subida, mensaje, imagenes };
+  // Cuarta etapa: las reducidas de las fotos de otros teléfonos (documento 15, sección 6.2). Solo si la
+  // subida de imágenes no encontró la red caída o la sesión vencida.
+  const imagenesBajadas = imagenes.estado === 'completa' ? await bajarImagenes(servicio) : undefined;
+  return bajada
+    ? { estado: 'completa', subida, bajada, imagenes, imagenesBajadas }
+    : { estado: 'error_bajada', subida, mensaje, imagenes, imagenesBajadas };
 }
 
 const ESPERA_TRAS_GUARDAR_MS = 3_000;

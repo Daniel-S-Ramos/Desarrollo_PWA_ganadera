@@ -187,6 +187,9 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-12 | Se suben al servicio la versión completa y la reducida de cada fotografía | Un teléfono nuevo descarga ~2,5 MB de reducidas en lugar de ~15 MB de completas (3.7.6) |
 | 2026-10-12 | La publicación con HTTPS se adelanta al paso 2.2b | La cámara del teléfono exige un contexto seguro; es el primer componente que necesita el teléfono real |
 | 2026-10-12 | Alojamiento en Vercel (plan Hobby), con una dirección por rama | Se conecta con GitHub y publica cada rama por separado; la aplicación son archivos estáticos (~660 KB) y los datos van directo a Supabase. El plan Hobby es no comercial: si la ganadería la adopta después de la evaluación, plan pago o Cloudflare Pages (README, «Publicación») |
+| 2026-10-12 | Los dispositivos del predio son Android; iPhone queda fuera del alcance de la evaluación | El propietario y los trabajadores usan Android. Las fotos dependen de que el navegador genere WebP, que Chrome para Android sí hace (PE-18) |
+| 2026-10-13 | El peso inicial se nombra según el origen: «peso de compra» (comprado) o «peso al nacer» (nacido en el predio), en la ficha y en el formulario | A pedido del autor: «peso inicial» no le dice al propietario qué peso es; el campo sigue siendo uno solo (documento técnico 16, sección 3.1) |
+| 2026-10-13 | La ficha se construye con su lógica completa (último peso, vacuna, leche, destino) aunque esos registros lleguen en las Iteraciones 3 y 4 | Cuando se guarden, la ficha los mostrará sin cambios; mientras tanto dice que no hay datos (CU-03, 4a) |
 | 2026-10-12 | El origen se pregunta como «nacido en el predio» o «comprado», con edad aproximada para los comprados; no se almacena, se deduce de la fecha de ingreso | El propietario conoce de manera aproximada la edad de un animal comprado (3.8.10) |
 | 2026-10-12 | La genealogía se captura al registrar el animal, opcional | La ficha no se modifica; en la carga inicial se perdería la madre de los nacidos en el predio |
 | 2026-10-12 | El destino productivo inicial se agrega al formulario de registro en el paso 3.2 | Es exclusivo del propietario (CU-12) y su historial se construye en la Iteración 3 |
@@ -199,7 +202,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 |---|---|---|
 | ~~6.4~~ | ~~Verificar en un teléfono Android si instalar la aplicación concede el almacenamiento persistente~~ **Resuelto el 2026-10-12 (PE-18, parte 2): en Android sí lo concede** | Documento técnico 04, sección 3 |
 | 2.6 | Tomar capturas de la aplicación en el teléfono (registro con fotos, barra sin señal, ficha) para la sustentación; PE-18 parte 2 se evidenció con datos del servicio | PE-18, observación 1 |
-| 2.x | iPhone: Safari (y todo navegador de iPhone) probablemente no genera WebP desde un canvas, así que la app rechazaría la foto. Probar en un iPhone y, si alguien del predio lo usa, agregar un respaldo en JPEG (migración del bucket y extensión por fotografía) | PE-18, observación 4 |
+| ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
 | 2.x | Probar a mano el rechazo del reingreso de otro usuario con pendientes (PU-08 lo cubre de forma automática) | PE-14, pendiente |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
