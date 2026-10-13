@@ -19,7 +19,8 @@ marca por registro de HU-07.3, y los casos pendientes de PE-14 y PE-16).
 | PE-17 | Registro de un animal en el navegador real, con conexión y sin ella | 2.1 | CU-02 · HU-01 · HU-06.1 · HU-07.1 · Tabla 31 | ⚠️ Aprobada con observaciones |
 | PU-15 | Fotografías: dimensiones, vista principal, guardado, cola, subida y limpieza | 2.2 | RF-02 · RNF-12 · 3.8.5 · Tablas 21 y 25 | ✅ |
 | PI-05 | Fotografías contra el servicio de archivos real | 2.2 | RNF-12 · 3.8.5 · 3.9.3 · RNF-06 | ✅ |
-| PE-18 | Fotografías en el navegador real (parte 1: computador) | 2.2 | RF-02 · HU-01 criterios 3 y 4 · RNF-12 · Tabla 25 | 🔄 Parte 2 (teléfono) en el paso 2.2b |
+| PE-18 | Fotografías en el navegador real: computador y teléfono Android | 2.2 · 2.2b | RF-02 · HU-01 criterios 3 y 4 · RNF-12 · Tabla 25 | ⚠️ Aprobada con observaciones |
+| PE-19 | Publicación con https en Vercel | 2.2b | RNF-10 · RNF-11 · 3.9.1 | ⚠️ Aprobada tras corrección |
 
 ---
 
@@ -188,9 +189,8 @@ página de error del navegador ([captura](evidencias/iteracion-2/PE-17-00-desarr
 No es un defecto: el Service Worker está desactivado en el modo de desarrollo. Las pruebas sin
 conexión se hacen siempre con la versión compilada (`npm run preview`), como en la Iteración 1.
 
-**Pendiente de confirmar.** El paso «empezar un registro, cerrar la pestaña y volver a abrir: el
-formulario aparece vacío» (Tabla 31) no tiene una captura propia. La captura del paso 7 muestra la
-aplicación reabierta sin conexión, pero en la pantalla de inicio.
+**Confirmado después.** El paso «empezar un registro, cerrar la aplicación y volver a abrir: el
+formulario aparece vacío» (Tabla 31) se verificó en el teléfono durante PE-18 (paso 11), sin captura.
 
 ---
 
@@ -278,8 +278,8 @@ aunque el script le pasa `--yes`. Se respondió que sí; queda anotado para auto
 | Requerimiento | RF-02 · HU-01 criterios 3 y 4 · RNF-12 · Tabla 25 · documento técnico 14, secciones 6 y 8 |
 | Tipo | Manual. **Parte 1** en el computador (`npm run preview`, fotos elegidas de la galería); **parte 2** en un teléfono Android con la cámara real, tras publicar la aplicación con https (paso 2.2b) |
 | Condiciones iniciales | Sesión de Daniel Ramos (trabajador); migración del bucket aplicada; chapetas Z923–Z925 |
-| Resultado obtenido (parte 1) | Todos los pasos se comportaron como se esperaba |
-| Estado | 🔄 Parte 1 aprobada; parte 2 pendiente |
+| Resultado obtenido | Parte 1 (computador) y parte 2 (Android 10, Chrome 154, aplicación instalada) se comportaron como se esperaba |
+| Estado | ⚠️ Aprobada con observaciones: la parte 2 se evidencia con los datos del servicio y no con capturas |
 | Fecha | 2026-10-12 |
 
 | # | Acción | Resultado | Evidencia |
@@ -291,7 +291,58 @@ aunque el script le pasa `--yes`. Se respondió que sí; queda anotado para auto
 | 5 | Revisar el bucket `fotografias` | Una carpeta por animal, con `{id}.webp` y `{id}-reducida.webp`; 10 archivos en total (5 fotos × 2) | [captura](evidencias/iteracion-2/PE-18-4-storage-dos-archivos-por-foto.png) |
 | 6 | Revisar la tabla local `imagen` | Una fila por animal: la de la vista principal (Tabla 25) | [captura](evidencias/iteracion-2/PE-18-5-imagen-una-fila-por-animal.png) |
 
-**Pendiente para la parte 2 (teléfono).** Capturar el formulario con las tres miniaturas y «3 de
-3»; expandir una fila de `imagen` para ver `completa: null` (lo verifica PU-15, grupo 7); y
-comprobar con fotos de la cámara la corrección de la orientación, que una imagen elegida en el
-computador no prueba.
+### Parte 2: teléfono Android con la aplicación publicada (paso 2.2b)
+
+Con la dirección https de la rama `iteracion-2` (PE-19), la aplicación instalada en el teléfono y la
+sesión de Daniel Ramos. El dispositivo consta en las sesiones del servicio: **Android 10, Chrome 154**.
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 7 | Registrar Z926 con las tres vistas tomadas con **la cámara del teléfono** | Las seis imágenes llegaron en WebP (completas de 48 a 55 KB, reducidas de 5 a 6 KB) | [servidor](evidencias/iteracion-2/PE-18-7-telefono-android-servidor.txt) |
+| 8 | Una de las fotos, tomada con el teléfono en vertical | Descargada del servicio: 1200 × 1600 y derecha. **La corrección de orientación funciona con la cámara real** | [foto](evidencias/iteracion-2/PE-18-8-foto-vertical-camara-android.webp) |
+| 9 | Registrar Z927 y, en modo avión, Z928 | Z928 esperó 64 s en el teléfono; su imagen subió 6 s después de su fila | [servidor](evidencias/iteracion-2/PE-18-7-telefono-android-servidor.txt) |
+| 10 | Abrir la aplicación instalada | **No apareció** el aviso de almacenamiento no protegido: Android concedió el almacenamiento persistente | Observado, sin captura |
+| 11 | Cerrar y reabrir en modo avión, con un formulario a medias | Abrió sin señal, pidió el código y el formulario apareció vacío (Tabla 31) | Observado, sin captura |
+
+**Observaciones.**
+
+1. **Evidencia sin capturas.** La parte 2 se evidencia con los datos medidos en el servicio:
+   dispositivo, tamaños, tiempos y la imagen descargada. Los pasos 10 y 11 constan como observados
+   por el autor. Para la sustentación conviene capturar la aplicación en el teléfono; queda como
+   tarea del cierre de la iteración.
+2. **Las imágenes del teléfono pesan menos** que las del computador porque la escena fotografiada
+   (un objeto sobre una pared lisa) tiene poco detalle. Con animales en el potrero se esperan los
+   ~200 KB medidos en la parte 1.
+3. **Pendiente 6.4 de la Iteración 1, resuelto.** Instalar la aplicación concede el almacenamiento
+   persistente en Android, a diferencia de Windows (PE-12). En el teléfono, que es el dispositivo de
+   campo, los registros sin enviar quedan protegidos frente al borrado automático del navegador (RNF-15).
+4. **iPhone.** Se identificó que Safari, y con él todos los navegadores de iPhone, que usan el mismo
+   motor, probablemente no genera WebP desde un `canvas`. En ese caso la aplicación rechaza la foto
+   con un mensaje. No se ha probado; queda como pendiente de diseño, a decidir según los teléfonos que
+   se usen en el predio.
+
+## PE-19 · Publicación con https en Vercel
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Publicar la aplicación en una dirección https para usarla e instalarla en un teléfono, con una dirección por rama |
+| Requerimiento | RNF-10 (navegadores móviles) · RNF-11 (instalable sin tienda) · 3.9.1 (el código de desbloqueo exige `crypto.subtle`, disponible solo en contexto seguro) · documento técnico 14, sección 12 |
+| Tipo | Verificación manual del despliegue y comprobación desde el navegador |
+| Código | [`vercel.json`](../../vercel.json) · `engines` en [`package.json`](../../package.json) · [README, «Publicación»](../../README.md) |
+| Condiciones iniciales | Cuenta de Vercel (plan Hobby) creada con la cuenta de GitHub del autor; repositorio importado |
+| Resultado obtenido | Producción (`main`): https://desarrollo-pwa-ganadera.vercel.app · Preview (`iteracion-2`): https://desarrollo-pwa-ganadera-git-iteracion-2-daniel-ramos1.vercel.app. Ambas cargan la pantalla de ingreso en contexto seguro, con el Service Worker activo; una ruta directa entrega la aplicación y `sw.js` se sirve sin caché ([evidencia](evidencias/iteracion-2/PE-19-1-publicacion-vercel.txt)) |
+| Estado | ⚠️ Aprobada tras corrección |
+| Fecha | 2026-10-12 |
+
+**Incidente.** La primera publicación mostró la página en blanco, y la consola decía «Faltan
+VITE_SUPABASE_URL o VITE_SUPABASE_PUBLISHABLE_KEY». Solo se había guardado una de las dos variables
+en Vercel, y Vite las inserta al compilar. Se agregó la que faltaba (tipo Config, entornos Production y
+Preview) y se volvieron a compilar las dos publicaciones. El mensaje de error que se escribió en la
+Fase 0 para este caso permitió encontrar la causa en segundos.
+
+**Decisiones durante la configuración.** (1) No se instaló la integración opcional «Supabase» de
+Vercel: habría creado otra cuenta o dado a Vercel acceso a la de Supabase, y no hace falta. (2) Se
+desactivó la protección de las publicaciones de prueba (Vercel Authentication), para abrirlas en el
+teléfono; la aplicación tiene su propia autenticación. (3) Vercel advirtió que el prefijo `VITE_`
+expone la variable al navegador: es lo esperado para la dirección y la clave publicable de Supabase,
+que están hechas para ir en la aplicación. La clave secreta no se usa.

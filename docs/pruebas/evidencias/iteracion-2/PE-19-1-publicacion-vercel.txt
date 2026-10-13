@@ -1,0 +1,36 @@
+PE-19 · Publicación con https en Vercel (paso 2.2b) · 2026-10-12
+
+Direcciones
+- Producción (rama main, v0.1): https://desarrollo-pwa-ganadera.vercel.app
+- Preview (rama iteracion-2):   https://desarrollo-pwa-ganadera-git-iteracion-2-daniel-ramos1.vercel.app
+
+Incidente durante la configuración
+- La primera compilación de producción mostró la página en blanco. La consola del navegador decía:
+  «Uncaught Error: Faltan VITE_SUPABASE_URL o VITE_SUPABASE_PUBLISHABLE_KEY. Copie .env.example como
+  .env.local y complete los valores.» (mensaje de src/servicios/supabase.ts).
+- Causa: en Vercel solo se había guardado VITE_SUPABASE_PUBLISHABLE_KEY. Vite inserta las variables
+  al compilar, así que la compilación quedó sin la dirección del servicio.
+- Corrección: se agregó VITE_SUPABASE_URL (tipo Config, entornos Production y Preview) y se volvieron
+  a compilar las dos publicaciones (Redeploy).
+- La integración opcional «Supabase» que ofrece Vercel no se instaló: habría creado otra cuenta o
+  dado a Vercel acceso a la cuenta de Supabase, y no hace falta porque la conexión va por las variables.
+- Se desactivó Deployment Protection → Vercel Authentication, para abrir la Preview en el teléfono
+  sin iniciar sesión en Vercel. La aplicación tiene su propia autenticación.
+
+Verificación desde el navegador, tras las nuevas compilaciones (JavaScript en la página)
+Preview:
+  {
+    "url": "https://desarrollo-pwa-ganadera-git-iteracion-2-daniel-ramos1.vercel.app/",
+    "seguro": true,                 ← isSecureContext
+    "cryptoSubtle": true,           ← necesario para el código de desbloqueo (PBKDF2)
+    "serviceWorker": "activated",
+    "manifest": ".../manifest.webmanifest",
+    "texto": "Ganadería JR ... Iniciar sesión ..."
+  }
+  {
+    "rutaDirecta": { "estado": 200, "esLaApp": true },   ← /animales/nuevo entrega index.html
+    "sw": { "estado": 200, "cache": "public, max-age=0, must-revalidate" },
+    "produccion": 200
+  }
+Producción:
+  "texto": "Ganadería JR ⚠ Los datos de este teléfono no están protegidos. ..."  (pantalla de ingreso)

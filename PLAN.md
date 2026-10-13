@@ -73,8 +73,8 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | Paso | Contenido | Estado |
 |---|---|---|
 | 2.1 | Registrar animal (CU-02) con validación de chapeta única | ✅ |
-| 2.2 | Fotografías: captura, compresión y cola de imágenes | ✅ (falta la parte 2 de PE-18 en el teléfono, paso 2.2b) |
-| 2.2b | Publicación con HTTPS para probar la cámara en el teléfono (adelantado del paso 6.5) | ⬜ |
+| 2.2 | Fotografías: captura, compresión y cola de imágenes | ✅ |
+| 2.2b | Publicación con HTTPS para probar la cámara en el teléfono (adelantado del paso 6.5) | ✅ |
 | 2.3 | Listado de animales y búsqueda por chapeta (CU-03) | ⬜ |
 | 2.4 | Ficha del animal con autoría visible (HU-15) | ⬜ |
 | 2.5 | Carga inicial de un dispositivo nuevo (3.7.6) | ⬜ |
@@ -197,7 +197,9 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 
 | Paso | Pendiente | Origen |
 |---|---|---|
-| 6.4 | Verificar en un teléfono Android si instalar la aplicación concede el almacenamiento persistente (en Windows no lo concedió, PE-12) | Documento técnico 04, sección 3 |
+| ~~6.4~~ | ~~Verificar en un teléfono Android si instalar la aplicación concede el almacenamiento persistente~~ **Resuelto el 2026-10-12 (PE-18, parte 2): en Android sí lo concede** | Documento técnico 04, sección 3 |
+| 2.6 | Tomar capturas de la aplicación en el teléfono (registro con fotos, barra sin señal, ficha) para la sustentación; PE-18 parte 2 se evidenció con datos del servicio | PE-18, observación 1 |
+| 2.x | iPhone: Safari (y todo navegador de iPhone) probablemente no genera WebP desde un canvas, así que la app rechazaría la foto. Probar en un iPhone y, si alguien del predio lo usa, agregar un respaldo en JPEG (migración del bucket y extensión por fotografía) | PE-18, observación 4 |
 | 2.x | Probar a mano el rechazo del reingreso de otro usuario con pendientes (PU-08 lo cubre de forma automática) | PE-14, pendiente |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |

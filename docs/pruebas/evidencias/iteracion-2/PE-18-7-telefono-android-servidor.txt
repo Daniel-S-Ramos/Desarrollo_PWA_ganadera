@@ -1,0 +1,42 @@
+PE-18, parte 2 · Prueba en un teléfono Android con la aplicación publicada (2026-10-12)
+Dirección: https://desarrollo-pwa-ganadera-git-iteracion-2-daniel-ramos1.vercel.app (Preview, rama iteracion-2)
+Hora de Colombia. Consultas hechas en el servicio con la CLI de Supabase.
+
+1. Dispositivo (auth.sessions de Daniel Ramos)
+┌──────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ sesion_creada    │ user_agent                                                                                                      │
+├──────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 2026-10-12 22:29 │ Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36 │
+└──────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+(Las sesiones anteriores del mismo día son de Windows, Chrome 154: las pruebas en el computador.)
+
+2. Animales y fotografías registrados desde el teléfono
+┌────────────────┬────────┬───────────┬───────────────┬─────────────────┬──────────────────────────────────────────────────────┬───────────────┐
+│ codigo_chapeta │ sexo   │ tipo      │ animal_creado │ espera_animal_s │ archivos                                             │ imagen_subida │
+├────────────────┼────────┼───────────┼───────────────┼─────────────────┼──────────────────────────────────────────────────────┼───────────────┤
+│ Z926           │ hembra │ derecho   │ 22:33:03      │ 6               │ reducida 5 KB image/webp · completa 49 KB image/webp │ 22:33:15      │
+│ Z926           │ hembra │ frontal   │ 22:33:03      │ 6               │ reducida 6 KB image/webp · completa 48 KB image/webp │ 22:33:16      │
+│ Z926           │ hembra │ izquierdo │ 22:33:03      │ 6               │ reducida 6 KB image/webp · completa 55 KB image/webp │ 22:33:14      │
+│ Z927           │ hembra │ izquierdo │ 22:34:19      │ 5               │ reducida 5 KB image/webp · completa 41 KB image/webp │ 22:34:29      │
+│ Z928           │ hembra │ izquierdo │ 22:35:57      │ 64              │ reducida 4 KB image/webp · completa 41 KB image/webp │ 22:37:07      │
+└────────────────┴────────┴───────────┴───────────────┴─────────────────┴──────────────────────────────────────────────────────┴───────────────┘
+«espera_animal_s» = recibido_en − creado_en del animal.
+
+Lectura:
+- La cámara del teléfono y la compresión funcionaron: todas las imágenes llegaron en WebP. Pesan menos
+  que las del computador (194–231 KB) porque la escena fotografiada (un objeto sobre una pared lisa)
+  tiene poco detalle y se comprime más que un animal en el potrero.
+- Z928 se registró sin señal: esperó 64 s en el teléfono y su imagen subió a las 22:37:07, después de
+  la fila (22:37:01), como exige la sección 6.2 del documento técnico 14.
+- La foto del frente de Z926 se descargó del servicio (PE-18-8-foto-vertical-camara-android.webp):
+  es vertical (1200 × 1600) y está derecha, lo que verifica la corrección de la orientación EXIF con
+  la cámara real.
+
+3. Observado por el autor en el teléfono, sin captura
+- Con la aplicación instalada y abierta desde el ícono, NO apareció el aviso «Los datos de este
+  teléfono no están protegidos»: Android concedió el almacenamiento persistente (pendiente 6.4 de la
+  Iteración 1; en Windows no se concedió, PE-12).
+- La cámara trasera se abrió desde «Tomar foto»; «Elegir de la galería» funcionó.
+- En modo avión la barra mostró el registro y la fotografía pendientes; la aplicación se cerró y se
+  volvió a abrir sin señal, pidió el código y un formulario dejado a medias apareció vacío; al quitar
+  el modo avión quedó «Todo enviado».
