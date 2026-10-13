@@ -5,7 +5,10 @@
  */
 import { spawnSync } from 'node:child_process';
 
-const prueba = spawnSync('npx', ['vitest', 'run', '--config', 'vitest.pi.config.ts'], { stdio: 'inherit', shell: true });
+const prueba = spawnSync('npx', ['vitest', 'run', '--config', 'vitest.pi.config.ts', 'src/sync/sincronizacion.pi.ts'], {
+  stdio: 'inherit',
+  shell: true,
+});
 
 console.log('\nLimpieza de los registros de la cuenta de prueba en el servicio…');
 const limpieza = spawnSync('npx', ['supabase', 'db', 'query', '--linked', '-o', 'table', '-f', 'supabase/pruebas/limpiar-usuario-pruebas.sql'], {

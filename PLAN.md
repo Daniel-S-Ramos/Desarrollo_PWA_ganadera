@@ -73,7 +73,8 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | Paso | Contenido | Estado |
 |---|---|---|
 | 2.1 | Registrar animal (CU-02) con validación de chapeta única | ✅ |
-| 2.2 | Fotografías: captura, compresión y cola de imágenes | ⬜ |
+| 2.2 | Fotografías: captura, compresión y cola de imágenes | ✅ (falta la parte 2 de PE-18 en el teléfono, paso 2.2b) |
+| 2.2b | Publicación con HTTPS para probar la cámara en el teléfono (adelantado del paso 6.5) | ⬜ |
 | 2.3 | Listado de animales y búsqueda por chapeta (CU-03) | ⬜ |
 | 2.4 | Ficha del animal con autoría visible (HU-15) | ⬜ |
 | 2.5 | Carga inicial de un dispositivo nuevo (3.7.6) | ⬜ |
@@ -119,7 +120,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 6.2 | Documento de casos de prueba | ⬜ |
 | 6.3 | Pruebas funcionales de flujos completos | ⬜ |
 | 6.4 | Verificación en conectividad limitada | ⬜ |
-| 6.5 | Despliegue del prototipo en un alojamiento con HTTPS | ⬜ |
+| 6.5 | Despliegue del prototipo en un alojamiento con HTTPS (adelantado al paso 2.2b; aquí queda la versión final) | ⬜ |
 | 6.6 | Matriz de trazabilidad entre requerimientos y pruebas | ⬜ |
 | 6.7 | Insumos para el capítulo 4 del documento | ⬜ |
 
@@ -182,6 +183,9 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-12 | Numeración del predio, definida por el propietario: 1 a 9999 y después letra + 1 a 999 (A1 … A999, B1 …), sin la letra O. Los ceros a la izquierda se eliminan (`01` = `1`) | Con esa numeración los ceros no significan nada; `01` y `1` habrían sido dos animales (hallazgo de PE-17) |
 | 2026-10-12 | La madre también puede ser externa al predio (`madre_externa`), con la misma regla que el padre | Pedido del propietario: un animal comprado puede tener una madre conocida que nunca fue del predio |
 | 2026-10-12 | Las pruebas que escriben en el servicio usan las chapetas Z900 a Z999 | No ocupan números que el predio usará; se borran antes de la evaluación |
+| 2026-10-12 | Vista principal de la fotografía: costado izquierdo, si falta el derecho y por último el frente | Indicación del propietario; es la que reconoce en campo (3.8.10) |
+| 2026-10-12 | Se suben al servicio la versión completa y la reducida de cada fotografía | Un teléfono nuevo descarga ~2,5 MB de reducidas en lugar de ~15 MB de completas (3.7.6) |
+| 2026-10-12 | La publicación con HTTPS se adelanta al paso 2.2b | La cámara del teléfono exige un contexto seguro; es el primer componente que necesita el teléfono real |
 | 2026-10-12 | El origen se pregunta como «nacido en el predio» o «comprado», con edad aproximada para los comprados; no se almacena, se deduce de la fecha de ingreso | El propietario conoce de manera aproximada la edad de un animal comprado (3.8.10) |
 | 2026-10-12 | La genealogía se captura al registrar el animal, opcional | La ficha no se modifica; en la carga inicial se perdería la madre de los nacidos en el predio |
 | 2026-10-12 | El destino productivo inicial se agrega al formulario de registro en el paso 3.2 | Es exclusivo del propietario (CU-12) y su historial se construye en la Iteración 3 |
@@ -234,3 +238,4 @@ la pregunte. Cada tema tiene su documento técnico.
 | Unicidad de la chapeta sin índice único local | Decisión que parece un descuido y en realidad evita que un teléfono deje de sincronizar para siempre (3.7.3, tercera regla) | [02-esquema-local.md](docs/tecnica/02-esquema-local.md), sección 6 |
 | Verificación dentro de la transacción y unicidad en tres niveles | Por qué la chapeta se verifica al escribir, otra vez dentro de la transacción y por último en el servicio, y qué límite no puede eliminar un teléfono sin conexión (3.7.3) | [13-registro-de-animal.md](docs/tecnica/13-registro-de-animal.md), sección 2.2 |
 | Normalización de la chapeta y la regla del predio | Cómo una prueba con el usuario real cambió una decisión aprobada (los ceros a la izquierda) y por qué la regla vive a la vez en el teléfono y en el servicio | [13-registro-de-animal.md](docs/tecnica/13-registro-de-animal.md), secciones 2.1 y 8 |
+| Cola de imágenes y Storage de solo inserciones | Por qué las fotos viajan en su propia cola y al final, por qué una imagen espera a que llegue su fotografía, cómo «ya existe» da la idempotencia y qué conserva el teléfono (3.8.5, Tabla 25) | [14-fotografias.md](docs/tecnica/14-fotografias.md), secciones 3, 6 y 7 |

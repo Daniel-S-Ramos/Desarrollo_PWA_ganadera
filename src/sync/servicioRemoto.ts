@@ -35,5 +35,10 @@ export interface ServicioRemoto {
   /** Ordeño ya aceptado de una vaca en una fecha (documento 09, sección 5.2). */
   buscarOrdeno(animalId: Uuid, fecha: string): Promise<{ id: Uuid; litros: number } | null>;
   usuarios(): Promise<Usuario[]>;
+  /**
+   * Sube una imagen al servicio de archivos sin reemplazar una existente (documento 14, sección 6.3).
+   * El código es el del servicio de archivos (por ejemplo, «409» si el archivo ya existe).
+   */
+  subirImagen(ruta: string, imagen: Blob): Promise<ResultadoEnvio>;
   parametros(): Promise<Parametro[]>;
 }

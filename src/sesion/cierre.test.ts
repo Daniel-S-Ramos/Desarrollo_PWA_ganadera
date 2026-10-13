@@ -73,7 +73,7 @@ describe('PU-13 · 2. Con pendientes', () => {
     await crear('animal', animal('012'), TRABAJADOR);
     await crear('animal', animal('031'), TRABAJADOR);
 
-    expect(await intentarCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 2, motivo: 'pendientes' });
+    expect(await intentarCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 2, imagenes: 0, motivo: 'pendientes' });
     expect(await leerSesionLocal()).toBeDefined();
     expect(dependencias.cerrarServicio).not.toHaveBeenCalled();
   });
@@ -94,19 +94,19 @@ describe('PU-13 · 4. Enviar y cerrar sin éxito', () => {
   it('sin red no se cierra y se informa el motivo', async () => {
     await crear('animal', animal('012'), TRABAJADOR);
     servicio.forzar = () => ({ ok: false, mensaje: 'Failed to fetch' });
-    expect(await enviarYCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 1, motivo: 'sin_red' });
+    expect(await enviarYCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 1, imagenes: 0, motivo: 'sin_red' });
     expect(await leerSesionLocal()).toBeDefined();
   });
 
   it('con la sesión vencida no se cierra y se informa el motivo', async () => {
     await crear('animal', animal('012'), TRABAJADOR);
     servicio.sesion = false;
-    expect(await enviarYCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 1, motivo: 'sesion_vencida' });
+    expect(await enviarYCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 1, imagenes: 0, motivo: 'sesion_vencida' });
   });
 
   it('con registros que aún no pueden enviarse (dependencia) no se cierra', async () => {
     await crear('pesaje', { animal_id: uuidv7(), fecha: '2026-10-12', peso: 300, metodo: 'cinta' }, TRABAJADOR);
-    expect(await enviarYCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 1, motivo: 'no_enviados' });
+    expect(await enviarYCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 1, imagenes: 0, motivo: 'no_enviados' });
   });
 });
 
@@ -146,5 +146,41 @@ describe('PU-13 · 6. Textos (sección 2)', () => {
   it('no cerrada, con cada motivo', () => {
     expect(textoNoCerrada(2, 'sin_red')).toBe('No se cerró la sesión: quedan 2 registros sin enviar. No hay conexión.');
     expect(textoNoCerrada(1, 'no_enviados')).toBe('No se cerró la sesión: queda 1 registro sin enviar. Algunos registros todavía no pueden enviarse.');
+  });
+});
+
+describe('PU-13 · 7. Fotografías pendientes (docs/tecnica/14-fotografias.md, sección 8.3)', () => {
+  const blob = () => new Blob([new Uint8Array(10)], { type: 'image/webp' });
+
+  async function fotografiaConImagen(codigo: string) {
+    const { unidadDeTrabajo } = await import('../datos/repositorio');
+    return unidadDeTrabajo(TRABAJADOR, async (tx) => {
+      const vaca = await tx.crear('animal', animal(codigo));
+      const foto = await tx.crear('fotografia', { animal_id: vaca.id, tipo: 'izquierdo' });
+      await tx.guardarImagen(foto, { completa: blob(), reducida: blob() });
+      return foto;
+    });
+  }
+
+  it('una imagen pendiente impide cerrar aunque no queden registros', async () => {
+    const foto = await fotografiaConImagen('45');
+    await db.cola_operaciones.clear();
+    expect(await intentarCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 0, imagenes: 1, motivo: 'pendientes' });
+    expect(await db.imagen.get(foto.id)).toBeDefined();
+  });
+
+  it('descartar borra también las imágenes pendientes y vacía su cola', async () => {
+    const foto = await fotografiaConImagen('46');
+    await descartarYCerrar(dependencias);
+    expect(await db.cola_imagenes.count()).toBe(0);
+    expect(await db.imagen.get(foto.id)).toBeUndefined();
+  });
+
+  it('textos con registros y fotografías', () => {
+    expect(textoPendientes(1, true, 3)).toBe('Hay 1 registro y 3 fotografías sin enviar.');
+    expect(textoPendientes(0, true, 1)).toBe('Hay 1 fotografía sin enviar.');
+    expect(textoNoCerrada(0, 'sin_red', 1)).toBe('No se cerró la sesión: queda 1 fotografía sin enviar. No hay conexión.');
+    expect(textoSegundaConfirmacion(2, 1)).toBe('Se perderán 2 registros y 1 fotografía que no se han enviado. Esta acción no se puede deshacer.');
+    expect(textoSegundaConfirmacion(0, 1)).toBe('Se perderá 1 fotografía que no se ha enviado. Esta acción no se puede deshacer.');
   });
 });

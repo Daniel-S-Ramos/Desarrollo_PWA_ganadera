@@ -1,6 +1,6 @@
 /**
- * Configuración de las pruebas de integración de extremo a extremo contra el servicio real (PI-04).
- * Se ejecutan aparte de las automáticas (npm run prueba:pi-04) porque necesitan conexión y la cuenta
+ * Configuración de las pruebas de integración de extremo a extremo contra el servicio real (PI-04, PI-05).
+ * Se ejecutan aparte de las automáticas (npm run prueba:pi-04 y prueba:pi-05) porque necesitan conexión y la cuenta
  * de prueba configurada en .env.local (PRUEBAS_CORREO y PRUEBAS_CONTRASENA).
  */
 import { defineConfig, loadEnv } from 'vite';

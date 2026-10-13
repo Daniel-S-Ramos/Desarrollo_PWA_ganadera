@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { formatearBytes, type Espacio } from '../../datos/almacenamiento';
-import { contarPendientes } from '../../datos/repositorio';
+import { contarImagenesPendientes, contarPendientes } from '../../datos/repositorio';
 import { contarConflictos } from '../../datos/sincronizacionLocal';
 import { leerEstadoMotor, suscribirseAlMotor, type EstadoMotor } from '../../sync/motor';
 import { describirBarra } from '../estadoSincronizacion';
@@ -14,12 +14,13 @@ export function BarraEstado({ espacio, conSesion }: { espacio: Espacio | null; c
   // La pantalla observa la base de datos local: el contador cambia solo al guardar o al confirmar.
   const pendientes = useLiveQuery(() => contarPendientes(), [], 0);
   const conflictos = useLiveQuery(() => contarConflictos(), [], 0);
+  const imagenes = useLiveQuery(() => contarImagenesPendientes(), [], 0);
   const motor = useEstadoMotor();
   const enLinea = useEnLinea();
   const ahora = useReloj(30_000);
 
   const lineas = conSesion
-    ? describirBarra({ pendientes, conflictos, enLinea, sincronizando: motor.sincronizando, ultima: motor.ultima, ultimaEn: motor.ultimaEn, ahora })
+    ? describirBarra({ pendientes, imagenes, conflictos, enLinea, sincronizando: motor.sincronizando, ultima: motor.ultima, ultimaEn: motor.ultimaEn, ahora })
     : [];
 
   return (

@@ -267,8 +267,8 @@ describe('PU-04 · 9. Contenido binario', () => {
     await db.imagen.add({ fotografia_id, animal_id: uuidv7(), reducida, completa: null });
     const recuperada = await db.imagen.get(fotografia_id);
 
-    expect(recuperada?.reducida.size).toBe(100 * 1024);
-    expect(recuperada?.reducida.type).toBe('image/webp');
-    expect(new Uint8Array(await recuperada!.reducida.arrayBuffer())).toEqual(contenido);
+    expect(recuperada?.reducida?.size).toBe(100 * 1024);
+    expect(recuperada?.reducida?.type).toBe('image/webp');
+    expect(new Uint8Array(await recuperada!.reducida!.arrayBuffer())).toEqual(contenido);
   });
 });

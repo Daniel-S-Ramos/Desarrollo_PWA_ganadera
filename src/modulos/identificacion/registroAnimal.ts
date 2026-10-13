@@ -8,7 +8,7 @@
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
-import type { DatosNuevos, FechaPredio, RegistroLocal, Sexo, Uuid } from '../../dominio/tipos';
+import { TIPOS_FOTOGRAFIA, type DatosNuevos, type FechaPredio, type RegistroLocal, type Sexo, type TipoFotografia, type Uuid } from '../../dominio/tipos';
 import { PermisoDenegado, puedeCrear } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
 
@@ -344,8 +344,14 @@ export async function listarProgenitores(): Promise<{ hembras: Progenitor[]; mac
 // Registro: sección 6
 // ---------------------------------------------------------------------------
 
+/**
+ * Fotografías capturadas en el formulario, ya comprimidas, por vista (docs/tecnica/14-fotografias.md,
+ * sección 5). Una vista sin foto simplemente no aparece (CU-02, flujo 6a).
+ */
+export type FotosCapturadas = Partial<Record<TipoFotografia, { completa: Blob; reducida: Blob }>>;
+
 export type ResultadoRegistro =
-  | { ok: true; animal: RegistroLocal<'animal'> }
+  | { ok: true; animal: RegistroLocal<'animal'>; fotografias: number }
   | { ok: false; errores: ErroresFormulario }
   | { ok: false; chapetaAsignada: AnimalConChapeta };
 
@@ -370,6 +376,7 @@ export async function registrarAnimal(
   formulario: FormularioAnimal,
   usuario: Identidad,
   hoy: FechaPredio = fechaDelPredio(),
+  fotos: FotosCapturadas = {},
 ): Promise<ResultadoRegistro> {
   if (!puedeCrear(usuario.perfil, 'animal')) throw new PermisoDenegado(usuario.perfil, 'animal');
 
@@ -384,9 +391,17 @@ export async function registrarAnimal(
       if (await consulta.animal.where('codigo_chapeta').equals(datos.codigo_chapeta).count()) throw new ChapetaAsignada();
       await verificarProgenitor(datos.madre_id, 'hembra', 'madre_id');
       await verificarProgenitor(datos.padre_id, 'macho', 'padre_id');
-      return tx.crear('animal', datos);
+      const animal = await tx.crear('animal', datos);
+      // En la misma transacción: si el animal se rechaza, no queda ninguna fotografía ni imagen.
+      for (const tipo of TIPOS_FOTOGRAFIA) {
+        const foto = fotos[tipo];
+        if (!foto) continue;
+        const fotografia = await tx.crear('fotografia', { animal_id: animal.id, tipo });
+        await tx.guardarImagen(fotografia, foto);
+      }
+      return animal;
     });
-    return { ok: true, animal };
+    return { ok: true, animal, fotografias: TIPOS_FOTOGRAFIA.filter((t) => fotos[t]).length };
   } catch (error) {
     if (error instanceof ChapetaAsignada) {
       const existente = await buscarPorChapeta(datos.codigo_chapeta);

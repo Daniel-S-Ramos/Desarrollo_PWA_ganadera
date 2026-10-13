@@ -94,6 +94,27 @@ export class ServicioSimulado implements ServicioRemoto {
     return f ? { id: f.id, litros: Number(f['litros']) } : null;
   }
 
+  /** Archivos del servicio de archivos simulado, por ruta. */
+  archivos = new Map<string, Blob>();
+  /** Si devuelve un resultado, reemplaza la respuesta normal de subirImagen. */
+  forzarImagen: ((ruta: string) => ResultadoEnvio | undefined) | undefined;
+  subidas: string[] = [];
+
+  /** Imita el bucket: no reemplaza (409) y exige que exista la fotografía de la ruta (documento 14, sección 7). */
+  async subirImagen(ruta: string, imagen: Blob): Promise<ResultadoEnvio> {
+    this.subidas.push(ruta);
+    const forzado = this.forzarImagen?.(ruta);
+    if (forzado) return forzado;
+    if (this.archivos.has(ruta)) return { ok: false, codigo: '409', estado: 400, mensaje: 'The resource already exists' };
+    const [animalId, archivo] = ruta.split('/');
+    const fotografiaId = archivo?.replace(/(-reducida)?\.webp$/, '');
+    if (!this.filas('fotografia').some((f) => f.id === fotografiaId && f['animal_id'] === animalId)) {
+      return { ok: false, codigo: '403', estado: 400, mensaje: 'new row violates row-level security policy' };
+    }
+    this.archivos.set(ruta, imagen);
+    return { ok: true };
+  }
+
   async usuarios() {
     return this.usuariosRemotos;
   }

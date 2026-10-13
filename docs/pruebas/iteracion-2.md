@@ -17,6 +17,9 @@ marca por registro de HU-07.3, y los casos pendientes de PE-14 y PE-16).
 | PI-03 | Políticas de seguridad, repetida con la serie de pruebas | 2.1 | 3.9.2 · 3.9.3 | ✅ |
 | PI-04 | Sincronización de extremo a extremo, repetida con la columna `madre_externa` | 2.1 | RF-29 · RNF-05 | ✅ |
 | PE-17 | Registro de un animal en el navegador real, con conexión y sin ella | 2.1 | CU-02 · HU-01 · HU-06.1 · HU-07.1 · Tabla 31 | ⚠️ Aprobada con observaciones |
+| PU-15 | Fotografías: dimensiones, vista principal, guardado, cola, subida y limpieza | 2.2 | RF-02 · RNF-12 · 3.8.5 · Tablas 21 y 25 | ✅ |
+| PI-05 | Fotografías contra el servicio de archivos real | 2.2 | RNF-12 · 3.8.5 · 3.9.3 · RNF-06 | ✅ |
+| PE-18 | Fotografías en el navegador real (parte 1: computador) | 2.2 | RF-02 · HU-01 criterios 3 y 4 · RNF-12 · Tabla 25 | 🔄 Parte 2 (teléfono) en el paso 2.2b |
 
 ---
 
@@ -188,3 +191,107 @@ conexión se hacen siempre con la versión compilada (`npm run preview`), como e
 **Pendiente de confirmar.** El paso «empezar un registro, cerrar la pestaña y volver a abrir: el
 formulario aparece vacío» (Tabla 31) no tiene una captura propia. La captura del paso 7 muestra la
 aplicación reabierta sin conexión, pero en la pantalla de inicio.
+
+---
+
+## PU-15 · Fotografías
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las dimensiones de las dos versiones, la elección de la vista principal, el guardado del animal con sus fotografías en una sola transacción, el orden de la subida, la clasificación de las respuestas del servicio de archivos y la limpieza del teléfono tras subir |
+| Requerimiento | RF-02 · RNF-12 · CU-02 (6a) · HU-01 criterios 3 y 4 · apartado 3.8.5 · Tablas 21 y 25 |
+| Tipo | Unitaria, automática, con el servicio simulado (que imita el bucket: no reemplaza y exige la fotografía). La compresión real se verificó aparte en Chrome, porque Vitest no tiene `canvas` |
+| Código | [`src/dominio/fotografias.ts`](../../src/dominio/fotografias.ts) · [`src/sync/subidaImagenes.ts`](../../src/sync/subidaImagenes.ts) · [`src/datos/sincronizacionLocal.ts`](../../src/datos/sincronizacionLocal.ts) · pruebas [`src/dominio/fotografias.test.ts`](../../src/dominio/fotografias.test.ts) y [`src/sync/subidaImagenes.test.ts`](../../src/sync/subidaImagenes.test.ts) · especificación [documento técnico 14](../tecnica/14-fotografias.md), sección 11 |
+| Pasos | Ejecutar `npm run test:informe` |
+| Resultado obtenido | **38 de 38 aprobadas**. Además, 5 casos nuevos en PU-12 (línea de fotografías pendientes en la barra) y 3 en PU-13 (el cierre de sesión cuenta las fotografías). Total del conjunto automático: **408 de 408** ([informe](resultados/2026-10-12_210413_9a3d7bb.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-12 |
+
+| # | Grupo | Pruebas |
+|---|---|---|
+| 1 | Dimensiones: proporción, horizontal y vertical, nunca amplía | 8 |
+| 2 | Vista principal: izquierdo, derecho, frente; vigente = mayor UUID v7; rutas | 5 |
+| 3 | Guardar con fotografías en una transacción; nada queda si el animal se rechaza | 2 |
+| 4 | Registro incompleto con 0, 1 y 2 vistas | 3 |
+| 5 | Orden: una imagen no sube sin su fotografía sincronizada; el motor sube datos y después imágenes | 3 |
+| 6 | Respuestas: éxito y «ya existe» confirman; transitorias y sesión vencida detienen; definitivas registran el intento y siguen | 13 |
+| 7 | Limpieza: se borra la completa; solo la vista principal conserva la reducida; lo que espera en la cola no se toca; el izquierdo nuevo reemplaza al frente | 4 |
+
+**Validación con mutaciones.** Se introdujeron 13 errores, uno por vez, sobre las pruebas de PU-15,
+PU-12 y PU-13. Los 13 fueron detectados.
+
+| Mutación | Pruebas que fallaron |
+|---|---|
+| Subir la imagen sin que su fotografía esté sincronizada | 2 |
+| Tratar «ya existe» como error | 2 |
+| Que una falla transitoria no detenga la subida | 1 |
+| Conservar en el teléfono las reducidas de todas las vistas | 3 |
+| Tocar imágenes que aún esperan en la cola | 1 |
+| Cambiar el orden de la vista principal | 2 |
+| Tomar como vigente la primera foto y no la más reciente | 1 |
+| Ampliar las fotos pequeñas | 2 |
+| Quitar la etapa de imágenes del motor | 4 |
+| Que el cierre de sesión ignore las imágenes | 1 |
+| Que descartar conserve las imágenes pendientes | 1 |
+| Mostrar «Todo enviado» con fotografías pendientes | 1 |
+| No guardar las imágenes al registrar | 12 |
+
+**Compresión en un navegador real.** Con Chrome y el servidor de desarrollo, una imagen de
+4.000 × 3.000 px y 5 MB quedó en 182 KB (1.600 × 1.200) y 21 KB (480 × 360), ambas WebP, en 0,7 s;
+una vertical conservó su orientación (1.200 × 1.600 y 360 × 480), y un archivo que no es imagen dio
+el mensaje esperado ([evidencia](evidencias/iteracion-2/PU-15-1-compresion-en-chrome.txt)).
+
+**Ajuste encontrado al integrar.** La conversión del ordeño duplicado en corrección abre una unidad
+de trabajo dentro de otra transacción. Al sumar las tablas de imágenes a la unidad de trabajo, la
+transacción exterior también tuvo que incluirlas; de lo contrario Dexie rechaza la transacción anidada.
+
+## PI-05 · Fotografías contra el servicio de archivos real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar con Supabase Storage que la fotografía sube con el motor de la aplicación y que las políticas del bucket rechazan reemplazar, borrar, subir sin fotografía, otro formato y más de 1 MB |
+| Requerimiento | RNF-12 · 3.8.5 · 3.9.3 (el servicio decide) · RNF-06 (solo inserciones) · documento técnico 14, sección 7 |
+| Tipo | Integración contra el servicio real, con la cuenta de prueba (perfil trabajador) |
+| Código | [`src/sync/fotografias.pi.ts`](../../src/sync/fotografias.pi.ts) · [`scripts/prueba-pi-05.mjs`](../../scripts/prueba-pi-05.mjs) · migración [`20261012000300_almacen_fotografias.sql`](../../supabase/migrations/20261012000300_almacen_fotografias.sql) |
+| Pasos | `npm run db:push` y `npm run prueba:pi-05`, que al terminar borra los archivos con la CLI (`supabase storage rm`) y los registros con `limpiar-usuario-pruebas.sql` |
+| Resultado obtenido | **5 de 5 aprobadas**; la limpieza borró los 2 archivos de prueba y dejó 0 registros de la cuenta de prueba ([evidencia](evidencias/iteracion-2/PI-05-1-ejecucion.txt)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-12 |
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | El animal y su fotografía suben con el motor; después, la completa (250 KB) y la reducida (40 KB), que se descargan con su tamaño | ✅ |
+| 2 | Subir otra vez el mismo archivo responde 409 («ya existe»), que la aplicación clasifica como éxito | ✅ |
+| 3 | Reemplazar (`upsert`) se rechaza; borrar no tiene efecto: la imagen sigue intacta | ✅ |
+| 4 | Una imagen sin fotografía en el servicio se rechaza (definitiva) | ✅ |
+| 5 | Un PNG y un WebP de 1,1 MB se rechazan | ✅ |
+
+**Observaciones.** (1) Los archivos no pueden borrarse con SQL, porque el servicio lo impide, así que
+la limpieza usa la CLI con la API del servicio de archivos. (2) La CLI pidió confirmar el borrado
+aunque el script le pasa `--yes`. Se respondió que sí; queda anotado para automatizarlo si molesta.
+
+## PE-18 · Fotografías en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar en Chrome el registro con tres vistas y con una sola, el aviso de registro incompleto, el contador de fotografías pendientes sin conexión, el orden de la subida, los archivos en el servicio y lo que queda en el teléfono |
+| Requerimiento | RF-02 · HU-01 criterios 3 y 4 · RNF-12 · Tabla 25 · documento técnico 14, secciones 6 y 8 |
+| Tipo | Manual. **Parte 1** en el computador (`npm run preview`, fotos elegidas de la galería); **parte 2** en un teléfono Android con la cámara real, tras publicar la aplicación con https (paso 2.2b) |
+| Condiciones iniciales | Sesión de Daniel Ramos (trabajador); migración del bucket aplicada; chapetas Z923–Z925 |
+| Resultado obtenido (parte 1) | Todos los pasos se comportaron como se esperaba |
+| Estado | 🔄 Parte 1 aprobada; parte 2 pendiente |
+| Fecha | 2026-10-12 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Registrar Z923 con las tres vistas | Guardado; en el servicio, 6 archivos: completas de 194 a 231 KB y reducidas de 26 a 28 KB | [servidor](evidencias/iteracion-2/PE-18-6-servidor-archivos-y-tiempos.txt) |
+| 2 | Registrar Z924 solo con el frente | «Registro fotográfico incompleto: 1 de 3» (CU-02, 6a) | [captura](evidencias/iteracion-2/PE-18-1-registro-incompleto-1-de-3.png) |
+| 3 | Sin conexión, registrar Z925 con una foto | La barra separa «2 registros pendientes de enviar» y «📷 1 fotografía pendiente de enviar» | [captura](evidencias/iteracion-2/PE-18-2-sin-conexion-registros-y-fotografias.png) |
+| 4 | Volver la conexión | «Todo enviado». En el servicio, la fila de Z925 llegó a las 20:45:18 y su imagen a las 20:45:27: después de la fila (sección 6.2) | [captura](evidencias/iteracion-2/PE-18-3-todo-enviado.png) · [servidor](evidencias/iteracion-2/PE-18-6-servidor-archivos-y-tiempos.txt) |
+| 5 | Revisar el bucket `fotografias` | Una carpeta por animal, con `{id}.webp` y `{id}-reducida.webp`; 10 archivos en total (5 fotos × 2) | [captura](evidencias/iteracion-2/PE-18-4-storage-dos-archivos-por-foto.png) |
+| 6 | Revisar la tabla local `imagen` | Una fila por animal: la de la vista principal (Tabla 25) | [captura](evidencias/iteracion-2/PE-18-5-imagen-una-fila-por-animal.png) |
+
+**Pendiente para la parte 2 (teléfono).** Capturar el formulario con las tres miniaturas y «3 de
+3»; expandir una fila de `imagen` para ver `completa: null` (lo verifica PU-15, grupo 7); y
+comprobar con fotos de la cámara la corrección de la orientación, que una imagen elegida en el
+computador no prueba.

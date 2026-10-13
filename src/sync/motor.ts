@@ -1,18 +1,20 @@
 /**
- * Motor de sincronización: ejecuta la subida y después la bajada, una sola vez a la vez, en los
- * momentos definidos (docs/tecnica/09-sincronizacion-subida.md, sección 2).
+ * Motor de sincronización: ejecuta la subida de datos, la bajada y la subida de imágenes, una sola vez a
+ * la vez, en los momentos definidos (docs/tecnica/09-sincronizacion-subida.md, sección 2, y
+ * 14-fotografias.md, sección 6.1).
  */
 import { alGuardarLocalmente } from '../datos/eventos';
 import { bajar, type ResumenBajada } from './bajada';
 import type { ServicioRemoto } from './servicioRemoto';
 import { subir, type ResumenSubida } from './subida';
+import { subirImagenes, type ResumenImagenes } from './subidaImagenes';
 
 export type ResultadoSincronizacion =
   | { estado: 'omitida' }
   | { estado: 'sesion_vencida'; subida: ResumenSubida }
   | { estado: 'sin_red'; subida: ResumenSubida }
-  | { estado: 'completa'; subida: ResumenSubida; bajada: ResumenBajada }
-  | { estado: 'error_bajada'; subida: ResumenSubida; mensaje: string };
+  | { estado: 'completa'; subida: ResumenSubida; bajada: ResumenBajada; imagenes: ResumenImagenes }
+  | { estado: 'error_bajada'; subida: ResumenSubida; mensaje: string; imagenes: ResumenImagenes };
 
 let enCurso = false;
 
@@ -84,11 +86,16 @@ async function sincronizarSinCandado(servicio: ServicioRemoto): Promise<Resultad
   const subida = await subir(servicio);
   if (subida.estado === 'sesion_vencida') return { estado: 'sesion_vencida', subida };
   if (subida.estado === 'detenida_sin_red') return { estado: 'sin_red', subida };
+  let bajada: ResumenBajada | undefined;
+  let mensaje = '';
   try {
-    return { estado: 'completa', subida, bajada: await bajar(servicio) };
+    bajada = await bajar(servicio);
   } catch (error) {
-    return { estado: 'error_bajada', subida, mensaje: error instanceof Error ? error.message : String(error) };
+    mensaje = error instanceof Error ? error.message : String(error);
   }
+  // Las imágenes van al final, porque son lo más pesado (3.8.5), y aunque la bajada falle: no dependen de ella.
+  const imagenes = await subirImagenes(servicio);
+  return bajada ? { estado: 'completa', subida, bajada, imagenes } : { estado: 'error_bajada', subida, mensaje, imagenes };
 }
 
 const ESPERA_TRAS_GUARDAR_MS = 3_000;

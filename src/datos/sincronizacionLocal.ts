@@ -8,7 +8,8 @@
  */
 import type { Table } from 'dexie';
 import type { EstadoSync, NombreTabla, Parametro, RegistroLocal, Usuario, Uuid } from '../dominio/tipos';
-import { db, TABLAS_SINCRONIZABLES, type OperacionPendiente } from './db';
+import { vistaPrincipal } from '../dominio/fotografias';
+import { db, TABLAS_SINCRONIZABLES, type ImagenLocal, type ImagenPendiente, type OperacionPendiente } from './db';
 import { unidadDeTrabajo } from './repositorio';
 
 /** Una fila tal como la entrega el servicio: la entidad más su recibido_en. */
@@ -96,7 +97,8 @@ export async function convertirOrdenoEnCorreccion(
   ordenoLocal: RegistroLocal<'produccion_leche'>,
   aceptado: { id: Uuid; litros: number },
 ): Promise<RegistroLocal<'correccion'>> {
-  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones];
+  // Incluye las tablas de imágenes porque la unidad de trabajo anidada las abarca.
+  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones, db.imagen, db.cola_imagenes];
   return db.transaction('rw', tablas, async () => {
     await db.cola_operaciones.delete(operacion.seq!);
     await db.produccion_leche.delete(ordenoLocal.id);
@@ -117,11 +119,12 @@ export async function convertirOrdenoEnCorreccion(
 
 /**
  * Descarta lo pendiente al cerrar sesión con confirmación explícita (docs/tecnica/12-cierre-de-sesion.md,
- * sección 3): vacía la cola y borra los registros que nunca llegaron al servicio. Los sincronizados y
- * los que están en conflicto no se tocan. Devuelve cuántos registros se descartaron.
+ * sección 3): vacía las colas y borra los registros y las imágenes que nunca llegaron al servicio
+ * (documento 14, sección 8.3). Los sincronizados y los que están en conflicto no se tocan. Devuelve
+ * cuántos registros se descartaron.
  */
 export async function descartarPendientes(): Promise<number> {
-  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones];
+  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones, db.imagen, db.cola_imagenes];
   return db.transaction('rw', tablas, async () => {
     const operaciones = await db.cola_operaciones.toArray();
     let descartados = 0;
@@ -133,8 +136,63 @@ export async function descartarPendientes(): Promise<number> {
       }
     }
     await db.cola_operaciones.clear();
+
+    const imagenes = await db.cola_imagenes.toArray();
+    await db.imagen.bulkDelete(imagenes.map((i) => i.fotografia_id));
+    await db.cola_imagenes.clear();
     return descartados;
   });
+}
+
+// ---------------------------------------------------------------------------
+// Cola de imágenes (docs/tecnica/14-fotografias.md, sección 6)
+// ---------------------------------------------------------------------------
+
+export type { ImagenLocal, ImagenPendiente } from './db';
+
+/** Una entrada de la cola de imágenes con lo necesario para subirla. */
+export interface ImagenPorSubir {
+  entrada: ImagenPendiente;
+  fotografia: RegistroLocal<'fotografia'> | undefined;
+  imagen: ImagenLocal | undefined;
+}
+
+/** La cola de imágenes en el orden en que se produjo. */
+export async function imagenesPendientes(): Promise<ImagenPorSubir[]> {
+  const entradas = await db.cola_imagenes.orderBy('seq').toArray();
+  return Promise.all(
+    entradas.map(async (entrada) => ({
+      entrada,
+      fotografia: await db.fotografia.get(entrada.fotografia_id),
+      imagen: await db.imagen.get(entrada.fotografia_id),
+    })),
+  );
+}
+
+/**
+ * Las dos versiones de una fotografía están en el servicio: sale de la cola y el teléfono conserva
+ * solo la reducida de la vista principal del animal (Tabla 25, documento 14, sección 6.3). Las
+ * imágenes que todavía esperan en la cola no se tocan.
+ */
+export async function confirmarImagen(entrada: ImagenPendiente, animalId: Uuid): Promise<void> {
+  await db.transaction('rw', [db.cola_imagenes, db.imagen, db.fotografia], async () => {
+    await db.cola_imagenes.delete(entrada.seq!);
+
+    const principal = vistaPrincipal(await db.fotografia.where('animal_id').equals(animalId).toArray());
+    const enCola = new Set((await db.cola_imagenes.toArray()).map((e) => e.fotografia_id));
+
+    for (const imagen of await db.imagen.where('animal_id').equals(animalId).toArray()) {
+      if (enCola.has(imagen.fotografia_id)) continue;
+      const reducida = imagen.fotografia_id === principal?.id ? imagen.reducida : null;
+      if (reducida === null) await db.imagen.delete(imagen.fotografia_id);
+      else if (imagen.completa !== null) await db.imagen.update(imagen.fotografia_id, { completa: null });
+    }
+  });
+}
+
+/** La subida falló: la imagen se queda en la cola y suma un intento. */
+export async function registrarIntentoImagen(entrada: ImagenPendiente): Promise<void> {
+  await db.cola_imagenes.update(entrada.seq!, { intentos: entrada.intentos + 1, ultimo_intento: new Date().toISOString() });
 }
 
 /** Registros en conflicto en todas las tablas: requieren la revisión del propietario (documento 11). */

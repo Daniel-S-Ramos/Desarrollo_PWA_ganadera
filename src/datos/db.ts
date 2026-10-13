@@ -36,11 +36,14 @@ export interface ImagenPendiente {
   ultimo_intento: Instante | null;
 }
 
-/** Imagen guardada en el dispositivo. Solo se conserva la versión reducida (Tabla 25). */
+/**
+ * Imágenes de una fotografía guardadas en el dispositivo (docs/tecnica/14-fotografias.md, sección 4.1).
+ * Ambas se conservan hasta que se suben; después solo queda la reducida de la vista principal (Tabla 25).
+ */
 export interface ImagenLocal {
   fotografia_id: Uuid;
   animal_id: Uuid;
-  reducida: Blob;
+  reducida: Blob | null;
   /** Resolución completa, retenida solo hasta que se transmite. */
   completa: Blob | null;
 }

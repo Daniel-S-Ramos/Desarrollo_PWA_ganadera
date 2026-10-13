@@ -6,6 +6,7 @@ import { fechaDelPredio } from '../../dominio/fechas';
 import type { RegistroLocal } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
+import { SeccionFotografias } from './SeccionFotografias';
 import {
   buscarPorChapeta,
   describirAnimalConChapeta,
@@ -20,6 +21,7 @@ import {
   type CampoFormulario,
   type ErroresFormulario,
   type FormularioAnimal,
+  type FotosCapturadas,
   type Progenitor,
 } from './registroAnimal';
 
@@ -38,7 +40,8 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
   const [asignada, setAsignada] = useState<AnimalConChapeta | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [confirmarCancelar, setConfirmarCancelar] = useState(false);
-  const [registrado, setRegistrado] = useState<RegistroLocal<'animal'> | null>(null);
+  const [registrado, setRegistrado] = useState<{ animal: RegistroLocal<'animal'>; fotografias: number } | null>(null);
+  const [fotos, setFotos] = useState<FotosCapturadas>({});
 
   const progenitores = useLiveQuery(() => listarProgenitores(), [], { hembras: [], machos: [] });
   const chapeta = normalizarChapeta(formulario.chapeta);
@@ -80,8 +83,8 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
     if (!validacion.ok || asignada) return;
     setGuardando(true);
     try {
-      const resultado = await registrarAnimal(formulario, identidad, hoy);
-      if (resultado.ok) setRegistrado(resultado.animal);
+      const resultado = await registrarAnimal(formulario, identidad, hoy, fotos);
+      if (resultado.ok) setRegistrado({ animal: resultado.animal, fotografias: resultado.fotografias });
       else if ('chapetaAsignada' in resultado) setAsignada(resultado.chapetaAsignada);
       else setErroresDeGuardado(resultado.errores);
     } finally {
@@ -91,6 +94,7 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
 
   function registrarOtro() {
     setFormulario(formularioVacio(hoy));
+    setFotos({});
     setTocados(new Set());
     setIntentado(false);
     setErroresDeGuardado({});
@@ -98,12 +102,19 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
   }
 
   function cancelar() {
-    if (formularioModificado(formulario, hoy)) setConfirmarCancelar(true);
+    if (formularioModificado(formulario, hoy) || Object.keys(fotos).length > 0) setConfirmarCancelar(true);
     else void navegar('/');
   }
 
   if (registrado) {
-    return <AnimalRegistrado animal={registrado} alRegistrarOtro={registrarOtro} alVolver={() => void navegar('/')} />;
+    return (
+      <AnimalRegistrado
+        animal={registrado.animal}
+        fotografias={registrado.fotografias}
+        alRegistrarOtro={registrarOtro}
+        alVolver={() => void navegar('/')}
+      />
+    );
   }
 
   const esComprado = formulario.origen === 'comprado';
@@ -279,7 +290,10 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
         <Error texto={errorDe('peso_inicial')} />
       </label>
 
-      {/* 5. Genealogía (sección 4) */}
+      {/* 5. Fotografías (documento técnico 14) */}
+      <SeccionFotografias fotos={fotos} alCambiar={setFotos} />
+
+      {/* 6. Genealogía (sección 4) */}
       <details
         className="plegable"
         open={intentado && !!(errores.madre_id || errores.madre_externa || errores.padre_id || errores.padre_externo)}
@@ -391,10 +405,12 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
 /** Confirmación tras guardar, con el estado de sincronización del registro (Tabla 22). */
 function AnimalRegistrado({
   animal,
+  fotografias,
   alRegistrarOtro,
   alVolver,
 }: {
   animal: RegistroLocal<'animal'>;
+  fotografias: number;
   alRegistrarOtro: () => void;
   alVolver: () => void;
 }) {
@@ -408,6 +424,13 @@ function AnimalRegistrado({
         </p>
         {actual && <DistintivoSync estado={actual.estado_sync} detalle={actual.detalle_conflicto} />}
       </div>
+      {fotografias < 3 && (
+        // CU-02, flujo 6a: el animal queda registrado y se avisa para completarlo después.
+        <div className="aviso aviso--atencion aviso--en-contenido" role="status">
+          <p>⚠ Registro fotográfico incompleto: {fotografias} de 3.</p>
+          <p className="aviso__detalle">Podrá completarlo desde la ficha del animal.</p>
+        </div>
+      )}
       <div className="acciones-formulario">
         <button className="boton boton--principal boton--ancho" type="button" onClick={alRegistrarOtro}>
           Registrar otro

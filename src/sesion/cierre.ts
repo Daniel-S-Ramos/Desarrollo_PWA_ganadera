@@ -5,7 +5,7 @@
  * Las dependencias externas (el servicio remoto y el cierre de la sesión de supabase-js) llegan como
  * parámetros, de modo que la lógica se verifica con pruebas automáticas y un servicio simulado.
  */
-import { contarPendientes } from '../datos/repositorio';
+import { contarImagenesPendientes, contarPendientes } from '../datos/repositorio';
 import { descartarPendientes } from '../datos/sincronizacionLocal';
 import { leerEstadoMotor, sincronizar, suscribirseAlMotor } from '../sync/motor';
 import type { ServicioRemoto } from '../sync/servicioRemoto';
@@ -20,7 +20,8 @@ export interface DependenciasCierre {
 
 export type MotivoNoCerrada = 'pendientes' | 'sin_red' | 'sesion_vencida' | 'no_enviados';
 
-export type ResultadoCierre = { cerrada: true } | { cerrada: false; pendientes: number; motivo: MotivoNoCerrada };
+/** pendientes: registros en la cola de datos · imagenes: fotografías en la cola de imágenes (documento 14, sección 8.3). */
+export type ResultadoCierre = { cerrada: true } | { cerrada: false; pendientes: number; imagenes: number; motivo: MotivoNoCerrada };
 
 /** Borra la sesión y el código. La información descargada del predio se conserva (documento 10, sección 6). */
 async function cerrarDefinitivamente(dependencias: DependenciasCierre): Promise<void> {
@@ -31,8 +32,8 @@ async function cerrarDefinitivamente(dependencias: DependenciasCierre): Promise<
 
 /** Cierra si la cola está vacía; si no, informa cuántos pendientes hay para que el usuario decida. */
 export async function intentarCerrar(dependencias: DependenciasCierre): Promise<ResultadoCierre> {
-  const pendientes = await contarPendientes();
-  if (pendientes > 0) return { cerrada: false, pendientes, motivo: 'pendientes' };
+  const [pendientes, imagenes] = await Promise.all([contarPendientes(), contarImagenesPendientes()]);
+  if (pendientes + imagenes > 0) return { cerrada: false, pendientes, imagenes, motivo: 'pendientes' };
   await cerrarDefinitivamente(dependencias);
   return { cerrada: true };
 }
@@ -59,14 +60,14 @@ export async function enviarYCerrar(dependencias: DependenciasCierre): Promise<R
     resultado = await sincronizar(dependencias.servicio);
   }
 
-  const pendientes = await contarPendientes();
-  if (pendientes === 0) {
+  const [pendientes, imagenes] = await Promise.all([contarPendientes(), contarImagenesPendientes()]);
+  if (pendientes + imagenes === 0) {
     await cerrarDefinitivamente(dependencias);
     return { cerrada: true };
   }
   const motivo: MotivoNoCerrada =
     resultado.estado === 'sin_red' ? 'sin_red' : resultado.estado === 'sesion_vencida' ? 'sesion_vencida' : 'no_enviados';
-  return { cerrada: false, pendientes, motivo };
+  return { cerrada: false, pendientes, imagenes, motivo };
 }
 
 /** «Sí, descartar y cerrar sesión» (sección 2.2): solo tras la segunda confirmación. */
@@ -80,25 +81,30 @@ export async function descartarYCerrar(dependencias: DependenciasCierre): Promis
 // Textos (sección 2)
 // ---------------------------------------------------------------------------
 
-const registros = (n: number) => (n === 1 ? '1 registro' : `${n} registros`);
-
-export function textoPendientes(pendientes: number, enLinea: boolean): string {
-  return enLinea
-    ? `Hay ${registros(pendientes)} sin enviar.`
-    : `Hay ${registros(pendientes)} sin enviar y no hay conexión. Si cierra la sesión ahora, se perderán.`;
+/** «1 registro», «3 fotografías», «1 registro y 3 fotografías». */
+function loQueFalta(registros: number, imagenes: number): string {
+  const partes: string[] = [];
+  if (registros > 0 || imagenes === 0) partes.push(registros === 1 ? '1 registro' : `${registros} registros`);
+  if (imagenes > 0) partes.push(imagenes === 1 ? '1 fotografía' : `${imagenes} fotografías`);
+  return partes.join(' y ');
 }
 
-export function textoNoCerrada(pendientes: number, motivo: Exclude<MotivoNoCerrada, 'pendientes'>): string {
+export function textoPendientes(pendientes: number, enLinea: boolean, imagenes = 0): string {
+  const falta = loQueFalta(pendientes, imagenes);
+  return enLinea ? `Hay ${falta} sin enviar.` : `Hay ${falta} sin enviar y no hay conexión. Si cierra la sesión ahora, se perderán.`;
+}
+
+export function textoNoCerrada(pendientes: number, motivo: Exclude<MotivoNoCerrada, 'pendientes'>, imagenes = 0): string {
   const causa = {
     sin_red: 'No hay conexión.',
     sesion_vencida: 'La sesión con el servicio venció: ingrese de nuevo con conexión para enviarlos.',
     no_enviados: 'Algunos registros todavía no pueden enviarse.',
   }[motivo];
-  const quedan = pendientes === 1 ? 'queda 1 registro' : `quedan ${pendientes} registros`;
-  return `No se cerró la sesión: ${quedan} sin enviar. ${causa}`;
+  const verbo = pendientes + imagenes === 1 ? 'queda' : 'quedan';
+  return `No se cerró la sesión: ${verbo} ${loQueFalta(pendientes, imagenes)} sin enviar. ${causa}`;
 }
 
-export function textoSegundaConfirmacion(pendientes: number): string {
-  const verbo = pendientes === 1 ? 'Se perderá 1 registro que no se ha enviado.' : `Se perderán ${pendientes} registros que no se han enviado.`;
-  return `${verbo} Esta acción no se puede deshacer.`;
+export function textoSegundaConfirmacion(pendientes: number, imagenes = 0): string {
+  const uno = pendientes + imagenes === 1;
+  return `Se ${uno ? 'perderá' : 'perderán'} ${loQueFalta(pendientes, imagenes)} que no se ${uno ? 'ha' : 'han'} enviado. Esta acción no se puede deshacer.`;
 }
