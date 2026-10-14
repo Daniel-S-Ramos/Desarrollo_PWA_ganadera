@@ -743,3 +743,29 @@ a.boton {
   gap: 6px;
   font-size: 1.05rem;
 }
+
+/* Catálogo de medicamentos (documento técnico 18, sección 6). */
+.medicamentos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.medicamento {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 0;
+}
+
+.medicamento + .medicamento {
+  border-top: 1px solid var(--borde);
+}
+
+.medicamento__nombre {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
