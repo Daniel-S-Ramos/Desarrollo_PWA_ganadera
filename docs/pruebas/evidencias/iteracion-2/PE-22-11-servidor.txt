@@ -1,0 +1,24 @@
+PE-22 · Verificación en el servicio de los casos heredados (2026-10-13). Hora de Colombia.
+
+1. Cierre de sesión con pendientes (Z930, Z931) y reingreso de otro usuario (Z932)
+┌─────────┬────────────────┬──────────┬──────────┬─────────────┬──────────┐
+│ chapeta │ en_el_servidor │ creado   │ espera_s │ fotografias │ archivos │
+├─────────┼────────────────┼──────────┼──────────┼─────────────┼──────────┤
+│ Z930    │ true           │ 22:25:42 │ 34       │ 1           │ 2        │
+│ Z931    │ false          │ NULL     │ NULL     │ 0           │ 0        │
+│ Z932    │ true           │ 22:34:28 │ 84       │ 1           │ 2        │
+└─────────┴────────────────┴──────────┴──────────┴─────────────┴──────────┘
+- Z930: registrada sin conexión, llegó con «Enviar y cerrar sesión».
+- Z931: descartada con la doble confirmación; nunca llegó al servicio.
+- Z932: esperó en el dispositivo mientras la cuenta de pruebas era rechazada; llegó al entrar Daniel Ramos.
+
+2. Conflicto de chapeta (Z933)
+┌────────────────┬──────────────┬──────────┬──────────┬─────────────┬────────────────────────────────────────────────────────────────────────────────────┐
+│ codigo_chapeta │ autor        │ creado   │ espera_s │ fotografias │ dispositivo                                                                        │
+├────────────────┼──────────────┼──────────┼──────────┼─────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ Z933           │ Daniel Ramos │ 22:40:58 │ 70       │ 0           │ ... AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/155 ... Safari/605.1.15          │
+└────────────────┴──────────────┴──────────┴──────────┴─────────────┴────────────────────────────────────────────────────────────────────────────────────┘
+- Una sola Z933 en el servicio: la de Daniel Ramos, registrada sin conexión en un iPhone con Chrome
+  para iOS (CriOS), que llegó primero.
+- La Z933 de la cuenta de pruebas, registrada sin conexión en el computador, fue rechazada (23505) y
+  quedó en conflicto solo en ese navegador, con su fotografía pendiente sin poder subir.

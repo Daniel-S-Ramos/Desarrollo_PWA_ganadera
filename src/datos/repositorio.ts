@@ -26,6 +26,11 @@ export interface Transaccion {
    * el identificador, el autor, la fecha de creación y el estado los fija el repositorio.
    */
   crear<T extends NombreTabla>(tabla: T, datos: DatosNuevos<T>): Promise<RegistroLocal<T>>;
+  /**
+   * Guarda las dos versiones de la imagen de una fotografía ya creada en esta transacción y la pone
+   * en la cola de imágenes (docs/tecnica/14-fotografias.md, sección 5).
+   */
+  guardarImagen(fotografia: RegistroLocal<'fotografia'>, imagenes: { completa: Blob; reducida: Blob }): Promise<void>;
 }
 
 /**
@@ -36,7 +41,7 @@ export interface Transaccion {
  * @param autor Usuario que registra. Debe llegar ya autorizado por el gestor de permisos.
  */
 export async function unidadDeTrabajo<R>(autor: Uuid, trabajo: (tx: Transaccion) => Promise<R>): Promise<R> {
-  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones];
+  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones, db.imagen, db.cola_imagenes];
 
   const resultado = await db.transaction('rw', tablas, async () => {
     const tx: Transaccion = {
@@ -62,6 +67,16 @@ export async function unidadDeTrabajo<R>(autor: Uuid, trabajo: (tx: Transaccion)
           creado_en: ahora,
         });
         return registro;
+      },
+
+      async guardarImagen(fotografia, imagenes) {
+        await db.imagen.add({
+          fotografia_id: fotografia.id,
+          animal_id: fotografia.animal_id,
+          completa: imagenes.completa,
+          reducida: imagenes.reducida,
+        });
+        await db.cola_imagenes.add({ fotografia_id: fotografia.id, intentos: 0, ultimo_intento: null });
       },
     };
     return trabajo(tx);
@@ -132,9 +147,38 @@ export const consulta: Consultas = {
 // Cola de operaciones
 // ---------------------------------------------------------------------------
 
-/** Número de operaciones que esperan conexión. Lo muestra el contador de la barra inferior. */
+/**
+ * Registros que esperan conexión, sin las filas de datos de las fotos, que se cuentan como fotografías
+ * (src/dominio/pendientes.ts). Lo muestran la barra inferior, el cierre de sesión y el reingreso.
+ */
+export function contarRegistrosPendientes(): Promise<number> {
+  return db.cola_operaciones.filter((o) => o.entidad !== 'fotografia').count();
+}
+
+/** Todas las operaciones que esperan conexión, incluidas las filas de las fotos. */
 export function contarPendientes(): Promise<number> {
   return db.cola_operaciones.count();
+}
+
+/** Fotografías cuya imagen espera conexión. Se cuentan aparte de los registros (documento 14, sección 8.2). */
+export function contarImagenesPendientes(): Promise<number> {
+  return db.cola_imagenes.count();
+}
+
+/** Las imágenes reducidas guardadas en el teléfono, por fotografía (documento 15, sección 4). */
+export async function reducidasLocales(): Promise<Map<Uuid, Blob>> {
+  const imagenes = await db.imagen.toArray();
+  return new Map(imagenes.filter((i) => i.reducida !== null).map((i) => [i.fotografia_id, i.reducida!]));
+}
+
+/** Versión completa de una fotografía que todavía no se ha subido (documento 16, sección 5.1). */
+export async function imagenCompletaLocal(fotografiaId: Uuid): Promise<Blob | null> {
+  return (await db.imagen.get(fotografiaId))?.completa ?? null;
+}
+
+/** Imagen reducida de una fotografía guardada en el teléfono, si la hay. */
+export async function imagenReducida(fotografiaId: Uuid): Promise<Blob | null> {
+  return (await db.imagen.get(fotografiaId))?.reducida ?? null;
 }
 
 /** Operaciones pendientes en el orden en que se produjeron. Las consume el motor de sincronización. */

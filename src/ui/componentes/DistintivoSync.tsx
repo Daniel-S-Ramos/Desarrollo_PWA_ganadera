@@ -11,8 +11,11 @@ export function DistintivoSync({ estado, detalle }: { estado: EstadoSync; detall
   if (!distintivo) return null;
   return (
     <span className={`distintivo distintivo--${distintivo.tono}`} title={distintivo.detalle ?? undefined}>
-      <span aria-hidden="true">{distintivo.icono} </span>
-      {distintivo.texto}
+      {/* El ícono y el texto van juntos en una línea; la causa de un conflicto, debajo. */}
+      <span>
+        <span aria-hidden="true">{distintivo.icono} </span>
+        {distintivo.texto}
+      </span>
       {distintivo.detalle && <span className="distintivo__detalle">{distintivo.detalle}</span>}
     </span>
   );

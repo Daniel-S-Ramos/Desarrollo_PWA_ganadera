@@ -8,7 +8,8 @@
  */
 import type { Table } from 'dexie';
 import type { EstadoSync, NombreTabla, Parametro, RegistroLocal, Usuario, Uuid } from '../dominio/tipos';
-import { db, TABLAS_SINCRONIZABLES, type OperacionPendiente } from './db';
+import { vistaPrincipal } from '../dominio/fotografias';
+import { db, TABLAS_SINCRONIZABLES, type ImagenLocal, type ImagenPendiente, type OperacionPendiente } from './db';
 import { unidadDeTrabajo } from './repositorio';
 
 /** Una fila tal como la entrega el servicio: la entidad más su recibido_en. */
@@ -96,7 +97,8 @@ export async function convertirOrdenoEnCorreccion(
   ordenoLocal: RegistroLocal<'produccion_leche'>,
   aceptado: { id: Uuid; litros: number },
 ): Promise<RegistroLocal<'correccion'>> {
-  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones];
+  // Incluye las tablas de imágenes porque la unidad de trabajo anidada las abarca.
+  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones, db.imagen, db.cola_imagenes];
   return db.transaction('rw', tablas, async () => {
     await db.cola_operaciones.delete(operacion.seq!);
     await db.produccion_leche.delete(ordenoLocal.id);
@@ -117,11 +119,12 @@ export async function convertirOrdenoEnCorreccion(
 
 /**
  * Descarta lo pendiente al cerrar sesión con confirmación explícita (docs/tecnica/12-cierre-de-sesion.md,
- * sección 3): vacía la cola y borra los registros que nunca llegaron al servicio. Los sincronizados y
- * los que están en conflicto no se tocan. Devuelve cuántos registros se descartaron.
+ * sección 3): vacía las colas y borra los registros y las imágenes que nunca llegaron al servicio
+ * (documento 14, sección 8.3). Los sincronizados y los que están en conflicto no se tocan. Devuelve
+ * cuántos registros se descartaron.
  */
 export async function descartarPendientes(): Promise<number> {
-  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones];
+  const tablas = [...TABLAS_SINCRONIZABLES.map((t) => tablaDe(t)), db.cola_operaciones, db.imagen, db.cola_imagenes];
   return db.transaction('rw', tablas, async () => {
     const operaciones = await db.cola_operaciones.toArray();
     let descartados = 0;
@@ -133,8 +136,136 @@ export async function descartarPendientes(): Promise<number> {
       }
     }
     await db.cola_operaciones.clear();
+
+    const imagenes = await db.cola_imagenes.toArray();
+    await db.imagen.bulkDelete(imagenes.map((i) => i.fotografia_id));
+    await db.cola_imagenes.clear();
     return descartados;
   });
+}
+
+// ---------------------------------------------------------------------------
+// Cola de imágenes (docs/tecnica/14-fotografias.md, sección 6)
+// ---------------------------------------------------------------------------
+
+export type { ImagenLocal, ImagenPendiente } from './db';
+
+/** Una entrada de la cola de imágenes con lo necesario para subirla. */
+export interface ImagenPorSubir {
+  entrada: ImagenPendiente;
+  fotografia: RegistroLocal<'fotografia'> | undefined;
+  imagen: ImagenLocal | undefined;
+}
+
+/** La cola de imágenes en el orden en que se produjo. */
+export async function imagenesPendientes(): Promise<ImagenPorSubir[]> {
+  const entradas = await db.cola_imagenes.orderBy('seq').toArray();
+  return Promise.all(
+    entradas.map(async (entrada) => ({
+      entrada,
+      fotografia: await db.fotografia.get(entrada.fotografia_id),
+      imagen: await db.imagen.get(entrada.fotografia_id),
+    })),
+  );
+}
+
+/**
+ * Las dos versiones de una fotografía están en el servicio: sale de la cola y el teléfono conserva
+ * solo la reducida de la vista principal del animal (Tabla 25, documento 14, sección 6.3). Las
+ * imágenes que todavía esperan en la cola no se tocan.
+ */
+export async function confirmarImagen(entrada: ImagenPendiente, animalId: Uuid): Promise<void> {
+  await db.transaction('rw', [db.cola_imagenes, db.imagen, db.fotografia], async () => {
+    await db.cola_imagenes.delete(entrada.seq!);
+    await conservarSoloPrincipal(animalId);
+  });
+}
+
+/**
+ * Regla de retención de la Tabla 25, compartida por la subida y la bajada de imágenes (documento 15,
+ * sección 6.2): de las imágenes que ya no esperan en la cola, se borran las completas y solo se
+ * conserva la reducida de la vista principal vigente. Debe llamarse dentro de una transacción que
+ * abarque cola_imagenes, imagen y fotografia.
+ */
+async function conservarSoloPrincipal(animalId: Uuid): Promise<void> {
+  const principal = vistaPrincipal(await db.fotografia.where('animal_id').equals(animalId).toArray());
+  const enCola = new Set((await db.cola_imagenes.toArray()).map((e) => e.fotografia_id));
+
+  for (const imagen of await db.imagen.where('animal_id').equals(animalId).toArray()) {
+    if (enCola.has(imagen.fotografia_id)) continue;
+    const reducida = imagen.fotografia_id === principal?.id ? imagen.reducida : null;
+    if (reducida === null) await db.imagen.delete(imagen.fotografia_id);
+    else if (imagen.completa !== null) await db.imagen.update(imagen.fotografia_id, { completa: null });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bajada de imágenes (docs/tecnica/15-listado-de-animales.md, sección 6)
+// ---------------------------------------------------------------------------
+
+const CLAVE_DESCARGAS_FALLIDAS = 'descargas_fallidas';
+/** Una imagen que el servicio aún no tiene se vuelve a pedir pasada 1 hora (sección 6.3). */
+export const ESPERA_REINTENTO_DESCARGA_MS = 60 * 60 * 1000;
+
+async function descargasFallidas(): Promise<Record<Uuid, string>> {
+  return ((await db.meta.get(CLAVE_DESCARGAS_FALLIDAS))?.valor as Record<Uuid, string> | undefined) ?? {};
+}
+
+/**
+ * Fotografías principales de los animales activos cuya reducida falta en el teléfono, sin las que
+ * fallaron hace menos de 1 hora. Los animales retirados no conservan foto (Tabla 25).
+ */
+export async function imagenesPorBajar(ahora: Date = new Date()): Promise<{ animal_id: Uuid; fotografia_id: Uuid }[]> {
+  const [fotografias, salidas, imagenes, fallidas] = await Promise.all([
+    db.fotografia.toArray(),
+    db.salida.toArray(),
+    db.imagen.toArray(),
+    descargasFallidas(),
+  ]);
+  const retirados = new Set(salidas.map((s) => s.animal_id));
+  const conReducida = new Set(imagenes.filter((i) => i.reducida !== null).map((i) => i.fotografia_id));
+
+  const porAnimal = new Map<Uuid, RegistroLocal<'fotografia'>[]>();
+  for (const foto of fotografias) porAnimal.set(foto.animal_id, [...(porAnimal.get(foto.animal_id) ?? []), foto]);
+
+  const faltantes: { animal_id: Uuid; fotografia_id: Uuid }[] = [];
+  for (const [animalId, fotos] of porAnimal) {
+    if (retirados.has(animalId)) continue;
+    const principal = vistaPrincipal(fotos);
+    // Solo las que ya están en el servicio: una foto pendiente de este teléfono tiene su reducida local.
+    if (!principal || principal.estado_sync !== 'sincronizado' || conReducida.has(principal.id)) continue;
+    const fallo = fallidas[principal.id];
+    if (fallo && ahora.getTime() - Date.parse(fallo) < ESPERA_REINTENTO_DESCARGA_MS) continue;
+    faltantes.push({ animal_id: animalId, fotografia_id: principal.id });
+  }
+  return faltantes;
+}
+
+/** Guarda la reducida bajada del servicio y aplica la retención (sección 6.2). */
+export async function guardarImagenBajada(animalId: Uuid, fotografiaId: Uuid, reducida: Blob): Promise<void> {
+  await db.transaction('rw', [db.cola_imagenes, db.imagen, db.fotografia, db.meta], async () => {
+    await db.imagen.put({ fotografia_id: fotografiaId, animal_id: animalId, reducida, completa: null });
+    const fallidas = await descargasFallidas();
+    if (fallidas[fotografiaId]) {
+      delete fallidas[fotografiaId];
+      await db.meta.put({ clave: CLAVE_DESCARGAS_FALLIDAS, valor: fallidas });
+    }
+    await conservarSoloPrincipal(animalId);
+  });
+}
+
+/** La imagen no está (todavía) en el servicio: se anota la hora para no pedirla antes de 1 hora. */
+export async function anotarDescargaFallida(fotografiaId: Uuid, ahora: Date = new Date()): Promise<void> {
+  await db.transaction('rw', db.meta, async () => {
+    const fallidas = await descargasFallidas();
+    fallidas[fotografiaId] = ahora.toISOString();
+    await db.meta.put({ clave: CLAVE_DESCARGAS_FALLIDAS, valor: fallidas });
+  });
+}
+
+/** La subida falló: la imagen se queda en la cola y suma un intento. */
+export async function registrarIntentoImagen(entrada: ImagenPendiente): Promise<void> {
+  await db.cola_imagenes.update(entrada.seq!, { intentos: entrada.intentos + 1, ultimo_intento: new Date().toISOString() });
 }
 
 /** Registros en conflicto en todas las tablas: requieren la revisión del propietario (documento 11). */
@@ -200,4 +331,39 @@ export async function reemplazarParametros(parametros: Parametro[]): Promise<voi
     await db.parametro.clear();
     await db.parametro.bulkPut(parametros);
   });
+}
+
+// ---------------------------------------------------------------------------
+// Carga inicial (docs/tecnica/17-carga-inicial.md, sección 3)
+// ---------------------------------------------------------------------------
+
+const CLAVE_CARGA_INICIAL = 'carga_inicial_completa';
+
+/** Fecha en que terminó de llegar la información del predio a este teléfono, o undefined si aún no. */
+export async function leerCargaInicialCompleta(): Promise<string | undefined> {
+  return (await db.meta.get(CLAVE_CARGA_INICIAL))?.valor as string | undefined;
+}
+
+/** Se guarda una sola vez, al completarse la primera bajada de datos. No se borra al cerrar sesión. */
+export async function marcarCargaInicialCompleta(ahora: Date = new Date()): Promise<void> {
+  await db.transaction('rw', db.meta, async () => {
+    if (!(await db.meta.get(CLAVE_CARGA_INICIAL))) await db.meta.put({ clave: CLAVE_CARGA_INICIAL, valor: ahora.toISOString() });
+  });
+}
+
+/** Animales que ya hay en el teléfono: el avance de la carga inicial los cuenta. */
+export function contarAnimales(): Promise<number> {
+  return db.animal.count();
+}
+
+/**
+ * Lo que ya hay en el teléfono, para el avance de la carga inicial: no se reinicia si la descarga se
+ * interrumpe y se reanuda (documento 17, sección 4; corrección tras PE-21).
+ */
+export async function contarLoDescargado(): Promise<{ usuarios: number; animales: number; registros: number }> {
+  let registros = 0;
+  for (const tabla of TABLAS_SINCRONIZABLES) {
+    if (tabla !== 'animal') registros += await tablaDe(tabla).count();
+  }
+  return { usuarios: await db.usuario.count(), animales: await db.animal.count(), registros };
 }

@@ -82,16 +82,16 @@ begin
 
     -- -------------------------------------------------------------- 4. Clave primaria e idempotencia
     insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta)
-    values (vaca, usuario, now(), 'PI01-012', 'hembra', true);
+    values (vaca, usuario, now(), 'Z901', 'hembra', true);
     codigos := array[
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true)', vaca, usuario, ahora, 'PI01-OTRO', 'hembra')),
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true) on conflict (id) do nothing', vaca, usuario, ahora, 'PI01-OTRO', 'hembra'))];
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true)', vaca, usuario, ahora, 'Z902', 'hembra')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true) on conflict (id) do nothing', vaca, usuario, ahora, 'Z902', 'hembra'))];
     select count(*) into cuenta from public.animal where id = vaca;
     r := r || jsonb_build_object('n',4,'v','Mismo id: se rechaza; con ON CONFLICT DO NOTHING se ignora sin error (3.7.8)',
            'ok', codigos = array['23505','OK'] and cuenta = 1, 'd', 'inserción repetida: ' || codigos[1] || ' · con ON CONFLICT: ' || codigos[2] || ' · filas con ese id: ' || cuenta);
 
     -- -------------------------------------------------------------- 5. Chapeta única
-    valor := pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true)', gen_random_uuid(), usuario, ahora, 'PI01-012', 'macho'));
+    valor := pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true)', gen_random_uuid(), usuario, ahora, 'Z901', 'macho'));
     r := r || jsonb_build_object('n',5,'v','Un segundo animal con la misma chapeta se rechaza','ok', valor = '23505','d','código: ' || valor);
 
     -- -------------------------------------------------------------- 6. Un ordeño por vaca y fecha
@@ -107,9 +107,9 @@ begin
       -- peso cero
       pg_temp.intentar(format('insert into public.pesaje (id, autor_id, creado_en, animal_id, fecha, peso, metodo) values (%L,%L,%s,%L,%L,0,%L)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-06', 'cinta')),
       -- sexo inválido
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L,%L,%s,%L,%L,true)', gen_random_uuid(), usuario, ahora, 'PI01-SEXO', 'otro')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L,%L,%s,%L,%L,true)', gen_random_uuid(), usuario, ahora, 'Z903', 'otro')),
       -- padre interno y externo a la vez
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, padre_id, padre_externo) values (%L,%L,%s,%L,%L,true,%L,%L)', gen_random_uuid(), usuario, ahora, 'PI01-PADRE', 'macho', vaca, 'Toro del vecino')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, padre_id, padre_externo) values (%L,%L,%s,%L,%L,true,%L,%L)', gen_random_uuid(), usuario, ahora, 'Z904', 'macho', vaca, 'Toro del vecino')),
       -- parto con cría viva sin cría
       pg_temp.intentar(format('insert into public.parto (id, autor_id, creado_en, madre_id, fecha, resultado) values (%L,%L,%s,%L,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-06', 'cria_viva')),
       -- venta sin valor
@@ -149,6 +149,25 @@ begin
        and (has_function_privilege('anon', p.oid, 'EXECUTE') or has_function_privilege('authenticated', p.oid, 'EXECUTE'));
     r := r || jsonb_build_object('n',11,'v','Ninguna función SECURITY DEFINER de public es ejecutable por anon ni authenticated',
            'ok', valor = '', 'd', case when valor = '' then 'ninguna expuesta' else 'expuestas: ' || valor end);
+
+    -- -------------------------------------------------------------- 12. Formato de la chapeta
+    -- El servicio solo admite la numeración del predio, normalizada (docs/tecnica/13-registro-de-animal.md, sección 8).
+    -- Las chapetas de prueba usan la serie Z900 a Z999, reservada para pruebas.
+    codigos := array(
+      select pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L,%L,%s,%L,%L,true)', gen_random_uuid(), usuario, ahora, c, 'hembra'))
+        from unnest(array['z905', 'Z 905', '0905', 'O905', 'Z0', 'ZZ1', 'Z1000', '10000', 'Z905']) with ordinality as t(c, i)
+       order by i);
+    r := r || jsonb_build_object('n',12,'v','Chapeta: se rechazan minúscula, espacio, cero inicial, letra O, cero, dos letras y fuera de rango; Z905 se admite',
+           'ok', codigos = array['23514','23514','23514','23514','23514','23514','23514','23514','OK'],
+           'd', 'códigos: ' || array_to_string(codigos, ', '));
+
+    -- -------------------------------------------------------------- 13. Madre de una sola forma
+    -- Como el padre (3.8.8), la madre es del predio o externa, nunca las dos cosas.
+    codigos := array[
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, madre_id, madre_externa) values (%L,%L,%s,%L,%L,true,%L,%L)', gen_random_uuid(), usuario, ahora, 'Z906', 'hembra', vaca, 'Vaca del vecino')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, madre_externa) values (%L,%L,%s,%L,%L,true,%L)', gen_random_uuid(), usuario, ahora, 'Z907', 'hembra', 'Vaca del vecino'))];
+    r := r || jsonb_build_object('n',13,'v','Madre del predio y externa a la vez se rechaza; solo externa se admite',
+           'ok', codigos = array['23514','OK'], 'd', 'ambas: ' || codigos[1] || ' · solo externa: ' || codigos[2]);
 
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.
     raise exception using errcode = 'P0099', message = 'REVERTIR';

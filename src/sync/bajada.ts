@@ -1,9 +1,10 @@
 /**
  * Bajada: trae lo que el servicio recibió desde la última marca de avance, tabla por tabla.
- * Especificación: docs/tecnica/10-sincronizacion-bajada.md
+ * Especificación: docs/tecnica/10-sincronizacion-bajada.md y 17-carga-inicial.md, sección 4
  */
 import { TABLAS_SINCRONIZABLES } from '../datos/repositorio';
 import { aplicarPagina, leerMarca, reemplazarParametros, reemplazarUsuarios } from '../datos/sincronizacionLocal';
+import type { NombreTabla } from '../dominio/tipos';
 import type { Desde, ServicioRemoto } from './servicioRemoto';
 
 export const TAMANO_PAGINA = 1_000;
@@ -14,6 +15,17 @@ export interface ResumenBajada {
   filas: number;
 }
 
+/** Avance de la bajada de datos, para la pantalla de carga inicial (documento 17, sección 4). */
+export interface AvanceDatos {
+  referencia: boolean;
+  /** Tabla que se está descargando; null antes de empezar las tablas del predio. */
+  tabla: NombreTabla | null;
+  /** Filas de animal recibidas en esta bajada. */
+  animales: number;
+  /** Filas de las demás tablas recibidas en esta bajada. */
+  registros: number;
+}
+
 /** Inicio de la descarga de una tabla: la marca menos el margen, o todo si no hay marca. */
 export function desdeLaMarca(marca: string | undefined): Desde {
   if (!marca) return { tipo: 'inicio' };
@@ -21,18 +33,28 @@ export function desdeLaMarca(marca: string | undefined): Desde {
 }
 
 /**
- * Descarga las tablas en el orden de sus dependencias. Cada página se aplica junto con su marca en
- * una transacción local; si una consulta falla, lo ya aplicado queda firme y el error se propaga.
+ * Descarga primero los datos de referencia (usuarios y parámetros, 3.7.6) y después las tablas del
+ * predio en el orden de sus dependencias. Cada página se aplica junto con su marca en una transacción
+ * local; si una consulta falla, lo ya aplicado queda firme y el error se propaga.
  */
-export async function bajar(servicio: ServicioRemoto): Promise<ResumenBajada> {
-  let filas = 0;
+export async function bajar(servicio: ServicioRemoto, alAvanzar: (avance: AvanceDatos) => void = () => {}): Promise<ResumenBajada> {
+  const avance: AvanceDatos = { referencia: false, tabla: null, animales: 0, registros: 0 };
+
+  await reemplazarUsuarios(await servicio.usuarios());
+  await reemplazarParametros(await servicio.parametros());
+  avance.referencia = true;
+  alAvanzar({ ...avance });
 
   for (const tabla of TABLAS_SINCRONIZABLES) {
+    avance.tabla = tabla;
+    alAvanzar({ ...avance });
     let desde = desdeLaMarca(await leerMarca(tabla));
     for (;;) {
       const pagina = await servicio.consultar(tabla, desde, TAMANO_PAGINA);
       await aplicarPagina(tabla, pagina);
-      filas += pagina.length;
+      if (tabla === 'animal') avance.animales += pagina.length;
+      else avance.registros += pagina.length;
+      if (pagina.length > 0) alAvanzar({ ...avance });
       if (pagina.length < TAMANO_PAGINA) break;
       // Las páginas siguientes se encadenan por la última fila, sin margen (sección 3.3).
       const ultima = pagina[pagina.length - 1]!;
@@ -40,7 +62,5 @@ export async function bajar(servicio: ServicioRemoto): Promise<ResumenBajada> {
     }
   }
 
-  await reemplazarUsuarios(await servicio.usuarios());
-  await reemplazarParametros(await servicio.parametros());
-  return { filas };
+  return { filas: avance.animales + avance.registros };
 }

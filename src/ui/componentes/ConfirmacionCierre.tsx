@@ -15,8 +15,8 @@ import { supabase } from '../../servicios/supabase';
 type Paso =
   | { tipo: 'inicial' }
   | { tipo: 'procesando'; texto: string }
-  | { tipo: 'decidir'; pendientes: number; mensaje: string; puedeEnviar: boolean }
-  | { tipo: 'segunda_confirmacion'; pendientes: number };
+  | { tipo: 'decidir'; pendientes: number; imagenes: number; mensaje: string; puedeEnviar: boolean }
+  | { tipo: 'segunda_confirmacion'; pendientes: number; imagenes: number };
 
 /**
  * Cierre de sesión con la cola vacía (docs/tecnica/12-cierre-de-sesion.md, sección 2). Si hay
@@ -33,7 +33,8 @@ export function ConfirmacionCierre({ alCerrar }: { alCerrar: () => void }) {
     setPaso({
       tipo: 'decidir',
       pendientes: resultado.pendientes,
-      mensaje: textoPendientes(resultado.pendientes, navigator.onLine),
+      imagenes: resultado.imagenes,
+      mensaje: textoPendientes(resultado.pendientes, navigator.onLine, resultado.imagenes),
       puedeEnviar: navigator.onLine,
     });
   }
@@ -45,7 +46,8 @@ export function ConfirmacionCierre({ alCerrar }: { alCerrar: () => void }) {
     setPaso({
       tipo: 'decidir',
       pendientes: resultado.pendientes,
-      mensaje: textoNoCerrada(resultado.pendientes, resultado.motivo === 'pendientes' ? 'no_enviados' : resultado.motivo),
+      imagenes: resultado.imagenes,
+      mensaje: textoNoCerrada(resultado.pendientes, resultado.motivo === 'pendientes' ? 'no_enviados' : resultado.motivo, resultado.imagenes),
       puedeEnviar: false,
     });
   }
@@ -89,7 +91,7 @@ export function ConfirmacionCierre({ alCerrar }: { alCerrar: () => void }) {
                 </button>
                 <button
                   className="boton boton--secundario"
-                  onClick={() => setPaso({ tipo: 'segunda_confirmacion', pendientes: paso.pendientes })}
+                  onClick={() => setPaso({ tipo: 'segunda_confirmacion', pendientes: paso.pendientes, imagenes: paso.imagenes })}
                 >
                   Cerrar sesión y descartar los registros
                 </button>
@@ -102,7 +104,7 @@ export function ConfirmacionCierre({ alCerrar }: { alCerrar: () => void }) {
     case 'segunda_confirmacion':
       return (
         <div className="aviso aviso--riesgo separado" role="alertdialog" aria-label="Confirmar descarte">
-          <p>⚠ {textoSegundaConfirmacion(paso.pendientes)}</p>
+          <p>⚠ {textoSegundaConfirmacion(paso.pendientes, paso.imagenes)}</p>
           <div className="aviso__acciones aviso__acciones--columna">
             <button className="boton boton--peligro" onClick={() => void descartar()}>
               Sí, descartar y cerrar sesión

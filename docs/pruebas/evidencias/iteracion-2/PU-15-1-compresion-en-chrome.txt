@@ -1,0 +1,25 @@
+PU-15 · Verificación de la compresión en un navegador real (2026-10-12)
+
+La compresión usa createImageBitmap y canvas, que no existen en Vitest. Se ejecutó comprimirFoto
+(src/modulos/identificacion/fotografias.ts) en Chrome, sobre el servidor de desarrollo, con imágenes
+generadas en el propio navegador.
+
+1. Imagen horizontal de 4000 × 3000 px con degradados, manchas y ruido (JPEG, calidad 0,92)
+   {
+     "original_KB": 5048,
+     "completa": { "tipo": "image/webp", "KB": 182, "medidas": "1600×1200" },
+     "reducida": { "tipo": "image/webp", "KB": 21,  "medidas": "480×360" },
+     "milisegundos": 742
+   }
+
+2. Imagen vertical de 3000 × 4000 px
+   { "completa": "1200×1600", "reducida": "360×480" }
+
+3. Un archivo que no es una imagen
+   "ImagenIlegible: No se pudo leer la imagen. Tómela de nuevo con la cámara."
+
+Resultado: ambas versiones en WebP, con la proporción conservada y el lado mayor esperado (1600 y
+480 px). La completa queda muy por debajo del límite de 1 MB del servicio y la reducida por debajo de
+los ~100 KB por animal que supuso la estimación del apartado 3.8.7.
+Pendiente: repetir con fotografías reales de la cámara de un teléfono Android (PE-18, paso 2.2b),
+incluida la corrección de la orientación (EXIF), que una imagen generada no puede probar.

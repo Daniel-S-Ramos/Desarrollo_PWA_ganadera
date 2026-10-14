@@ -78,6 +78,12 @@ mencionados, pero no puede darse por garantizada y se verificará en el teléfon
 En consecuencia, el aviso al usuario se adapta según la aplicación esté instalada o no
 (sección 4.3).
 
+*Verificación en el teléfono (2026-10-12, PE-18 parte 2).* Con la aplicación publicada con https e
+**instalada en un teléfono Android 10 con Chrome 154**, el aviso de almacenamiento no protegido **no
+apareció**: Android concedió el almacenamiento persistente. Se confirma así la recomendación de
+instalar la aplicación en el dispositivo de campo, que es el que guarda los registros sin enviar. La
+verificación se adelantó del paso 6.4 al 2.2b, junto con la publicación.
+
 ## 4. Comportamiento de la aplicación
 
 ### 4.1 Al iniciar

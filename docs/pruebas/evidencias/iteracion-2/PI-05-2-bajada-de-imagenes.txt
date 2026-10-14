@@ -1,0 +1,37 @@
+PI-05 repetida el 2026-10-13 con la verificación 6 (bajada de imágenes, documento técnico 15, sección 6).
+
+PS C:\Users\dsram\Desarrollo_PWA_ganadera> npm run prueba:pi-05
+
+> ganaderia-jr-pwa@0.1.0 prueba:pi-05
+> node scripts/prueba-pi-05.mjs
+
+
+ RUN  v5.0.3 C:/Users/dsram/Desarrollo_PWA_ganadera
+
+ ✓ src/sync/fotografias.pi.ts (6 tests) 20037ms
+   ✓ PI-05 · Fotografías en el servicio de archivos (6)
+     ✓ 1. el animal y su fotografía suben con el motor: primero los datos y después la completa y la reducida 12088ms
+     ✓ 2. subir otra vez el mismo archivo responde «ya existe», que la aplicación trata como éxito 264ms
+     ✓ 3. nadie reemplaza ni borra una imagen 716ms
+     ✓ 4. no se sube una imagen sin su fotografía 399ms
+     ✓ 5. el servicio rechaza otro formato y más de 1 MB 1684ms
+     ✓ 6. un teléfono vacío recibe el animal y baja la reducida de su vista principal (documento 15, sección 6) 3992ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  00:22:25
+   Duration  20.83s (tests 97%, transform 1%, import 1%)
+
+
+Limpieza de los archivos de prueba en el servicio de archivos…
+Confirm deleting files in bucket fotografias? [y/N] y
+Deleting objects: [01a133b6-4a8c-7000-bd23-b6817acec89a]
+Deleting objects: [01a133b6-4a8c-7000-bd23-b6817acec89a/01a133b6-4a90-7000-a3c1-630ebb938495-reducida.webp 01a133b6-4a8c-7000-bd23-b6817acec89a/01a133b6-4a90-7000-a3c1-630ebb938495.webp]
+
+Limpieza de los registros de la cuenta de prueba en el servicio…
+Initialising login role...
+┌────────────────────┬───────────────────┬───────────────────┬───────────────────┬────────────────────────┐
+│ animales_restantes │ pesajes_restantes │ ordenos_restantes │ eventos_restantes │ correcciones_restantes │
+├────────────────────┼───────────────────┼───────────────────┼───────────────────┼────────────────────────┤
+│ 0                  │ 0                 │ 0                 │ 0                 │ 0                      │
+└────────────────────┴───────────────────┴───────────────────┴───────────────────┴────────────────────────┘

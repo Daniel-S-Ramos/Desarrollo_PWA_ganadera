@@ -161,6 +161,11 @@ Para poder nombrarlo, al borrar la sesión local por bloqueo se conservan el ide
 nombre del usuario anterior, y solo mientras haya pendientes. En cuanto la cola queda vacía, ese
 dato se descarta y cualquier usuario puede ingresar.
 
+*Precisión tras PE-22 (2026-10-13).* Desde el paso 2.2 la cola tiene también fotografías. El reingreso
+las cuenta igual que el cierre de sesión (documento 12): con una sola foto pendiente, otro usuario
+tampoco puede ingresar, y el aviso las nombra («tiene 1 registro y 1 fotografía de Daniel Ramos»).
+También se corrigió el verbo en singular: «1 registro … que aún no se ha enviado».
+
 La misma regla aplica a «Olvidé mi código». El cierre de sesión normal ya exige la cola vacía
 (documento 06), de modo que no deja pendientes de otro usuario.
 

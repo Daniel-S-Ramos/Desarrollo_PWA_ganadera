@@ -1,0 +1,16 @@
+PE-20 · Fotografías de Z924 en el servicio, tras completar el costado izquierdo desde la ficha (2026-10-13)
+
+┌────────────────┬───────────┬──────────────┬──────────────────┬──────────────────────────────────┐
+│ codigo_chapeta │ tipo      │ autor        │ creada           │ archivos                         │
+├────────────────┼───────────┼──────────────┼──────────────────┼──────────────────────────────────┤
+│ Z924           │ frontal   │ Daniel Ramos │ 2026-10-12 20:42 │ reducida 27 KB · completa 194 KB │
+│ Z924           │ izquierdo │ Daniel Ramos │ 2026-10-13 19:48 │ reducida 5 KB · completa 48 KB   │
+└────────────────┴───────────┴──────────────┴──────────────────┴──────────────────────────────────┘
+
+Lectura:
+- La foto del frente se tomó en el computador el 12 de octubre (PE-18); la del costado izquierdo, con
+  la cámara del teléfono desde «Ver y completar fotos» el 13 de octubre.
+- La nueva es un registro nuevo: la anterior se conserva (servidor de solo inserciones).
+- Ambas versiones de la nueva llegaron al servicio de archivos.
+- En el teléfono, la miniatura del listado pasó del frente al costado izquierdo (vista principal,
+  documento técnico 14, sección 3): capturas PE-20-06 y PE-20-07.

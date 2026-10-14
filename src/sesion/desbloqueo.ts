@@ -6,7 +6,7 @@
  * claro. Se verifica sin red. Tras cinco intentos fallidos se borran el código y la sesión local y se
  * exige un ingreso completo, que requiere conexión (Tabla 31).
  */
-import { contarPendientes } from '../datos/repositorio';
+import { contarImagenesPendientes, contarPendientes, contarRegistrosPendientes } from '../datos/repositorio';
 import { borrarMeta, escribirMeta, leerMeta } from '../datos/meta';
 import { borrarSesionLocal, leerSesionLocal } from './sesionLocal';
 import type { Uuid } from '../dominio/tipos';
@@ -133,7 +133,8 @@ export async function verificarCodigo(codigo: string): Promise<ResultadoDesbloqu
  */
 export async function bloquear(): Promise<void> {
   const sesion = await leerSesionLocal();
-  if (sesion && (await contarPendientes()) > 0) {
+  // Cualquier cosa sin enviar, también una foto: su dueño debe poder volver a enviarla.
+  if (sesion && (await contarPendientes()) + (await contarImagenesPendientes()) > 0) {
     const anterior: UsuarioAnterior = { usuario_id: sesion.identidad.usuario_id, nombre: sesion.identidad.nombre };
     await escribirMeta(CLAVE_USUARIO_ANTERIOR, anterior);
   }
@@ -148,22 +149,22 @@ export function borrarCodigo(): Promise<void> {
 
 export type ResultadoReingreso =
   | { permitido: true }
-  | { permitido: false; anterior: UsuarioAnterior; pendientes: number };
+  | { permitido: false; anterior: UsuarioAnterior; pendientes: number; imagenes: number };
 
 /**
  * Mientras haya pendientes de una sesión bloqueada, solo su dueño puede volver a ingresar
  * (sección 6). Sin pendientes, cualquiera puede, y se descarta el dato del usuario anterior.
  */
 export async function verificarReingreso(usuarioId: Uuid): Promise<ResultadoReingreso> {
-  const pendientes = await contarPendientes();
+  const [pendientes, imagenes] = await Promise.all([contarRegistrosPendientes(), contarImagenesPendientes()]);
   const anterior = await leerMeta<UsuarioAnterior>(CLAVE_USUARIO_ANTERIOR);
 
-  if (pendientes === 0) {
+  if (pendientes + imagenes === 0) {
     if (anterior) await borrarMeta(CLAVE_USUARIO_ANTERIOR);
     return { permitido: true };
   }
   if (!anterior || anterior.usuario_id === usuarioId) return { permitido: true };
-  return { permitido: false, anterior, pendientes };
+  return { permitido: false, anterior, pendientes, imagenes };
 }
 
 /** Descarta el dato del usuario anterior una vez que su dueño volvió a ingresar. */

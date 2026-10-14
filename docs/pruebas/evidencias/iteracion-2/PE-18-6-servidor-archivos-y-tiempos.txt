@@ -1,0 +1,26 @@
+PE-18 · Consulta en el servicio de las fotografías registradas durante la prueba (2026-10-12)
+Hora de Colombia. Tamaños tomados de storage.objects (metadatos del servicio de archivos).
+
+┌────────────────┬───────────┬───────────────┬──────────────────────────────────┬────────────────┬─────────────┐
+│ codigo_chapeta │ tipo      │ espera_fila_s │ archivos                         │ archivo_subido │ foto_creada │
+├────────────────┼───────────┼───────────────┼──────────────────────────────────┼────────────────┼─────────────┤
+│ Z923           │ derecho   │ 4             │ reducida 26 KB · completa 197 KB │ 20:42:02       │ 20:41:51    │
+│ Z923           │ frontal   │ 4             │ reducida 27 KB · completa 194 KB │ 20:42:04       │ 20:41:51    │
+│ Z923           │ izquierdo │ 4             │ reducida 28 KB · completa 231 KB │ 20:42:01       │ 20:41:51    │
+│ Z924           │ frontal   │ 3             │ reducida 27 KB · completa 194 KB │ 20:42:28       │ 20:42:20    │
+│ Z925           │ izquierdo │ 17            │ reducida 28 KB · completa 231 KB │ 20:45:27       │ 20:45:01    │
+└────────────────┴───────────┴───────────────┴──────────────────────────────────┴────────────────┴─────────────┘
+┌────────────────────┐
+│ archivos_en_bucket │
+├────────────────────┤
+│ 10                 │
+└────────────────────┘
+
+«espera_fila_s» = recibido_en − creado_en de la fila de la fotografía.
+
+Lectura:
+- Fotografías reales comprimidas: completa entre 194 y 231 KB, reducida entre 26 y 28 KB (estimado
+  en el documento técnico 14: 200–300 KB y 30–50 KB; límite del servicio: 1 MB).
+- 10 archivos = 5 fotografías × 2 versiones (completa y reducida).
+- Z925 se registró sin conexión: su fila llegó 17 s después de creada (20:45:18) y su imagen subió
+  a las 20:45:27, después de la fila, como exige la sección 6.2 del documento técnico 14.

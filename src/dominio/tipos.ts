@@ -132,7 +132,9 @@ export interface Animal extends Auditable {
   fecha_ingreso: FechaPredio | null;
   procedencia: string | null;
   peso_inicial: number | null;
+  /** La madre es una hembra del predio o una externa, nunca las dos cosas a la vez (decisión del 2026-10-12). */
   madre_id: Uuid | null;
+  madre_externa: string | null;
   /** El padre es un animal del predio o un reproductor externo, nunca las dos cosas a la vez. */
   padre_id: Uuid | null;
   padre_externo: string | null;

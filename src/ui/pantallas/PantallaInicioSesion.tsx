@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { iniciarSesion, type ResultadoIngreso } from '../../sesion/autenticacion';
+import { describirPendientes } from '../../dominio/pendientes';
 import type { Identidad } from '../../sesion/token';
 
 type Falla = Extract<ResultadoIngreso, { ok: false }>;
@@ -18,8 +19,8 @@ const MENSAJES: Record<MotivoSimple, string> = {
  */
 export function mensajeDeFalla(falla: Falla): string {
   if (falla.motivo === 'otro_usuario_con_pendientes') {
-    const registros = falla.pendientes === 1 ? '1 registro' : `${falla.pendientes} registros`;
-    return `Este teléfono tiene ${registros} de ${falla.anterior.nombre} que aún no se han enviado. Solo ${falla.anterior.nombre} puede ingresar hasta que se envíen, para que no se pierdan. Pídale que ingrese con su cuenta y sincronice.`;
+    const uno = falla.pendientes + falla.imagenes === 1;
+    return `Este teléfono tiene ${describirPendientes(falla.pendientes, falla.imagenes)} de ${falla.anterior.nombre} que aún no se ${uno ? 'ha' : 'han'} enviado. Solo ${falla.anterior.nombre} puede ingresar hasta que se envíen, para que no se pierdan. Pídale que ingrese con su cuenta y sincronice.`;
   }
   return MENSAJES[falla.motivo];
 }

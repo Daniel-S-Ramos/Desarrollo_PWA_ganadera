@@ -44,6 +44,7 @@ function cria(codigo: string): DatosNuevos<'animal'> {
     procedencia: 'Nacida en el predio',
     peso_inicial: 32,
     madre_id: uuidv7(),
+    madre_externa: null,
     padre_id: null,
     padre_externo: null,
   };

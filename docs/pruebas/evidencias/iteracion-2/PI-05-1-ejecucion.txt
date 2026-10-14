@@ -1,0 +1,49 @@
+PS C:\Users\dsram\Desarrollo_PWA_ganadera> npm run db:push
+
+> ganaderia-jr-pwa@0.1.0 db:push
+> supabase db push
+
+Initialising login role...
+Connecting to remote database...
+Skipping migration README.md... (file name must match pattern "<timestamp>_name.sql")
+│
+◇  Do you want to push these migrations to the remote database?
+│   • 20261012000300_almacen_fotografias.sql
+│
+│  Yes
+Applying migration 20261012000300_almacen_fotografias.sql...
+Finished supabase db push.
+PS C:\Users\dsram\Desarrollo_PWA_ganadera> npm run prueba:pi-05
+
+> ganaderia-jr-pwa@0.1.0 prueba:pi-05
+> node scripts/prueba-pi-05.mjs
+
+
+ RUN  v5.0.3 C:/Users/dsram/Desarrollo_PWA_ganadera
+
+ ✓ src/sync/fotografias.pi.ts (5 tests) 15754ms
+   ✓ PI-05 · Fotografías en el servicio de archivos (5)
+     ✓ 1. el animal y su fotografía suben con el motor: primero los datos y después la completa y la reducida 10250ms
+     ✓ 2. subir otra vez el mismo archivo responde «ya existe», que la aplicación trata como éxito 315ms
+     ✓ 3. nadie reemplaza ni borra una imagen 774ms
+     ✓ 4. no se sube una imagen sin su fotografía 1067ms
+     ✓ 5. el servicio rechaza otro formato y más de 1 MB 1980ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  20:23:14
+   Duration  16.51s (tests 97%, transform 1%, import 1%)
+
+
+Limpieza de los archivos de prueba en el servicio de archivos…
+Confirm deleting files in bucket fotografias? [y/N] y
+Deleting objects: [01a132db-509d-7000-a082-ecbf03264819]
+Deleting objects: [01a132db-509d-7000-a082-ecbf03264819/01a132db-50a2-7000-beaf-fbcaf2fcbd43-reducida.webp 01a132db-509d-7000-a082-ecbf03264819/01a132db-50a2-7000-beaf-fbcaf2fcbd43.webp]
+
+Limpieza de los registros de la cuenta de prueba en el servicio…
+Initialising login role...
+┌────────────────────┬───────────────────┬───────────────────┬───────────────────┬────────────────────────┐
+│ animales_restantes │ pesajes_restantes │ ordenos_restantes │ eventos_restantes │ correcciones_restantes │
+├────────────────────┼───────────────────┼───────────────────┼───────────────────┼────────────────────────┤
+│ 0                  │ 0                 │ 0                 │ 0                 │ 0                      │
+└────────────────────┴───────────────────┴───────────────────┴───────────────────┴────────────────────────┘

@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "description": "Prototipo de aplicación web progresiva para la trazabilidad bovina y el seguimiento productivo de la Ganadería JR",
   "scripts": {
     "dev": "vite",
@@ -18,7 +21,8 @@
     "prueba:pi-01": "supabase db query --linked -f supabase/pruebas/pi-01-esquema.sql",
     "prueba:pi-02": "supabase db query --linked -f supabase/pruebas/pi-02-gancho-token.sql",
     "prueba:pi-03": "supabase db query --linked -f supabase/pruebas/pi-03-politicas.sql",
-    "prueba:pi-04": "node scripts/prueba-pi-04.mjs"
+    "prueba:pi-04": "node scripts/prueba-pi-04.mjs",
+    "prueba:pi-05": "node scripts/prueba-pi-05.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.116.0",

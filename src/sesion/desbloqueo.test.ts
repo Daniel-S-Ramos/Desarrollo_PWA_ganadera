@@ -147,7 +147,14 @@ describe('PU-08 · 7. Reingreso tras el bloqueo', () => {
 
   it('con pendientes, otro usuario no puede ingresar y se le informa de quién son y cuántos', async () => {
     await bloqueadaConPendientesDe(DANIEL, 3);
-    expect(await verificarReingreso(JOSE.usuario_id)).toEqual({ permitido: false, anterior: DANIEL, pendientes: 3 });
+    expect(await verificarReingreso(JOSE.usuario_id)).toEqual({ permitido: false, anterior: DANIEL, pendientes: 3, imagenes: 0 });
+  });
+
+  it('con solo una foto pendiente, otro usuario tampoco puede ingresar (igual que el cierre de sesión)', async () => {
+    await sesionDe(DANIEL);
+    await db.cola_imagenes.add({ fotografia_id: uuidv7(), intentos: 0, ultimo_intento: null });
+    await bloquear();
+    expect(await verificarReingreso(JOSE.usuario_id)).toEqual({ permitido: false, anterior: DANIEL, pendientes: 0, imagenes: 1 });
   });
 
   it('con pendientes, el mismo usuario sí puede ingresar', async () => {

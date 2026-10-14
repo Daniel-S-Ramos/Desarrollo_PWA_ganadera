@@ -4,7 +4,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { FilaRemota } from '../datos/sincronizacionLocal';
 import type { NombreTabla, Parametro, Usuario, Uuid } from '../dominio/tipos';
-import type { Desde, ResultadoEnvio, ServicioRemoto } from '../sync/servicioRemoto';
+import type { Desde, ResultadoDescarga, ResultadoEnvio, ServicioRemoto } from '../sync/servicioRemoto';
+
+/** Bucket privado de las fotografías (documento 14, sección 4.2). */
+export const BUCKET_FOTOGRAFIAS = 'fotografias';
 
 export function crearServicioRemoto(cliente: SupabaseClient): ServicioRemoto {
   return {
@@ -61,6 +64,31 @@ export function crearServicioRemoto(cliente: SupabaseClient): ServicioRemoto {
         .maybeSingle();
       if (error || !data) return null;
       return { id: data.id as Uuid, litros: Number(data.litros) };
+    },
+
+    async subirImagen(ruta: string, imagen: Blob): Promise<ResultadoEnvio> {
+      try {
+        const { error } = await cliente.storage
+          .from(BUCKET_FOTOGRAFIAS)
+          // Sin reemplazo: el servicio de archivos, como las tablas, solo admite inserciones (documento 14, sección 7).
+          .upload(ruta, imagen, { contentType: 'image/webp', upsert: false });
+        if (!error) return { ok: true };
+        const detalle = error as { status?: number; statusCode?: string };
+        return { ok: false, codigo: detalle.statusCode, estado: detalle.status ?? 0, mensaje: error.message };
+      } catch (error) {
+        return { ok: false, mensaje: error instanceof Error ? error.message : String(error) };
+      }
+    },
+
+    async descargarImagen(ruta: string): Promise<ResultadoDescarga> {
+      try {
+        const { data, error } = await cliente.storage.from(BUCKET_FOTOGRAFIAS).download(ruta);
+        if (data) return { ok: true, imagen: data };
+        const detalle = (error ?? {}) as { status?: number; statusCode?: string; message?: string };
+        return { ok: false, codigo: detalle.statusCode, estado: detalle.status ?? 0, mensaje: detalle.message ?? 'Sin respuesta' };
+      } catch (error) {
+        return { ok: false, mensaje: error instanceof Error ? error.message : String(error) };
+      }
     },
 
     async usuarios(): Promise<Usuario[]> {
