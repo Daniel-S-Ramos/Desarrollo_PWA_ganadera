@@ -147,7 +147,15 @@ export const consulta: Consultas = {
 // Cola de operaciones
 // ---------------------------------------------------------------------------
 
-/** Número de operaciones que esperan conexión. Lo muestra el contador de la barra inferior. */
+/**
+ * Registros que esperan conexión, sin las filas de datos de las fotos, que se cuentan como fotografías
+ * (src/dominio/pendientes.ts). Lo muestran la barra inferior, el cierre de sesión y el reingreso.
+ */
+export function contarRegistrosPendientes(): Promise<number> {
+  return db.cola_operaciones.filter((o) => o.entidad !== 'fotografia').count();
+}
+
+/** Todas las operaciones que esperan conexión, incluidas las filas de las fotos. */
 export function contarPendientes(): Promise<number> {
   return db.cola_operaciones.count();
 }

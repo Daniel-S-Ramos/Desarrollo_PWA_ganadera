@@ -54,7 +54,7 @@ se editan a mano.
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
 | [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (cerrada, `v0.1`) | 21 | 21 aprobadas · 12 criterios de aceptación cumplidos (8 de extremo a extremo, 4 a nivel técnico) |
-| [iteracion-2.md](iteracion-2.md) | Iteración 2: identificación animal y ficha (en curso) | 14 | 14 aprobadas (6 con observaciones o tras corrección) |
+| [iteracion-2.md](iteracion-2.md) | Iteración 2: identificación animal y ficha (cerrada, `v0.2`) | 15 | 15 aprobadas (6 con observaciones o tras corrección) · 12 criterios de aceptación: 10 de extremo a extremo, 1 técnico, 1 trasladado |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 

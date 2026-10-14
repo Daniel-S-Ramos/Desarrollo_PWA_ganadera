@@ -207,6 +207,14 @@ Las imágenes pendientes se cuentan aparte de los registros, porque son otra cos
 > ⏳ 1 registro pendiente de enviar
 > 📷 3 fotografías pendientes de enviar
 
+*Precisión tras PE-22 (2026-10-13).* Una foto viaja en dos partes, la fila de datos y la imagen, y la
+primera versión contaba la fila entre los registros: un animal con una foto aparecía como «2 registros
+y 1 fotografía», que el propietario leería como dos animales. Ahora **la fila de datos de una foto se
+cuenta como fotografía**: «1 registro y 1 fotografía». No hay riesgo de que algo quede sin contar,
+porque una fila de foto pendiente implica su imagen pendiente (la imagen sube después de la fila,
+sección 6.2). La regla está en `src/dominio/pendientes.ts` y la usan la barra, el cierre de sesión y el
+reingreso (documento 07, sección 6).
+
 ### 8.3 Al cerrar sesión
 
 El cierre exige también la cola de imágenes vacía (3.9.1, documento 12): *«Hay 1 registro y 3

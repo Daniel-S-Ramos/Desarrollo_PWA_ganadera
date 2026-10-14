@@ -5,7 +5,8 @@
  * Las dependencias externas (el servicio remoto y el cierre de la sesión de supabase-js) llegan como
  * parámetros, de modo que la lógica se verifica con pruebas automáticas y un servicio simulado.
  */
-import { contarImagenesPendientes, contarPendientes } from '../datos/repositorio';
+import { contarImagenesPendientes, contarRegistrosPendientes } from '../datos/repositorio';
+import { describirPendientes } from '../dominio/pendientes';
 import { descartarPendientes } from '../datos/sincronizacionLocal';
 import { leerEstadoMotor, sincronizar, suscribirseAlMotor } from '../sync/motor';
 import type { ServicioRemoto } from '../sync/servicioRemoto';
@@ -32,7 +33,7 @@ async function cerrarDefinitivamente(dependencias: DependenciasCierre): Promise<
 
 /** Cierra si la cola está vacía; si no, informa cuántos pendientes hay para que el usuario decida. */
 export async function intentarCerrar(dependencias: DependenciasCierre): Promise<ResultadoCierre> {
-  const [pendientes, imagenes] = await Promise.all([contarPendientes(), contarImagenesPendientes()]);
+  const [pendientes, imagenes] = await Promise.all([contarRegistrosPendientes(), contarImagenesPendientes()]);
   if (pendientes + imagenes > 0) return { cerrada: false, pendientes, imagenes, motivo: 'pendientes' };
   await cerrarDefinitivamente(dependencias);
   return { cerrada: true };
@@ -60,7 +61,7 @@ export async function enviarYCerrar(dependencias: DependenciasCierre): Promise<R
     resultado = await sincronizar(dependencias.servicio);
   }
 
-  const [pendientes, imagenes] = await Promise.all([contarPendientes(), contarImagenesPendientes()]);
+  const [pendientes, imagenes] = await Promise.all([contarRegistrosPendientes(), contarImagenesPendientes()]);
   if (pendientes + imagenes === 0) {
     await cerrarDefinitivamente(dependencias);
     return { cerrada: true };
@@ -81,16 +82,8 @@ export async function descartarYCerrar(dependencias: DependenciasCierre): Promis
 // Textos (sección 2)
 // ---------------------------------------------------------------------------
 
-/** «1 registro», «3 fotografías», «1 registro y 3 fotografías». */
-function loQueFalta(registros: number, imagenes: number): string {
-  const partes: string[] = [];
-  if (registros > 0 || imagenes === 0) partes.push(registros === 1 ? '1 registro' : `${registros} registros`);
-  if (imagenes > 0) partes.push(imagenes === 1 ? '1 fotografía' : `${imagenes} fotografías`);
-  return partes.join(' y ');
-}
-
 export function textoPendientes(pendientes: number, enLinea: boolean, imagenes = 0): string {
-  const falta = loQueFalta(pendientes, imagenes);
+  const falta = describirPendientes(pendientes, imagenes);
   return enLinea ? `Hay ${falta} sin enviar.` : `Hay ${falta} sin enviar y no hay conexión. Si cierra la sesión ahora, se perderán.`;
 }
 
@@ -101,10 +94,10 @@ export function textoNoCerrada(pendientes: number, motivo: Exclude<MotivoNoCerra
     no_enviados: 'Algunos registros todavía no pueden enviarse.',
   }[motivo];
   const verbo = pendientes + imagenes === 1 ? 'queda' : 'quedan';
-  return `No se cerró la sesión: ${verbo} ${loQueFalta(pendientes, imagenes)} sin enviar. ${causa}`;
+  return `No se cerró la sesión: ${verbo} ${describirPendientes(pendientes, imagenes)} sin enviar. ${causa}`;
 }
 
 export function textoSegundaConfirmacion(pendientes: number, imagenes = 0): string {
   const uno = pendientes + imagenes === 1;
-  return `Se ${uno ? 'perderá' : 'perderán'} ${loQueFalta(pendientes, imagenes)} que no se ${uno ? 'ha' : 'han'} enviado. Esta acción no se puede deshacer.`;
+  return `Se ${uno ? 'perderá' : 'perderán'} ${describirPendientes(pendientes, imagenes)} que no se ${uno ? 'ha' : 'han'} enviado. Esta acción no se puede deshacer.`;
 }

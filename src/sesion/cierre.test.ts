@@ -184,3 +184,18 @@ describe('PU-13 · 7. Fotografías pendientes (docs/tecnica/14-fotografias.md, s
     expect(textoSegundaConfirmacion(0, 1)).toBe('Se perderá 1 fotografía que no se ha enviado. Esta acción no se puede deshacer.');
   });
 });
+
+describe('PU-13 · 8. Un animal con una foto es «1 registro y 1 fotografía» (decisión tras PE-22)', () => {
+  it('la fila de datos de la foto se cuenta como fotografía, no como registro', async () => {
+    const { unidadDeTrabajo } = await import('../datos/repositorio');
+    await unidadDeTrabajo(TRABAJADOR, async (tx) => {
+      const vaca = await tx.crear('animal', animal('47'));
+      const foto = await tx.crear('fotografia', { animal_id: vaca.id, tipo: 'izquierdo' });
+      await tx.guardarImagen(foto, { completa: new Blob([new Uint8Array(10)]), reducida: new Blob([new Uint8Array(5)]) });
+    });
+    // En la cola hay dos operaciones (animal y fotografía), pero se muestra un registro y una foto.
+    expect(await db.cola_operaciones.count()).toBe(2);
+    expect(await intentarCerrar(dependencias)).toEqual({ cerrada: false, pendientes: 1, imagenes: 1, motivo: 'pendientes' });
+    expect(textoPendientes(1, false, 1)).toBe('Hay 1 registro y 1 fotografía sin enviar y no hay conexión. Si cierra la sesión ahora, se perderán.');
+  });
+});

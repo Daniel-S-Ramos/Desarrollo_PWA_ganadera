@@ -16,7 +16,7 @@ const EMISOR = `${URL_SERVICIO}/auth/v1`;
 export type ResultadoIngreso =
   | { ok: true; identidad: Identidad }
   | { ok: false; motivo: 'sin_conexion' | 'credenciales' | 'sin_perfil' | 'error' }
-  | { ok: false; motivo: 'otro_usuario_con_pendientes'; anterior: UsuarioAnterior; pendientes: number };
+  | { ok: false; motivo: 'otro_usuario_con_pendientes'; anterior: UsuarioAnterior; pendientes: number; imagenes: number };
 
 /** Descarga la clave pública con que el servicio firma los tokens y elige la que corresponde al token. */
 async function obtenerClavePublica(token: string): Promise<JWK | null> {
@@ -60,7 +60,7 @@ export async function iniciarSesion(correo: string, contrasena: string): Promise
     const reingreso = await verificarReingreso(verificacion.identidad.usuario_id);
     if (!reingreso.permitido) {
       await supabase.auth.signOut({ scope: 'local' });
-      return { ok: false, motivo: 'otro_usuario_con_pendientes', anterior: reingreso.anterior, pendientes: reingreso.pendientes };
+      return { ok: false, motivo: 'otro_usuario_con_pendientes', anterior: reingreso.anterior, pendientes: reingreso.pendientes, imagenes: reingreso.imagenes };
     }
 
     const resultado = await guardarSesionLocal(token, clave, EMISOR);

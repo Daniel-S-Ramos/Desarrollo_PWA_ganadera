@@ -57,13 +57,13 @@ repite, y las siguientes tienen más pantallas. Se recalibra al cierre de cada i
 | Iteración | Puntos | Inicio | Cierre estimado | Cierre real | Velocidad |
 |---|---|---|---|---|---|
 | 1 · Fundación técnica | 16 | 2026-10-06 | — | 2026-10-12 | 16 puntos / 7 días |
-| 2 · Identificación y ficha | 15 | 2026-10-13 | 2026-10-19 | | |
+| 2 · Identificación y ficha | 15 | 2026-10-12 | 2026-10-19 | 2026-10-13 | 15 puntos / 2 días |
 | 3 · Sanidad, leche y destino | 16 | 2026-10-20 | 2026-10-26 | | |
 | 4 · Peso, partos y correcciones | 13 | 2026-10-27 | 2026-11-02 | | |
 | 5 · Consultas, alertas y economía | 16 | 2026-11-03 | 2026-11-09 | | |
 | Cierre · Evaluación del prototipo | — | 2026-11-10 | 2026-11-23 | | |
 
-## Iteración 2 — Identificación animal y ficha (HU-01, HU-02, HU-15 · 15 puntos)
+## Iteración 2 — Identificación animal y ficha (HU-01, HU-02, HU-15 · 15 puntos) · cerrada el 2026-10-13 · `v0.2`
 
 **Criterios de cierre heredados de la Iteración 1:** verificar en pantalla HU-06.1 (el trabajador
 crea y consulta), HU-06.4 (opciones ocultas según el perfil), HU-07.1 (registro y consulta sin
@@ -78,9 +78,11 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 2.3 | Listado de animales y búsqueda por chapeta (CU-03) | ✅ |
 | 2.4 | Ficha del animal con autoría visible (HU-15) | ✅ |
 | 2.5 | Carga inicial de un dispositivo nuevo (3.7.6) | ✅ |
-| 2.6 | Pruebas y cierre de iteración | ⬜ |
+| 2.6 | Pruebas y cierre de iteración | ✅ |
 
 ## Iteración 3 — Sanidad, leche y destino (HU-03, HU-04, HU-09, HU-13 · 16 puntos)
+
+**Criterios de cierre heredados de la Iteración 2:** HU-02.4 (acceso desde la ficha al historial sanitario), HU-06.4 (opciones exclusivas del propietario ocultas al trabajador, con el destino y la salida) y la comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
 
 | Paso | Contenido | Estado |
 |---|---|---|
@@ -191,6 +193,8 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-13 | El peso inicial se nombra según el origen: «peso de compra» (comprado) o «peso al nacer» (nacido en el predio), en la ficha y en el formulario | A pedido del autor: «peso inicial» no le dice al propietario qué peso es; el campo sigue siendo uno solo (documento técnico 16, sección 3.1) |
 | 2026-10-13 | La ficha se construye con su lógica completa (último peso, vacuna, leche, destino) aunque esos registros lleguen en las Iteraciones 3 y 4 | Cuando se guarden, la ficha los mostrará sin cambios; mientras tanto dice que no hay datos (CU-03, 4a) |
 | 2026-10-13 | Durante la carga inicial de un teléfono nuevo se puede consultar pero no registrar, hasta que lleguen los datos; las fotos no bloquean | Corrige el documento técnico 10: registrar sin el inventario completo puede producir un conflicto de chapeta (documento técnico 17, sección 2) |
+| 2026-10-13 | La fila de datos de una foto se cuenta como fotografía, no como registro: un animal con una foto es «1 registro y 1 fotografía». El reingreso cuenta también las fotos | Hallazgo de PE-22: «2 registros» se leía como dos animales (documento técnico 14, sección 8.2) |
+| 2026-10-13 | Conflicto de chapeta, según el propietario: si son dos animales distintos con la misma chapeta por error humano, se corrige la chapeta del que llegó segundo; si es el mismo animal registrado dos veces, se anula el duplicado y **sus eventos se pasan al animal correcto** | Respuesta al pendiente de diseño 2.1; se implementa con las correcciones (CU-17) en la Iteración 4 |
 | 2026-10-12 | El origen se pregunta como «nacido en el predio» o «comprado», con edad aproximada para los comprados; no se almacena, se deduce de la fecha de ingreso | El propietario conoce de manera aproximada la edad de un animal comprado (3.8.10) |
 | 2026-10-12 | La genealogía se captura al registrar el animal, opcional | La ficha no se modifica; en la carga inicial se perdería la madre de los nacidos en el predio |
 | 2026-10-12 | El destino productivo inicial se agrega al formulario de registro en el paso 3.2 | Es exclusivo del propietario (CU-12) y su historial se construye en la Iteración 3 |
@@ -202,16 +206,14 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | Paso | Pendiente | Origen |
 |---|---|---|
 | ~~6.4~~ | ~~Verificar en un teléfono Android si instalar la aplicación concede el almacenamiento persistente~~ **Resuelto el 2026-10-12 (PE-18, parte 2): en Android sí lo concede** | Documento técnico 04, sección 3 |
-| 2.6 | Tomar capturas de la aplicación en el teléfono (registro con fotos, barra sin señal, ficha) para la sustentación; PE-18 parte 2 se evidenció con datos del servicio | PE-18, observación 1 |
-| ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
-| 2.x | Probar a mano el rechazo del reingreso de otro usuario con pendientes (PU-08 lo cubre de forma automática) | PE-14, pendiente |
+| ~~2.6~~ | **Hecho:** capturas del teléfono en PE-20 (listado, fichas, fotos sin señal) y PE-22. Tomar capturas de la aplicación en el teléfono (registro con fotos, barra sin señal, ficha) para la sustentación; PE-18 parte 2 se evidenció con datos del servicio | PE-18, observación 1 |
+| ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** En PE-22 el registro de datos sin conexión funcionó en Chrome para iOS; falta probar la foto. Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
 | 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros | Documento técnico 13, sección 2.4 |
 | 6.x | Opcional: dividir el código por pantallas (el paquete pesa 633 kB, 188 kB comprimido) para aligerar la primera carga | Aviso de Vite en la compilación del paso 2.1 |
-| 2.x | Probar a mano el cierre de sesión con pendientes: «Enviar y cerrar sesión» y el descarte con doble confirmación (PU-13 lo cubre de forma automática) | PE-16, pendiente |
 | ~~2.3~~ | **Hecho en los pasos 2.3 y 2.4:** distintivo junto a cada animal en el listado y la ficha. Falta observarlo a mano con pendientes y conflictos (paso 2.6). Mostrar el distintivo de sincronización junto a cada registro en el listado y la ficha, y observar a mano los estados con pendientes y conflictos | PE-15, observación 1 |
-| 2.1 | Cómo resuelve el propietario un conflicto de chapeta. Si son dos animales distintos, corregir el código (3.9.5). Si es el mismo animal registrado dos veces, anular el duplicado; falta definir qué pasa con los eventos que ya se le registraron al duplicado en ese teléfono. Consultar con el propietario | 3.7.3, tercera regla · conversación del 2026-10-06 |
+| 4.3 | **Resolver un conflicto de chapeta** con la regla que dio el propietario el 2026-10-13: dos animales distintos → corregir la chapeta del que llegó segundo; el mismo animal dos veces → anular el duplicado y pasar sus eventos (y fotos) al animal correcto. Implica: (1) el animal en conflicto nunca llegó al servicio, así que la corrección debe crear un animal nuevo con la chapeta corregida o reenviarlo, no corregir una fila del servicio; (2) «pasar los eventos» encaja con la corrección del campo `animal_id` con el motivo «animal equivocado» (3.9.5); (3) la foto del animal rechazado, que hoy queda pendiente para siempre (PE-22), debe seguir al animal. Diseñarlo en el documento técnico de las correcciones | 3.7.3, tercera regla · PE-22 · decisión del propietario del 2026-10-13 |
 
 ## Pendientes para el documento
 

@@ -6,7 +6,7 @@ Incluye además los criterios de cierre heredados de la Iteración 1 (HU-06.1, H
 marca por registro de HU-07.3, y los casos pendientes de PE-14 y PE-16).
 
 **Responsable:** Daniel Santiago Ramos Pintor
-**Estado:** en curso
+**Estado:** cerrada el 2026-10-13 como versión `v0.2` (ver el [acta de cierre](#acta-de-cierre-de-la-iteración-2) al final)
 
 ## Resumen de resultados
 
@@ -26,7 +26,8 @@ marca por registro de HU-07.3, y los casos pendientes de PE-14 y PE-16).
 | PU-17 | Ficha del animal | 2.4 | RF-05 · HU-02 · HU-15 · RNF-08 | ✅ |
 | PE-20 | Listado y ficha en el teléfono | 2.3 · 2.4 | RF-05 · RF-06 · RF-28 · CU-03 · HU-02 · HU-15 · HU-07.3 | ⚠️ Aprobada con observaciones |
 | PU-18 | Carga inicial de un teléfono nuevo | 2.5 | 3.7.6 · 3.7.7 · RNF-05 | ✅ |
-| PE-21 | Carga inicial en el navegador real | 2.5 | 3.7.6 · 3.7.7 · RNF-05 | ⚠️ Aprobada tras corrección (reverificar pasos 4 y 5) |
+| PE-21 | Carga inicial en el navegador real | 2.5 | 3.7.6 · 3.7.7 · RNF-05 | ⚠️ Aprobada tras corrección |
+| PE-22 | Casos heredados: cierre con pendientes, reingreso de otro usuario, registro en conflicto | 2.6 | 3.9.1 · Tabla 31 · RNF-04 · 3.7.3 · HU-07.3 | ✅ |
 
 ---
 
@@ -503,5 +504,161 @@ sincronización en curso, que se reinicia al reanudar. Ahora salen de lo que hay
 tabla que se está descargando (documento técnico 17, sección 4, y PU-18 grupo 6). Las cuentas no se
 reinician: tras una interrupción se ve «✓ Animales: 8».
 
-**Pendiente.** Repetir los pasos 4 y 5 con la corrección publicada, para ver los íconos correctos tras
-la interrupción.
+**Reverificación (2026-10-13), con la corrección publicada.** En una ventana de incógnito nueva, tras
+cortar la red a mitad de la carga, la pantalla muestra «✓ Usuarios y parámetros», «✓ Animales: 8» y
+«○ Registros: 11»: la cuenta real de lo que está en el teléfono, con los registros pendientes porque la
+descarga no terminó ([captura](evidencias/iteracion-2/PE-21-8-reverificacion-iconos-corregidos.png)).
+
+---
+
+## PE-22 · Casos heredados de la Iteración 1, con registros reales
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Ejecutar a mano los casos que en la Iteración 1 solo pudieron verificarse con pruebas automáticas, porque ninguna pantalla creaba registros: el cierre de sesión con pendientes (PE-16), el reingreso de otro usuario con pendientes (PE-14) y el distintivo de un registro en conflicto (HU-07.3) |
+| Requerimiento | 3.9.1 · Tabla 31 · RNF-04 · 3.7.3 (tercera regla) · Tabla 22 · criterios heredados de la Iteración 1 |
+| Tipo | Manual, con la aplicación publicada (rama `iteracion-2`): Chrome en el computador (vista de teléfono) y Chrome en un iPhone |
+| Condiciones iniciales | Sesiones de Daniel Ramos (trabajador) y de la cuenta de pruebas (trabajador); chapetas Z930 a Z933 |
+| Resultado obtenido | Los tres casos se comportaron como se diseñaron; el servicio lo confirma |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-13 |
+
+### 1. Cierre de sesión con pendientes (PE-16, pendiente)
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Sin conexión, registrar Z930 con una foto y pulsar **Cerrar sesión** | «Hay 2 registros y 1 fotografía sin enviar y no hay conexión. Si cierra la sesión ahora, se perderán.», con **Cancelar** como acción principal | [captura](evidencias/iteracion-2/PE-22-1-cierre-sin-conexion-cancelar.png) |
+| 2 | Con conexión, **Cerrar sesión** | Ofrece **Enviar y cerrar sesión**; envía y cierra. Z930 llegó al servicio con su foto | [ofrece](evidencias/iteracion-2/PE-22-2-cierre-con-conexion-enviar.png) · [enviando](evidencias/iteracion-2/PE-22-3-enviando-y-cerrando.png) |
+| 3 | Sin conexión, registrar Z931 y **descartar** | Segunda confirmación en rojo: «Se perderán 2 registros y 1 fotografía que no se han enviado. Esta acción no se puede deshacer.» Z931 **nunca llegó** al servicio | [captura](evidencias/iteracion-2/PE-22-4-descarte-segunda-confirmacion.png) |
+
+### 2. Reingreso de otro usuario con pendientes (PE-14, pendiente)
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 4 | Sin conexión, Daniel registra Z932; **Olvidé mi código**; con conexión, ingresa la cuenta de pruebas | Rechazado: «Este teléfono tiene 2 registros de Daniel Ramos que aún no se han enviado. Solo Daniel Ramos puede ingresar hasta que se envíen, para que no se pierdan.» | [captura](evidencias/iteracion-2/PE-22-5-reingreso-otro-usuario-rechazado.png) |
+| 5 | Ingresa Daniel | Aceptado; Z932 se envió (esperó 84 s en el dispositivo) | [captura](evidencias/iteracion-2/PE-22-6-z932-enviada-al-entrar-daniel.png) · [servidor](evidencias/iteracion-2/PE-22-11-servidor.txt) |
+
+### 3. Registro en conflicto (HU-07.3)
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 6 | Sin conexión, registrar Z933 en un iPhone (Daniel) y en el computador (cuenta de pruebas) | Ambos la aceptan: el teléfono solo compara con lo que tiene (documento técnico 13, sección 2.2) | [iPhone](evidencias/iteracion-2/PE-22-7-iphone-z933-pendiente.webp) · [computador](evidencias/iteracion-2/PE-22-9-computador-z933-pendiente.png) |
+| 7 | Conectar primero el iPhone y después el computador | El servicio guarda la del iPhone; la del computador queda **⚠ En conflicto** con la causa «El código de chapeta ya está asignado a otro animal», y la barra muestra «1 registro en conflicto · Requieren la revisión del propietario» | [iPhone](evidencias/iteracion-2/PE-22-8-iphone-z933-enviando.webp) · [computador](evidencias/iteracion-2/PE-22-10-computador-z933-en-conflicto.png) · [servidor](evidencias/iteracion-2/PE-22-11-servidor.txt) |
+
+**Observaciones.**
+
+1. **El conteo «2 registros y 1 fotografía»** para un animal con una foto es técnicamente correcto (la
+   fila de datos de la foto es un registro aparte del animal), pero el propietario lo leería como dos
+   animales. Se propuso contar la fila de la foto dentro de «fotografías» (ver la decisión
+   correspondiente).
+2. **La foto del animal en conflicto queda pendiente para siempre** en el dispositivo que perdió: su
+   fila depende de un animal que el servicio no tiene. El documento técnico 14 (sección 6.2) lo había
+   previsto. Se agregó este caso al pendiente de diseño 2.1, que debe resolverse antes de la evaluación.
+3. **iPhone.** El registro de datos sin conexión y la sincronización funcionaron en Chrome para iOS. La
+   compresión de fotos en iPhone sigue sin probarse (fuera del alcance: el predio usa Android).
+
+---
+
+## Ajuste final: cómo se cuentan los pendientes
+
+A partir de la observación 1 de PE-22, la fila de datos de una foto se cuenta como **fotografía** y no
+como registro: un animal con una foto es «1 registro y 1 fotografía» en la barra inferior, el cierre de
+sesión y el rechazo del reingreso (documento técnico 14, sección 8.2). Se corrigieron además dos
+detalles encontrados al revisarlo: el reingreso no consideraba las fotos pendientes (ahora las cuenta,
+igual que el cierre de sesión), y el verbo quedaba en plural con un solo pendiente («1 registro… que
+aún no se ha enviado»). Pruebas nuevas en PU-08 (aviso del reingreso), PU-13 (grupo 8) y en el
+reingreso de PU-08; tres mutaciones aplicadas sobre el ajuste, las tres detectadas. Total del conjunto
+automático: **498 de 498** ([informe](resultados/2026-10-13_225446_cc2f66d.md)).
+
+---
+
+## Acta de cierre de la Iteración 2
+
+| Campo | Contenido |
+|---|---|
+| Iteración | 2 · Identificación animal y ficha (Tabla 13) |
+| Historias | HU-01 (8 puntos) · HU-02 (5 puntos) · HU-15 (2 puntos) · **15 puntos** |
+| Periodo | 12 y 13 de octubre de 2026 (2 días calendario; estimado: hasta el 19 de octubre) |
+| Rama | `iteracion-2` · se fusiona con `main` y se etiqueta `v0.2` |
+| Pasos | 2.1 a 2.6, más el 2.2b (publicación con https, adelantado del paso 6.5) |
+| Casos de prueba | 15 casos (PU-14 a PU-18, PI-01, PI-03, PI-04, PI-05, PE-17 a PE-22): 15 aprobados, 6 de ellos con observaciones o tras corrección |
+| Pruebas automáticas | 498 de 498 aprobadas; cada grupo nuevo validado con mutaciones |
+| Documentación técnica | Documentos 13 a 17, nuevos; 04, 07, 10 y 14 actualizados con lo aprendido en las pruebas |
+| Publicación | https://desarrollo-pwa-ganadera.vercel.app (`main`) y una dirección por rama |
+
+### Criterios de aceptación
+
+Fuente: tarjetas del Anexo B. ✅ verificado de extremo a extremo · ⚙️ verificado a nivel técnico, con la
+verificación en pantalla en una iteración posterior · ➡️ trasladado.
+
+**HU-01 · Registro e identificación individual del animal (Tabla B1)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | El identificador corresponde a la chapeta, es obligatorio y no puede repetirse | ✅ | PU-14 (normalización, formato del predio, unicidad en el teléfono y en la transacción); PI-01 (formato y unicidad en el servicio); PE-17 |
+| 2 | El sistema impide continuar cuando el identificador ya está asignado e informa la causa | ✅ | PE-17 (aviso con el animal que ya tiene la chapeta y Guardar inhabilitado); PE-22 (conflicto entre dos teléfonos, con su causa) |
+| 3 | Se admiten tres fotografías: costado izquierdo, costado derecho y vista frontal | ✅ | PU-15; PE-18 (galería en el computador y cámara en Android); PI-05 |
+| 4 | El registro fotográfico incompleto no impide guardar, pero queda señalado en la ficha | ✅ | PE-18 («Registro fotográfico incompleto: 1 de 3»); PE-20 (señalado en la ficha y completado desde ella) |
+| 5 | El registro se completa sin conexión | ✅ | PE-17 (205 s de espera medidos en el servicio); PE-18 (con foto, en modo avión) |
+
+**HU-02 · Consulta de la ficha del animal en campo (Tabla B2)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | La ficha muestra fotografía, identificador, edad, último peso, última vacuna, leche más reciente y destino | ⚙️ | PU-17 (la ficha consolida los siete datos); PE-20 (foto, chapeta, edad y peso de compra o al nacer, en el teléfono). Vacuna, leche y destino muestran «sin registros» hasta que se registren en la Iteración 3, y los pesajes en la 4: la ficha ya los consulta |
+| 2 | El animal puede localizarse a partir de su identificador | ✅ | PU-16; PE-20 (`Z0923` encuentra Z923) |
+| 3 | La consulta se resuelve sin conexión | ✅ | PE-20 (listado, ficha y foto reducida en modo avión) |
+| 4 | Desde la ficha se accede al historial sanitario, a la evolución del peso y al control reproductivo | ➡️ | Esas pantallas se construyen en las Iteraciones 3 y 4; los accesos se agregan con ellas (documento técnico 16, sección 6) |
+
+**HU-15 · Registro de la autoría y la fecha de cada dato (Tabla B15)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | Cada registro conserva de forma permanente su autor y su fecha de creación | ✅ | PU-05 (los fija el repositorio); PI-01 (inalterables en el servicio) |
+| 2 | Esa información se presenta al consultar el registro | ✅ | PU-17; PE-20 (autor y fecha al pie de la ficha y en cada foto) |
+| 3 | La autoría y la fecha no pueden alterarse | ✅ | PI-01 y PI-03 (sin privilegio de modificación; el servicio rechaza un autor distinto de quien envía) |
+
+### Criterios heredados de la Iteración 1
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| HU-06.1 · El trabajador crea y consulta registros | ✅ | PE-17 (el trabajador registra animales); PE-20 (consulta el listado y las fichas) |
+| HU-06.4 · Las opciones exclusivas del propietario no se muestran al trabajador | ➡️ | Todavía no hay opciones exclusivas del propietario: las primeras (destino productivo, salida) llegan en la Iteración 3. La regla está verificada a nivel técnico desde la Iteración 1 (PU-09, PI-03) |
+| HU-07.1 · Registro y consulta sin conexión | ✅ | PE-17, PE-18 y PE-20 |
+| HU-07.3 · Marca de sincronización por registro | ✅ | PE-17 (⏳ Pendiente); PE-20 (listado y ficha); PE-22 (⚠ En conflicto con su causa) |
+| PE-14 · Reingreso de otro usuario con pendientes, a mano | ✅ | PE-22 |
+| PE-16 · Cierre de sesión con pendientes, a mano | ✅ | PE-22 |
+
+### Decisión de cierre
+
+La Iteración 2 se cierra con **12 de 12 criterios de sus historias cumplidos o trasladados con
+justificación**: 10 verificados de extremo a extremo, 1 a nivel técnico (HU-02.1, cuyos datos de
+sanidad, leche, destino y pesaje se registran en las Iteraciones 3 y 4) y 1 trasladado (HU-02.4, los
+accesos a pantallas que aún no existen). De los heredados, 5 quedan cumplidos y 1 (HU-06.4) pasa a la
+Iteración 3, donde aparecen las primeras opciones exclusivas del propietario.
+
+**Pasan a la Iteración 3:** HU-02.4 (con el historial sanitario), HU-06.4 (con el destino y la salida)
+y la comprobación en pantalla de los datos de HU-02.1 a medida que se registren.
+
+**Pendiente antes de la evaluación (Iteración 4):** resolver los conflictos de chapeta con la regla que
+dio el propietario el 2026-10-13 (pendiente de diseño 4.3 del PLAN).
+
+### Velocidad
+
+15 puntos en 2 días calendario. Acumulado: 31 puntos en 8 días (6 al 13 de octubre). Las estimaciones
+de las iteraciones siguientes no se adelantan: la velocidad depende del tiempo disponible del autor, y
+el margen queda para la carga real de los animales, la evaluación y los pendientes de diseño (PLAN,
+«Calendario de la Fase 3»).
+
+### Hallazgos de la iteración que cambiaron el diseño
+
+| Hallazgo | Prueba | Cambio |
+|---|---|---|
+| El propietario numera 1–9999 y luego letra + 1–999, sin la O; `01` y `1` son el mismo animal | PE-17 | Normalización sin ceros y formato del predio, en el teléfono y en el servicio |
+| La madre también puede ser externa | PE-17 | Columna `madre_externa` |
+| El peso inicial confundía | Revisión de la ficha | «Peso de compra» o «peso al nacer», según el origen |
+| La edad del 31 de enero al 1 de marzo daba días negativos | PU-16 | Cálculo desde el último mes cumplido |
+| Registrar durante la carga inicial podía crear conflictos de chapeta | Diseño del paso 2.5 | Registro en espera durante la carga (corrige el documento 10) |
+| Los pasos de la carga se reiniciaban tras una interrupción | PE-21 | Avance calculado con lo que hay en el teléfono |
+| «2 registros» por un animal con una foto | PE-22 | La fila de una foto se cuenta como fotografía |
+| Android sí concede el almacenamiento persistente al instalar la aplicación | PE-18 | Pendiente 6.4 resuelto |

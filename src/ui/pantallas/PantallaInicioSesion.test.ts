@@ -7,17 +7,21 @@ import { mensajeDeFalla } from './PantallaInicioSesion';
  */
 describe('PU-08 · 7b. Aviso cuando otro usuario intenta ingresar con pendientes', () => {
   const anterior = { usuario_id: '0192', nombre: 'Daniel Ramos' };
+  const falla = (pendientes: number, imagenes = 0) => ({ ok: false as const, motivo: 'otro_usuario_con_pendientes' as const, anterior, pendientes, imagenes });
 
   it('nombra al usuario anterior, la cantidad de pendientes y la acción a seguir', () => {
-    const texto = mensajeDeFalla({ ok: false, motivo: 'otro_usuario_con_pendientes', anterior, pendientes: 3 });
-    expect(texto).toBe(
+    expect(mensajeDeFalla(falla(3))).toBe(
       'Este teléfono tiene 3 registros de Daniel Ramos que aún no se han enviado. Solo Daniel Ramos puede ingresar hasta que se envíen, para que no se pierdan. Pídale que ingrese con su cuenta y sincronice.',
     );
   });
 
-  it('usa el singular con un solo pendiente', () => {
-    const texto = mensajeDeFalla({ ok: false, motivo: 'otro_usuario_con_pendientes', anterior, pendientes: 1 });
-    expect(texto).toContain('tiene 1 registro de Daniel Ramos');
+  it('usa el singular con un solo pendiente, también en el verbo', () => {
+    expect(mensajeDeFalla(falla(1))).toContain('tiene 1 registro de Daniel Ramos que aún no se ha enviado');
+  });
+
+  it('cuenta las fotografías aparte (decisión tras PE-22)', () => {
+    expect(mensajeDeFalla(falla(1, 1))).toContain('tiene 1 registro y 1 fotografía de Daniel Ramos que aún no se han enviado');
+    expect(mensajeDeFalla(falla(0, 1))).toContain('tiene 1 fotografía de Daniel Ramos que aún no se ha enviado');
   });
 
   it('los demás motivos conservan su mensaje', () => {
