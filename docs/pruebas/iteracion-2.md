@@ -21,6 +21,10 @@ marca por registro de HU-07.3, y los casos pendientes de PE-14 y PE-16).
 | PI-05 | Fotografías contra el servicio de archivos real | 2.2 | RNF-12 · 3.8.5 · 3.9.3 · RNF-06 | ✅ |
 | PE-18 | Fotografías en el navegador real: computador y teléfono Android | 2.2 · 2.2b | RF-02 · HU-01 criterios 3 y 4 · RNF-12 · Tabla 25 | ⚠️ Aprobada con observaciones |
 | PE-19 | Publicación con https en Vercel | 2.2b | RNF-10 · RNF-11 · 3.9.1 | ⚠️ Aprobada tras corrección |
+| PU-16 | Listado, búsqueda por chapeta, edad y bajada de imágenes | 2.3 | RF-06 · CU-03 · 3.11.1 · Tabla 25 | ⚠️ Aprobada tras corrección |
+| PI-05 | Verificación 6: un teléfono vacío baja la reducida del servicio real | 2.3 | RF-28 · 3.7.6 | ✅ ([evidencia](evidencias/iteracion-2/PI-05-2-bajada-de-imagenes.txt)) |
+| PU-17 | Ficha del animal | 2.4 | RF-05 · HU-02 · HU-15 · RNF-08 | ✅ |
+| PE-20 | Listado y ficha en el teléfono | 2.3 · 2.4 | RF-05 · RF-06 · RF-28 · CU-03 · HU-02 · HU-15 · HU-07.3 | ⚠️ Aprobada con observaciones |
 
 ---
 
@@ -346,3 +350,98 @@ desactivó la protección de las publicaciones de prueba (Vercel Authentication)
 teléfono; la aplicación tiene su propia autenticación. (3) Vercel advirtió que el prefijo `VITE_`
 expone la variable al navegador: es lo esperado para la dirección y la clave publicable de Supabase,
 que están hechas para ir en la aplicación. La clave secreta no se usa.
+
+---
+
+## PU-16 · Listado, búsqueda por chapeta, edad y bajada de imágenes
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar la búsqueda (normalización, filtro por el inicio, orden numérico), la oferta de registrar una chapeta no registrada, el filtro por estado, el cálculo de la edad, la foto de cada fila y la bajada de las imágenes de otros teléfonos |
+| Requerimiento | RF-06 · RF-28 · CU-03 (2a, 2b) · HU-02 criterio 2 · 3.8.10 · 3.11.1 · Tabla 25 |
+| Tipo | Unitaria, automática |
+| Código | [`src/modulos/consulta/listado.ts`](../../src/modulos/consulta/listado.ts) · [`src/dominio/edad.ts`](../../src/dominio/edad.ts) · [`src/sync/bajadaImagenes.ts`](../../src/sync/bajadaImagenes.ts) · pruebas [`listado.test.ts`](../../src/modulos/consulta/listado.test.ts), [`edad.test.ts`](../../src/dominio/edad.test.ts) y [`bajadaImagenes.test.ts`](../../src/sync/bajadaImagenes.test.ts) · especificación [documento técnico 15](../tecnica/15-listado-de-animales.md), sección 9 |
+| Resultado obtenido | **50 de 50 aprobadas**. Total del conjunto automático: **481 de 481** ([informe](resultados/2026-10-13_200947_1e39542.md)) |
+| Estado | ⚠️ Aprobada tras corrección |
+| Fecha | 2026-10-13 |
+
+**Error encontrado por la prueba.** La edad del 31 de enero al 1 de marzo daba «1 mes y −2 días».
+Al descontar un mes no cumplido, el cálculo sumaba los días de febrero en lugar de contarlos desde el
+último mes cumplido. Se corrigió calculando los días desde la fecha del aniversario mensual, con el
+último día del mes cuando ese día no existe, y se agregaron casos de fin de mes y de año bisiesto.
+
+**Mutaciones.** Se aplicaron 14; 13 fueron detectadas. La sobreviviente («la coincidencia exacta va
+primero») resultó **equivalente**: como todas las coincidencias empiezan por lo buscado y son más
+largas que la exacta, el orden numérico ya la deja primera. La regla se eliminó por redundante y se
+explicó en el documento técnico 15, sección 2.3.
+
+| Mutación | Pruebas que fallaron |
+|---|---|
+| Buscar en cualquier parte de la chapeta y no por el inicio | 4 |
+| Quitar «la exacta primero» | 0 (equivalente, ver arriba) |
+| No considerar los retirados al ofrecer el registro | 1 |
+| Orden alfabético en lugar de numérico | 2 |
+| No preferir la reducida de la vista principal | 1 |
+| Bajar las fotos de animales retirados | 1 |
+| No reintentar nunca una imagen que faltaba | 1 |
+| Reintentar en cada sincronización | 1 |
+| Bajar sin aplicar la retención | 1 |
+| Quitar la cuarta etapa del motor | 1 |
+| Tratar una falla transitoria como «no existe» | 3 |
+| Edad aproximada con los meses sueltos | 2 |
+| Pasar a años desde los 12 meses | 1 |
+| Dar por cumplido el mes antes del día | 5 |
+
+## PU-17 · Ficha del animal
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar la consolidación de la ficha: último peso (o peso de compra o al nacer), última vacuna, leche, destino, genealogía, fotos, autoría y el cambio de una foto |
+| Requerimiento | RF-02 · RF-05 · RF-27 · CU-03 (4a) · HU-02 criterio 1 · HU-15 · RNF-08 |
+| Tipo | Unitaria, automática |
+| Código | [`src/modulos/consulta/ficha.ts`](../../src/modulos/consulta/ficha.ts) · [`src/dominio/origen.ts`](../../src/dominio/origen.ts) · [`src/modulos/identificacion/actualizarFotos.ts`](../../src/modulos/identificacion/actualizarFotos.ts) · prueba [`ficha.test.ts`](../../src/modulos/consulta/ficha.test.ts) · especificación [documento técnico 16](../tecnica/16-ficha-del-animal.md), sección 8 |
+| Resultado obtenido | **23 de 23 aprobadas** |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-13 |
+
+**Mutaciones.** Se aplicaron 10; al principio sobrevivió una: quitar el desempate «a igual fecha, el
+registrado después». La prueba evaluaba un solo orden de entrada, que daba el resultado correcto por
+casualidad. Se reforzó con los dos órdenes y la mutación quedó detectada. Las otras nueve (invertir
+el peso de compra y al nacer, tomar el último registrado en lugar del más reciente, contar las purgas
+como vacuna, mostrar la leche en machos, tomar el último destino registrado, mostrar el identificador
+del autor, no marcar los retirados, quitar el nombre «peso de compra» y admitir fotos de un animal
+inexistente) fueron detectadas desde el principio.
+
+## PE-20 · Listado y ficha en el teléfono
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar en el teléfono Android, con la aplicación publicada e instalada, el listado con las fotos de otros teléfonos, la búsqueda, el registro desde una chapeta no registrada, la ficha completa, el cambio de foto y el funcionamiento sin señal |
+| Requerimiento | RF-02 · RF-05 · RF-06 · RF-28 · CU-03 · HU-02 criterios 1 a 3 · HU-15 · HU-07.3 (heredado) · 3.11.1 |
+| Tipo | Manual, en un teléfono Android 10 con Chrome, aplicación instalada desde la dirección de la rama `iteracion-2` |
+| Condiciones iniciales | Sesión de Daniel Ramos (trabajador). En el servicio, Z920 a Z928; las fotos de Z923, Z924 y Z925 se habían tomado en el computador |
+| Resultado obtenido | Todos los pasos se comportaron como se esperaba. Se encontraron dos defectos visuales, corregidos |
+| Estado | ⚠️ Aprobada con observaciones |
+| Fecha | 2026-10-13 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Abrir **Animales** | Z920 a Z928, con las fotos de Z923, Z924 y Z925 **bajadas del servicio**: la cuarta etapa del motor funciona con datos reales. Z920 y Z921, que no tienen fotos, dicen «Sin foto» | [listado](evidencias/iteracion-2/PE-20-01-listado-con-fotos-de-otros-telefonos.jpg) · [final](evidencias/iteracion-2/PE-20-02-listado-final.jpg) |
+| 2 | Buscar `Z0923` | Encuentra Z923, resaltada | [captura](evidencias/iteracion-2/PE-20-03-busqueda-z0923.jpg) |
+| 3 | Buscar `Z929` | «La chapeta Z929 no está registrada en este teléfono»; **Registrar el animal Z929** abre el formulario con la chapeta escrita (CU-03 2a, 3.11.1) | [aviso](evidencias/iteracion-2/PE-20-04-chapeta-no-registrada.jpg) · [formulario](evidencias/iteracion-2/PE-20-05-registro-con-chapeta-precargada.jpg) |
+| 4 | Abrir Z924 y completar el costado izquierdo con la cámara | «Registro fotográfico incompleto: 1 de 3». Tras la foto, **la miniatura del listado pasó del frente al costado izquierdo** (vista principal recalculada). En el servicio, la foto nueva es un registro nuevo y la anterior se conserva | [ficha](evidencias/iteracion-2/PE-20-06-ficha-z924-incompleta.jpg) · [listado](evidencias/iteracion-2/PE-20-07-listado-tras-completar-z924.jpg) · [servidor](evidencias/iteracion-2/PE-20-14-servidor-foto-nueva-z924.txt) |
+| 5 | Abrir Z921 | «120 kg · peso al nacer», madre **Z920** como enlace, padre externo, autoría al pie (HU-15) | [datos](evidencias/iteracion-2/PE-20-08-ficha-z921-peso-al-nacer.jpg) · [genealogía y autoría](evidencias/iteracion-2/PE-20-09-ficha-z921-genealogia-y-autoria.jpg) |
+| 6 | Abrir Z920 | «390 kg · peso de compra»; comprada, con procedencia y nacimiento aproximado | [datos](evidencias/iteracion-2/PE-20-10-ficha-z920-peso-de-compra.jpg) · [origen](evidencias/iteracion-2/PE-20-11-ficha-z920-origen.jpg) |
+| 7 | Abrir Z924 (macho) | La fila de leche no aparece (decisión B) | [captura](evidencias/iteracion-2/PE-20-06-ficha-z924-incompleta.jpg) |
+| 8 | En modo avión, abrir Z925 y **Ver fotos** | La reducida del encabezado se ve; las completas dicen «Requiere conexión», con la autoría de cada foto | [ficha](evidencias/iteracion-2/PE-20-12-ficha-z925-sin-conexion.jpg) · [fotos](evidencias/iteracion-2/PE-20-13-ver-fotos-sin-conexion.jpg) |
+
+**Defectos encontrados y corregidos.**
+
+1. **Punto doble en la autoría** («a las 6:22 p. m..»). Chrome para Android escribe la hora terminada
+   en «p. m.» y la frase le agregaba otro punto. Se quitó el punto final de la frase.
+2. **Los filtros en dos filas.** «Todos» quedaba solo en una segunda fila. Los tres filtros van ahora en
+   una sola línea.
+
+**Observación.** Las fotos completas con conexión (paso 5 del plan de la prueba) no tienen captura.
+La descarga de una imagen del servicio de archivos con la sesión de la aplicación ya está verificada
+por PI-05 (verificación 1).

@@ -56,7 +56,7 @@ export function PantallaListado({ puedeRegistrar }: { puedeRegistrar: boolean })
         />
       </label>
 
-      <div className="opciones" role="group" aria-label="Estado">
+      <div className="opciones opciones--tres" role="group" aria-label="Estado">
         {FILTROS.map(([clave, nombre]) => (
           <button key={clave} type="button" className="opcion" aria-pressed={filtro === clave} onClick={() => setFiltro(clave)}>
             {nombre}

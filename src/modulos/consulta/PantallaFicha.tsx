@@ -105,7 +105,8 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
 
       {/* HU-15: quién registró y cuándo, al pie (3.10.4.4). */}
       <p className="ficha__autoria">
-        Registrado por <strong>{ficha.autor}</strong> el {formatearInstante(ficha.creado_en)}.
+        {/* Sin punto final: en Android la hora ya termina en «p. m.» y quedaría «p. m..» (PE-20). */}
+        Registrado por <strong>{ficha.autor}</strong> el {formatearInstante(ficha.creado_en)}
       </p>
     </div>
   );

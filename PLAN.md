@@ -75,8 +75,8 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 2.1 | Registrar animal (CU-02) con validación de chapeta única | ✅ |
 | 2.2 | Fotografías: captura, compresión y cola de imágenes | ✅ |
 | 2.2b | Publicación con HTTPS para probar la cámara en el teléfono (adelantado del paso 6.5) | ✅ |
-| 2.3 | Listado de animales y búsqueda por chapeta (CU-03) | ⬜ |
-| 2.4 | Ficha del animal con autoría visible (HU-15) | ⬜ |
+| 2.3 | Listado de animales y búsqueda por chapeta (CU-03) | ✅ |
+| 2.4 | Ficha del animal con autoría visible (HU-15) | ✅ |
 | 2.5 | Carga inicial de un dispositivo nuevo (3.7.6) | ⬜ |
 | 2.6 | Pruebas y cierre de iteración | ⬜ |
 
@@ -209,7 +209,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros | Documento técnico 13, sección 2.4 |
 | 6.x | Opcional: dividir el código por pantallas (el paquete pesa 633 kB, 188 kB comprimido) para aligerar la primera carga | Aviso de Vite en la compilación del paso 2.1 |
 | 2.x | Probar a mano el cierre de sesión con pendientes: «Enviar y cerrar sesión» y el descarte con doble confirmación (PU-13 lo cubre de forma automática) | PE-16, pendiente |
-| 2.3 | Mostrar el distintivo de sincronización junto a cada registro en el listado y la ficha, y observar a mano los estados con pendientes y conflictos | PE-15, observación 1 |
+| ~~2.3~~ | **Hecho en los pasos 2.3 y 2.4:** distintivo junto a cada animal en el listado y la ficha. Falta observarlo a mano con pendientes y conflictos (paso 2.6). Mostrar el distintivo de sincronización junto a cada registro en el listado y la ficha, y observar a mano los estados con pendientes y conflictos | PE-15, observación 1 |
 | 2.1 | Cómo resuelve el propietario un conflicto de chapeta. Si son dos animales distintos, corregir el código (3.9.5). Si es el mismo animal registrado dos veces, anular el duplicado; falta definir qué pasa con los eventos que ya se le registraron al duplicado en ese teléfono. Consultar con el propietario | 3.7.3, tercera regla · conversación del 2026-10-06 |
 
 ## Pendientes para el documento
