@@ -121,3 +121,41 @@ export function describirDistintivo(estado: EstadoSync, detalleConflicto?: strin
       return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Pasos de la carga inicial (docs/tecnica/17-carga-inicial.md, sección 4)
+// ---------------------------------------------------------------------------
+
+export type EstadoPaso = 'hecho' | 'en_curso' | 'pendiente';
+
+export interface PasosCarga {
+  referencia: EstadoPaso;
+  animales: EstadoPaso;
+  registros: EstadoPaso;
+}
+
+/**
+ * Estado de cada paso de la carga inicial. Se calcula con lo que ya hay en el teléfono más la tabla
+ * que se está descargando, no solo con la sincronización en curso: así una descarga interrumpida y
+ * reanudada no vuelve a mostrar como pendiente lo que ya llegó (corrección tras PE-21).
+ */
+export function pasosDeCarga(s: {
+  sincronizando: boolean;
+  /** Tabla que se está descargando; null antes de las tablas del predio o fuera de una sincronización. */
+  tabla: string | null;
+  usuarios: number;
+  animales: number;
+}): PasosCarga {
+  const enTablas = s.sincronizando && s.tabla !== null;
+  const antesDeAnimales = s.tabla === 'medicamento';
+  const enAnimales = enTablas && s.tabla === 'animal';
+  const despuesDeAnimales = enTablas && !antesDeAnimales && !enAnimales;
+  return {
+    referencia: s.usuarios > 0 ? 'hecho' : s.sincronizando ? 'en_curso' : 'pendiente',
+    // Los animales del predio (unos 55) llegan en una sola página, que se aplica completa o no se aplica:
+    // si hay animales en el teléfono, llegaron todos.
+    animales: enAnimales ? 'en_curso' : despuesDeAnimales || s.animales > 0 ? 'hecho' : 'pendiente',
+    // Mientras la pantalla se muestra, los registros no han terminado de llegar: nunca se dan por hechos.
+    registros: despuesDeAnimales ? 'en_curso' : 'pendiente',
+  };
+}

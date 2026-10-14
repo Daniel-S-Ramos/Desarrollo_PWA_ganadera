@@ -1,10 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router';
-import { contarAnimales } from '../../sync/cargaInicial';
+import { contarLoDescargado } from '../../sync/cargaInicial';
+import { pasosDeCarga, type EstadoPaso } from '../estadoSincronizacion';
 import { useEnLinea, useEstadoMotor } from '../useEstadoMotor';
 
-type Paso = 'hecho' | 'en_curso' | 'pendiente';
-const ICONO: Record<Paso, string> = { hecho: '✓', en_curso: '↻', pendiente: '○' };
+const ICONO: Record<EstadoPaso, string> = { hecho: '✓', en_curso: '↻', pendiente: '○' };
 
 /**
  * «Preparando este teléfono»: el avance de la carga inicial (documento técnico 17, secciones 4 y 5).
@@ -13,11 +13,9 @@ const ICONO: Record<Paso, string> = { hecho: '✓', en_curso: '↻', pendiente: 
 export function PreparandoTelefono() {
   const motor = useEstadoMotor();
   const enLinea = useEnLinea();
-  const animales = useLiveQuery(() => contarAnimales(), [], 0);
-  const datos = motor.avance?.datos ?? null;
-
-  const referencia: Paso = datos?.referencia ? 'hecho' : motor.sincronizando ? 'en_curso' : 'pendiente';
-  const recibiendo: Paso = datos?.referencia ? 'en_curso' : 'pendiente';
+  // Lo que ya hay en el teléfono: no se reinicia si la descarga se corta y se reanuda.
+  const descargado = useLiveQuery(() => contarLoDescargado(), [], { usuarios: 0, animales: 0, registros: 0 });
+  const pasos = pasosDeCarga({ sincronizando: motor.sincronizando, tabla: motor.avance?.datos?.tabla ?? null, ...descargado });
   const interrumpida = !motor.sincronizando && (!enLinea || motor.ultima?.estado === 'sin_red' || motor.ultima?.estado === 'error_bajada');
 
   return (
@@ -27,14 +25,14 @@ export function PreparandoTelefono() {
 
       <ul className="preparando__pasos">
         <li>
-          <span aria-hidden="true">{ICONO[referencia]}</span> Usuarios y parámetros
+          <span aria-hidden="true">{ICONO[pasos.referencia]}</span> Usuarios y parámetros
         </li>
         <li>
-          <span aria-hidden="true">{ICONO[recibiendo]}</span> Animales: {animales}
+          <span aria-hidden="true">{ICONO[pasos.animales]}</span> Animales: {descargado.animales}
         </li>
         <li>
-          <span aria-hidden="true">{ICONO[recibiendo]}</span> Registros: {datos?.registros ?? 0}
-          {recibiendo === 'en_curso' ? '…' : ''}
+          <span aria-hidden="true">{ICONO[pasos.registros]}</span> Registros: {descargado.registros}
+          {pasos.registros === 'en_curso' ? '…' : ''}
         </li>
         <li>
           <span aria-hidden="true">{ICONO.pendiente}</span> Fotos de los animales (llegan después, sin impedir registrar)

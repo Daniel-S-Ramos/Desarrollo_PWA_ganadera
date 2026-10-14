@@ -5,11 +5,11 @@
  * Un teléfono está en carga inicial mientras no haya completado su primera bajada de datos. Durante
  * ese tiempo se consulta lo que ya llegó, pero no se registra (sección 2).
  */
-import { contarAnimales, leerCargaInicialCompleta, marcarCargaInicialCompleta } from '../datos/sincronizacionLocal';
+import { contarAnimales, contarLoDescargado, leerCargaInicialCompleta, marcarCargaInicialCompleta } from '../datos/sincronizacionLocal';
 import type { AvanceDatos } from './bajada';
 import type { AvanceFotos } from './bajadaImagenes';
 
-export { contarAnimales, marcarCargaInicialCompleta };
+export { contarAnimales, contarLoDescargado, marcarCargaInicialCompleta };
 
 /** ¿Ya llegó la información del predio a este teléfono? Las fotos no cuentan (sección 3). */
 export async function cargaInicialCompleta(): Promise<boolean> {

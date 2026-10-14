@@ -77,7 +77,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 2.2b | Publicación con HTTPS para probar la cámara en el teléfono (adelantado del paso 6.5) | ✅ |
 | 2.3 | Listado de animales y búsqueda por chapeta (CU-03) | ✅ |
 | 2.4 | Ficha del animal con autoría visible (HU-15) | ✅ |
-| 2.5 | Carga inicial de un dispositivo nuevo (3.7.6) | ⬜ |
+| 2.5 | Carga inicial de un dispositivo nuevo (3.7.6) | ✅ |
 | 2.6 | Pruebas y cierre de iteración | ⬜ |
 
 ## Iteración 3 — Sanidad, leche y destino (HU-03, HU-04, HU-09, HU-13 · 16 puntos)

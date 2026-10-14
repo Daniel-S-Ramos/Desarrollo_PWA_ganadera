@@ -4,9 +4,9 @@ import { uuidv7 } from '../datos/uuidv7';
 import { rutaImagen } from '../dominio/fotografias';
 import { descartarYCerrar } from '../sesion/cierre';
 import { ServicioSimulado } from '../test/servicioSimulado';
-import { describirBarra } from '../ui/estadoSincronizacion';
+import { describirBarra, pasosDeCarga } from '../ui/estadoSincronizacion';
 import { leerCargaInicialCompleta } from '../datos/sincronizacionLocal';
-import { cargaInicialCompleta, marcarCargaInicialCompleta } from './cargaInicial';
+import { cargaInicialCompleta, contarLoDescargado, marcarCargaInicialCompleta } from './cargaInicial';
 import { sincronizar, suscribirseAlMotor, type EstadoMotor } from './motor';
 
 /**
@@ -135,5 +135,36 @@ describe('PU-18 · 5. Reanudación (3.7.7)', () => {
     const deAnimal = servicio.consultas.filter((c) => c.tabla === 'animal');
     expect(deAnimal[0]?.desde.tipo).toBe('despues_de');
     expect(await cargaInicialCompleta()).toBe(true);
+  });
+});
+
+describe('PU-18 · 6. Pasos de la pantalla (corrección tras PE-21)', () => {
+  it('al empezar: la referencia en curso, lo demás pendiente', () => {
+    expect(pasosDeCarga({ sincronizando: true, tabla: null, usuarios: 0, animales: 0 })).toEqual({
+      referencia: 'en_curso', animales: 'pendiente', registros: 'pendiente',
+    });
+  });
+
+  it('descargando animales y después registros', () => {
+    expect(pasosDeCarga({ sincronizando: true, tabla: 'animal', usuarios: 4, animales: 0 })).toMatchObject({ referencia: 'hecho', animales: 'en_curso' });
+    expect(pasosDeCarga({ sincronizando: true, tabla: 'pesaje', usuarios: 4, animales: 8 })).toEqual({
+      referencia: 'hecho', animales: 'hecho', registros: 'en_curso',
+    });
+  });
+
+  it('tras una interrupción, lo que ya está en el teléfono sigue hecho; los registros siguen pendientes', () => {
+    expect(pasosDeCarga({ sincronizando: false, tabla: null, usuarios: 4, animales: 8 })).toEqual({
+      referencia: 'hecho', animales: 'hecho', registros: 'pendiente',
+    });
+  });
+
+  it('al reanudar, mientras vuelve a pedir la referencia, los animales que ya llegaron no vuelven a «pendiente»', () => {
+    expect(pasosDeCarga({ sincronizando: true, tabla: 'medicamento', usuarios: 4, animales: 8 })).toMatchObject({ animales: 'hecho' });
+  });
+
+  it('lo descargado se cuenta desde el teléfono, no desde la sincronización en curso', async () => {
+    predioEnElServicio(3);
+    await sincronizar(servicio);
+    expect(await contarLoDescargado()).toEqual({ usuarios: 1, animales: 3, registros: 3 });
   });
 });

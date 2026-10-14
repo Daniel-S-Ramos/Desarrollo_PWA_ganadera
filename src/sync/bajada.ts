@@ -4,6 +4,7 @@
  */
 import { TABLAS_SINCRONIZABLES } from '../datos/repositorio';
 import { aplicarPagina, leerMarca, reemplazarParametros, reemplazarUsuarios } from '../datos/sincronizacionLocal';
+import type { NombreTabla } from '../dominio/tipos';
 import type { Desde, ServicioRemoto } from './servicioRemoto';
 
 export const TAMANO_PAGINA = 1_000;
@@ -17,6 +18,8 @@ export interface ResumenBajada {
 /** Avance de la bajada de datos, para la pantalla de carga inicial (documento 17, sección 4). */
 export interface AvanceDatos {
   referencia: boolean;
+  /** Tabla que se está descargando; null antes de empezar las tablas del predio. */
+  tabla: NombreTabla | null;
   /** Filas de animal recibidas en esta bajada. */
   animales: number;
   /** Filas de las demás tablas recibidas en esta bajada. */
@@ -35,7 +38,7 @@ export function desdeLaMarca(marca: string | undefined): Desde {
  * local; si una consulta falla, lo ya aplicado queda firme y el error se propaga.
  */
 export async function bajar(servicio: ServicioRemoto, alAvanzar: (avance: AvanceDatos) => void = () => {}): Promise<ResumenBajada> {
-  const avance: AvanceDatos = { referencia: false, animales: 0, registros: 0 };
+  const avance: AvanceDatos = { referencia: false, tabla: null, animales: 0, registros: 0 };
 
   await reemplazarUsuarios(await servicio.usuarios());
   await reemplazarParametros(await servicio.parametros());
@@ -43,6 +46,8 @@ export async function bajar(servicio: ServicioRemoto, alAvanzar: (avance: Avance
   alAvanzar({ ...avance });
 
   for (const tabla of TABLAS_SINCRONIZABLES) {
+    avance.tabla = tabla;
+    alAvanzar({ ...avance });
     let desde = desdeLaMarca(await leerMarca(tabla));
     for (;;) {
       const pagina = await servicio.consultar(tabla, desde, TAMANO_PAGINA);

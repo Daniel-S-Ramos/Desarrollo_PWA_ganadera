@@ -25,6 +25,8 @@ marca por registro de HU-07.3, y los casos pendientes de PE-14 y PE-16).
 | PI-05 | Verificación 6: un teléfono vacío baja la reducida del servicio real | 2.3 | RF-28 · 3.7.6 | ✅ ([evidencia](evidencias/iteracion-2/PI-05-2-bajada-de-imagenes.txt)) |
 | PU-17 | Ficha del animal | 2.4 | RF-05 · HU-02 · HU-15 · RNF-08 | ✅ |
 | PE-20 | Listado y ficha en el teléfono | 2.3 · 2.4 | RF-05 · RF-06 · RF-28 · CU-03 · HU-02 · HU-15 · HU-07.3 | ⚠️ Aprobada con observaciones |
+| PU-18 | Carga inicial de un teléfono nuevo | 2.5 | 3.7.6 · 3.7.7 · RNF-05 | ✅ |
+| PE-21 | Carga inicial en el navegador real | 2.5 | 3.7.6 · 3.7.7 · RNF-05 | ⚠️ Aprobada tras corrección (reverificar pasos 4 y 5) |
 
 ---
 
@@ -445,3 +447,61 @@ inexistente) fueron detectadas desde el principio.
 **Observación.** Las fotos completas con conexión (paso 5 del plan de la prueba) no tienen captura.
 La descarga de una imagen del servicio de archivos con la sesión de la aplicación ya está verificada
 por PI-05 (verificación 1).
+
+---
+
+## PU-18 · Carga inicial de un teléfono nuevo
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar la marca de carga completa, que las fotos no bloquean, el avance por etapas, el orden de los datos de referencia, la reanudación y los pasos que muestra la pantalla |
+| Requerimiento | Apartados 3.7.6 y 3.7.7 · RNF-05 · 3.7.3 (tercera regla) |
+| Tipo | Unitaria, automática, con el servicio simulado |
+| Código | [`src/sync/cargaInicial.ts`](../../src/sync/cargaInicial.ts) · [`src/sync/bajada.ts`](../../src/sync/bajada.ts) · [`src/sync/motor.ts`](../../src/sync/motor.ts) · `pasosDeCarga` en [`src/ui/estadoSincronizacion.ts`](../../src/ui/estadoSincronizacion.ts) · prueba [`src/sync/cargaInicial.test.ts`](../../src/sync/cargaInicial.test.ts) · especificación [documento técnico 17](../tecnica/17-carga-inicial.md), sección 7 |
+| Resultado obtenido | **14 de 14 aprobadas**. Total del conjunto automático: **495 de 495** ([informe](resultados/2026-10-13_221658_8de6beb.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-13 |
+
+| # | Grupo | Pruebas |
+|---|---|---|
+| 1 | Marca de carga completa: no existe en un teléfono nuevo; se guarda al completarse la bajada; no si se interrumpe; una sola vez; se conserva al cerrar sesión | 4 |
+| 2 | Las fotos no bloquean | 1 |
+| 3 | Avance en orden y barra con las fotos que bajan | 2 |
+| 4 | Usuarios y parámetros antes que las tablas del predio | 1 |
+| 5 | Reanudación sin volver a pedir desde el principio | 1 |
+| 6 | Pasos de la pantalla con lo que hay en el teléfono (corrección tras PE-21) | 5 |
+
+**Mutaciones.** Diez, todas detectadas al final. Una sobrevivió al principio: reescribir la marca en
+cada sincronización en lugar de guardarla una sola vez; ninguna prueba miraba la fecha, y se agregó la
+que la comprueba. Tras corregir el defecto de PE-21, **reintroducirlo** (los íconos solo con la
+sincronización en curso) hace fallar dos pruebas. La prueba PU-12 del motor se ajustó: exigía
+exactamente dos avisos (empezar y terminar), y ahora también hay avisos de avance entre ambos.
+
+## PE-21 · Carga inicial en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Simular un teléfono nuevo y comprobar la pantalla de carga, la consulta durante la carga, el registro en espera, la interrupción y la reanudación, y la habilitación del registro al terminar |
+| Requerimiento | 3.7.6 · 3.7.7 · RNF-05 |
+| Tipo | Manual. Chrome en una ventana de incógnito (sin datos ni sesión) con la dirección de la rama `iteracion-2`, vista de teléfono de DevTools y la red limitada a «3G» para observar el avance |
+| Resultado obtenido | El comportamiento fue el esperado; los íconos de los pasos mostraron un defecto tras la interrupción, corregido |
+| Estado | ⚠️ Aprobada tras corrección |
+| Fecha | 2026-10-13 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Ingresar en un navegador sin datos | «Preparando este teléfono», con «↻ Usuarios y parámetros» | [captura](evidencias/iteracion-2/PE-21-1-preparando-al-ingresar.png) |
+| 2 | **Ver los animales que ya llegaron** durante la carga | El listado, con el aviso «La información del predio todavía está llegando a este teléfono» | [captura](evidencias/iteracion-2/PE-21-2-listado-durante-la-carga.png) |
+| 3 | Abrir `/animales/nuevo` durante la carga | «Espere a que termine de llegar la información del predio para registrar…» | [captura](evidencias/iteracion-2/PE-21-3-registro-en-espera.png) |
+| 4 | Cortar la red a mitad de la carga | «Sin conexión: la descarga continuará donde quedó cuando vuelva la señal». **Defecto:** «○ Animales: 8» y «Registros: 0», con los animales ya en el teléfono | [captura](evidencias/iteracion-2/PE-21-4-interrupcion-defecto-iconos.png) |
+| 5 | Devolver la red (3G) | La descarga continúa; mismo defecto en los íconos mientras vuelve a pedir la referencia | [captura](evidencias/iteracion-2/PE-21-5-reanudacion-con-3g.png) |
+| 6 | Al terminar los datos | El registro queda habilitado; la barra muestra «Bajando fotos de los animales · 2 de 6» mientras las fotos siguen llegando | [captura](evidencias/iteracion-2/PE-21-7-registro-habilitado-fotos-bajando.png) |
+| 7 | Ver fotos en una ficha con 3G | La completa muestra «Cargando…» mientras baja | [captura](evidencias/iteracion-2/PE-21-6-ver-fotos-cargando-en-3g.png) |
+
+**Defecto encontrado y corregido.** Los íconos y la cuenta de registros salían solo de la
+sincronización en curso, que se reinicia al reanudar. Ahora salen de lo que hay en el teléfono más la
+tabla que se está descargando (documento técnico 17, sección 4, y PU-18 grupo 6). Las cuentas no se
+reinician: tras una interrupción se ve «✓ Animales: 8».
+
+**Pendiente.** Repetir los pasos 4 y 5 con la corrección publicada, para ver los íconos correctos tras
+la interrupción.

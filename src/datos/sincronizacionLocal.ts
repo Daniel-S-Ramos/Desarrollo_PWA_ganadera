@@ -355,3 +355,15 @@ export async function marcarCargaInicialCompleta(ahora: Date = new Date()): Prom
 export function contarAnimales(): Promise<number> {
   return db.animal.count();
 }
+
+/**
+ * Lo que ya hay en el teléfono, para el avance de la carga inicial: no se reinicia si la descarga se
+ * interrumpe y se reanuda (documento 17, sección 4; corrección tras PE-21).
+ */
+export async function contarLoDescargado(): Promise<{ usuarios: number; animales: number; registros: number }> {
+  let registros = 0;
+  for (const tabla of TABLAS_SINCRONIZABLES) {
+    if (tabla !== 'animal') registros += await tablaDe(tabla).count();
+  }
+  return { usuarios: await db.usuario.count(), animales: await db.animal.count(), registros };
+}

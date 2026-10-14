@@ -66,6 +66,19 @@ El motor publica, además de «sincronizando», el avance de la carga:
 | Registros | Cuántas filas de las demás tablas han llegado (fotos, eventos, pesajes…) |
 | Fotos de los animales | Cuántas reducidas se han bajado, de cuántas faltan |
 
+**De dónde salen los íconos y las cuentas** (*corrección tras PE-21, 2026-10-13*). La primera versión
+los tomaba solo de la sincronización en curso. En la prueba, tras cortar y devolver la conexión, la
+pantalla mostraba «○ Animales: 8» (pendiente, con los 8 animales ya en el teléfono) y «Registros: 0»,
+porque la sincronización reanudada empieza su cuenta de cero aunque lo descargado sigue guardado. Ahora
+las cuentas salen de **lo que hay en el teléfono** y el ícono de cada paso, de esa cuenta más la tabla
+que se está descargando en ese momento (función pura `pasosDeCarga`):
+
+| Paso | Hecho | En curso | Pendiente |
+|---|---|---|---|
+| Usuarios y parámetros | Hay usuarios en el teléfono | Sincronizando, sin usuarios todavía | Ni lo uno ni lo otro |
+| Animales | Hay animales en el teléfono (llegan en una sola página), o ya se descargan tablas posteriores | Descargando la tabla de animales | Ni lo uno ni lo otro |
+| Registros | Nunca mientras la pantalla se muestra: si se muestra, no han terminado | Descargando las tablas posteriores a los animales | En otro caso |
+
 No se conoce de antemano el total de filas del servicio, así que el avance de los datos se muestra
 como una cuenta que crece («Registros: 812…»), no como un porcentaje. El de las fotos sí tiene total,
 porque se sabe cuántas faltan antes de empezar a bajarlas.

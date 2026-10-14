@@ -54,7 +54,7 @@ se editan a mano.
 |---|---|---|---|
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
 | [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (cerrada, `v0.1`) | 21 | 21 aprobadas · 12 criterios de aceptación cumplidos (8 de extremo a extremo, 4 a nivel técnico) |
-| [iteracion-2.md](iteracion-2.md) | Iteración 2: identificación animal y ficha (en curso) | 12 | 12 aprobadas (5 con observaciones o tras corrección) |
+| [iteracion-2.md](iteracion-2.md) | Iteración 2: identificación animal y ficha (en curso) | 14 | 14 aprobadas (6 con observaciones o tras corrección) |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -87,7 +87,7 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | RNF-13 | Arquitectura modular | PE-02 (estructura por capas y módulos); PU-05 (prueba de arquitectura: una sola vía de escritura) | 🔄 Parcial: se verifica con cada módulo construido |
 | RNF-08 | Autoría y fecha de creación inalterables | PU-02 (campos de solo lectura en el tipo); PI-01 (sin privilegio de modificación en el servicio) | ✅ Verificado |
 | RNF-06 | Ningún registro puede modificarse ni eliminarse | PI-01 (ningún rol tiene UPDATE ni DELETE); PI-03 (ni el propietario modifica ni elimina) | 🔄 Parcial: falta la corrección y anulación (paso 4.3) |
-| RNF-05 | Restaurar la información ante la pérdida del dispositivo | PI-01 (esquema remoto que conserva la copia); PU-11 y PI-04 (un teléfono vacío recupera la información con la carga inicial) | ✅ Verificado |
+| RNF-05 | Restaurar la información ante la pérdida del dispositivo | PI-01 (esquema remoto que conserva la copia); PU-18 y PE-21 (carga inicial con avance, reanudación y registro en espera); PI-05 verificación 6 (también las fotos); PU-11 y PI-04 (un teléfono vacío recupera la información con la carga inicial) | ✅ Verificado |
 | RF-29 | Sincronizar lo registrado sin conexión al restablecerse la señal | PU-10 (subida, reintentos, conflictos); PU-11 (bajada incremental); PI-04 (extremo a extremo con el servicio real) | ✅ Verificado |
 | RF-30 | Indicar si un registro está sincronizado o pendiente | PU-10 (estados de la Tabla 22 según la respuesta del servicio); PU-12 (textos de la barra y distintivos); PE-15 (barra inferior en el navegador real) | 🔄 Parcial: falta ver el distintivo junto a cada registro en las listas y la ficha (Iteración 2) |
 | RD-02 | Identificadores sin contador central | PU-03 (UUID v7: unicidad, orden y dos dispositivos sin coincidencias) | ✅ Verificado |
