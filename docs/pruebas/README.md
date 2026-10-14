@@ -55,6 +55,7 @@ se editan a mano.
 | [fase-0-entorno.md](fase-0-entorno.md) | Preparación del entorno (pasos 0.1 a 0.8) | 12 | 12 aprobadas |
 | [iteracion-1.md](iteracion-1.md) | Iteración 1: fundación técnica (cerrada, `v0.1`) | 21 | 21 aprobadas · 12 criterios de aceptación cumplidos (8 de extremo a extremo, 4 a nivel técnico) |
 | [iteracion-2.md](iteracion-2.md) | Iteración 2: identificación animal y ficha (cerrada, `v0.2`) | 15 | 15 aprobadas (6 con observaciones o tras corrección) · 12 criterios de aceptación: 10 de extremo a extremo, 1 técnico, 1 trasladado |
+| [iteracion-3.md](iteracion-3.md) | Iteración 3: sanidad, leche y destino (en curso) | 3 | 3 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 
@@ -68,6 +69,7 @@ debe tener al menos una prueba que lo verifique (apartado 1.6.3.11).
 | RF-03 | Datos de origen: fechas exacta o estimada, sexo, procedencia y peso | PU-14 (origen, edad aproximada, validaciones); PE-17 (animal comprado con edad aproximada llegó al servicio con fecha estimada) | ✅ Verificado |
 | RF-04 | Genealogía con madre y padre, del predio o externos | PU-14 (cada progenitor de una sola forma, sexo correcto); PI-01 (madre de una sola forma en el servicio); PE-17 (madre del predio y padre externo) | ✅ Verificado |
 | RF-06 | Localizar un animal por su identificador | PU-16 (búsqueda normalizada, por el inicio, en orden numérico; chapeta no registrada); PE-20 (búsqueda en el teléfono y registro desde una chapeta no registrada) | ✅ Verificado |
+| RF-09 | Advertir la aplicación repetida de un medicamento dentro de un intervalo | PU-19, PI-01 verificación 14 y PE-23 (catálogo con un nombre único sin tildes ni espacios, base de la comparación) | 🔄 Parcial: la advertencia se construye en el paso 3.4 |
 | RF-05 | Ficha con foto, identificador, edad, último peso, última vacuna, leche y destino | PU-17 (consolidación de cada dato); PE-20 (ficha en el teléfono) | 🔄 Parcial: vacuna, leche, destino y pesajes se registran en las Iteraciones 3 y 4; la ficha ya los consulta |
 | RF-02 | Tres fotografías por animal, actualizables después | PU-15 (tres vistas, registro incompleto, vista principal); PI-05 (subida al servicio de archivos); PE-18 (galería en el computador y cámara en un teléfono Android, con la orientación corregida) | 🔄 Parcial: falta actualizar las fotos desde la ficha (paso 2.4) |
 | RNF-12 | Fotografías comprimidas | PU-15 y verificación en Chrome (5 MB → 182 KB y 21 KB); PI-05 (el servicio rechaza más de 1 MB y otros formatos); PE-18 (fotos reales: ~200 KB y ~27 KB; solo la reducida principal queda en el teléfono) | ✅ Verificado |

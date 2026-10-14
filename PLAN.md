@@ -86,7 +86,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 
 | Paso | Contenido | Estado |
 |---|---|---|
-| 3.1 | Catálogo de medicamentos y tabla de parámetros | ⬜ |
+| 3.1 | Catálogo de medicamentos y tabla de parámetros | ✅ |
 | 3.2 | Destino productivo y su historial (CU-12) | ⬜ |
 | 3.3 | Registro sanitario e historial (CU-04, CU-05) | ⬜ |
 | 3.4 | Advertencia por repetición de medicamento (RF-09) | ⬜ |

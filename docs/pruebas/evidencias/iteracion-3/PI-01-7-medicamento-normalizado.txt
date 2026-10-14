@@ -1,0 +1,13 @@
+PI-01 · Tras la migración 20261013000100_nombre_medicamento_normalizado.sql (2026-10-13)
+Salida de `npm run db:push` y `npm run prueba:pi-01` (verificaciones 1 a 13 sin cambios, todas APROBADAS):
+
+Applying migration 20261013000100_nombre_medicamento_normalizado.sql...
+Finished supabase db push.
+
+│ 8  │ «prueba ivermectina» se rechaza si ya existe «Prueba Ivermectina» (3.8.9)          │ APROBADA  │ código: 23505              │
+│ 14 │ Medicamento con tilde o espacios repetidos se rechaza; otro nombre se admite      │ APROBADA  │ códigos: 23505, 23505, OK  │
+
+Resultado: 14 de 14 APROBADAS.
+- Verificación 8: la prueba ahora usa «Prueba Ivermectina» para no ocupar el nombre real del catálogo.
+- Verificación 14: con «Prueba Ivermectina» registrada, se rechazan «Prueba Ivermectína» y
+  «  prueba   IVERMECTINA » y se admite «Prueba Ivermectina 1%».
