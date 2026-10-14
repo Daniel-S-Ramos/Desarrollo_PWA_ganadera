@@ -725,3 +725,21 @@ a.boton {
 .opciones--tres {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+
+/* Carga inicial de un teléfono nuevo (documento técnico 17, sección 5). */
+.preparando {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: var(--separacion);
+}
+
+.preparando__pasos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 1.05rem;
+}

@@ -152,9 +152,10 @@ holgadamente en las horas de señal del predio, y si se interrumpe se reanuda po
 | Aspecto | Comportamiento |
 |---|---|
 | Cuándo ocurre | Tras el primer ingreso con credenciales en el teléfono, que ya exige conexión (CU-01) |
-| Mientras ocurre | La aplicación muestra el avance («Descargando la información del predio…») y puede usarse; lo que se registre entra a la cola como siempre |
+| Mientras ocurre | La aplicación muestra el avance («Preparando este teléfono»). **Se puede consultar lo que ya llegó, pero no registrar** hasta que terminen de llegar los datos: la verificación de la chapeta necesita el inventario completo. *Corregido el 2026-10-13; la primera versión permitía registrar. Ver el [documento 17](17-carga-inicial.md), sección 2* |
+| Orden | Primero los usuarios y los parámetros (datos de referencia, 3.7.6), después las tablas del predio en el orden de sus dependencias. *Hasta el paso 2.5 los usuarios y los parámetros se descargaban al final* |
 | Advertencia por dosis repetida | Hasta que la carga termine, la advertencia del RF-09 puede no conocer aplicaciones previas. La nota que el apartado 3.10.4.4 prevé al pie del registro sanitario («la verificación se realiza contra los registros disponibles en el dispositivo») cubre este caso |
-| Fotografías | Las imágenes reducidas se descargan por su propia cola, después de los datos (3.7.6). Se incorporan en el paso 2.2 |
+| Fotografías | Las imágenes reducidas se descargan por su propia cola, después de los datos (3.7.6): documento 15, sección 6. No bloquean el registro |
 
 ## 6. Datos que se borran del teléfono al cerrar sesión
 

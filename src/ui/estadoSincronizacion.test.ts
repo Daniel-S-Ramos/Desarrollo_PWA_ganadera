@@ -170,8 +170,12 @@ describe('PU-12 · 6. Avisos del motor', () => {
     await sincronizar(new ServicioSimulado());
     dejar();
 
-    expect(avisos.map((a) => a.sincronizando)).toEqual([true, false]);
-    expect(avisos[1]!.ultima?.estado).toBe('completa');
-    expect(avisos[1]!.ultimaEn).toBeInstanceOf(Date);
+    // Entre el primero y el último puede haber avisos de avance (documento 17, sección 4).
+    const ultimo = avisos[avisos.length - 1]!;
+    expect(avisos[0]!.sincronizando).toBe(true);
+    expect(avisos.slice(0, -1).every((a) => a.sincronizando)).toBe(true);
+    expect(ultimo).toMatchObject({ sincronizando: false, avance: null });
+    expect(ultimo.ultima?.estado).toBe('completa');
+    expect(ultimo.ultimaEn).toBeInstanceOf(Date);
   });
 });

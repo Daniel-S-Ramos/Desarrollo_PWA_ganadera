@@ -332,3 +332,26 @@ export async function reemplazarParametros(parametros: Parametro[]): Promise<voi
     await db.parametro.bulkPut(parametros);
   });
 }
+
+// ---------------------------------------------------------------------------
+// Carga inicial (docs/tecnica/17-carga-inicial.md, sección 3)
+// ---------------------------------------------------------------------------
+
+const CLAVE_CARGA_INICIAL = 'carga_inicial_completa';
+
+/** Fecha en que terminó de llegar la información del predio a este teléfono, o undefined si aún no. */
+export async function leerCargaInicialCompleta(): Promise<string | undefined> {
+  return (await db.meta.get(CLAVE_CARGA_INICIAL))?.valor as string | undefined;
+}
+
+/** Se guarda una sola vez, al completarse la primera bajada de datos. No se borra al cerrar sesión. */
+export async function marcarCargaInicialCompleta(ahora: Date = new Date()): Promise<void> {
+  await db.transaction('rw', db.meta, async () => {
+    if (!(await db.meta.get(CLAVE_CARGA_INICIAL))) await db.meta.put({ clave: CLAVE_CARGA_INICIAL, valor: ahora.toISOString() });
+  });
+}
+
+/** Animales que ya hay en el teléfono: el avance de la carga inicial los cuenta. */
+export function contarAnimales(): Promise<number> {
+  return db.animal.count();
+}

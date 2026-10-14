@@ -9,6 +9,7 @@ import type { ServicioRemoto } from './servicioRemoto';
 import { subir, type ResumenSubida } from './subida';
 import { subirImagenes, type ResumenImagenes } from './subidaImagenes';
 import { bajarImagenes, type ResumenBajadaImagenes } from './bajadaImagenes';
+import { marcarCargaInicialCompleta, type AvanceCarga } from './cargaInicial';
 
 export type ResultadoSincronizacion =
   | { estado: 'omitida' }
@@ -25,11 +26,13 @@ let enCurso = false;
 
 export interface EstadoMotor {
   sincronizando: boolean;
+  /** Avance de la sincronización en curso (documento 17, sección 4); null fuera de ella. */
+  avance: AvanceCarga | null;
   ultima: ResultadoSincronizacion | null;
   ultimaEn: Date | null;
 }
 
-let estadoMotor: EstadoMotor = { sincronizando: false, ultima: null, ultimaEn: null };
+let estadoMotor: EstadoMotor = { sincronizando: false, avance: null, ultima: null, ultimaEn: null };
 const oyentesMotor = new Set<(estado: EstadoMotor) => void>();
 
 function publicar(cambio: Partial<EstadoMotor>) {
@@ -70,13 +73,13 @@ async function conCandado<T>(trabajo: () => Promise<T>): Promise<T | null> {
 /** Primero se envía lo pendiente y después se pregunta qué hay de nuevo (3.7.7). */
 export async function sincronizar(servicio: ServicioRemoto): Promise<ResultadoSincronizacion> {
   const resultado = await conCandado<ResultadoSincronizacion>(async () => {
-    publicar({ sincronizando: true });
+    publicar({ sincronizando: true, avance: { datos: null, fotos: null } });
     try {
       const final = await sincronizarSinCandado(servicio);
-      publicar({ sincronizando: false, ultima: final, ultimaEn: new Date() });
+      publicar({ sincronizando: false, avance: null, ultima: final, ultimaEn: new Date() });
       return final;
     } catch (error) {
-      publicar({ sincronizando: false });
+      publicar({ sincronizando: false, avance: null });
       throw error;
     }
   });
@@ -90,7 +93,9 @@ async function sincronizarSinCandado(servicio: ServicioRemoto): Promise<Resultad
   let bajada: ResumenBajada | undefined;
   let mensaje = '';
   try {
-    bajada = await bajar(servicio);
+    bajada = await bajar(servicio, (datos) => publicar({ avance: { datos, fotos: estadoMotor.avance?.fotos ?? null } }));
+    // La primera bajada completa termina la carga inicial: desde ahora se puede registrar (documento 17, sección 3).
+    await marcarCargaInicialCompleta();
   } catch (error) {
     mensaje = error instanceof Error ? error.message : String(error);
   }
@@ -98,7 +103,9 @@ async function sincronizarSinCandado(servicio: ServicioRemoto): Promise<Resultad
   const imagenes = await subirImagenes(servicio);
   // Cuarta etapa: las reducidas de las fotos de otros teléfonos (documento 15, sección 6.2). Solo si la
   // subida de imágenes no encontró la red caída o la sesión vencida.
-  const imagenesBajadas = imagenes.estado === 'completa' ? await bajarImagenes(servicio) : undefined;
+  const imagenesBajadas = imagenes.estado === 'completa'
+      ? await bajarImagenes(servicio, new Date(), (fotos) => publicar({ avance: { datos: estadoMotor.avance?.datos ?? null, fotos } }))
+      : undefined;
   return bajada
     ? { estado: 'completa', subida, bajada, imagenes, imagenesBajadas }
     : { estado: 'error_bajada', subida, mensaje, imagenes, imagenesBajadas };

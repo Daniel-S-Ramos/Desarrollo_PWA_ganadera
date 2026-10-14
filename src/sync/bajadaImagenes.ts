@@ -24,15 +24,29 @@ export interface ResumenBajadaImagenes {
   no_disponibles: number;
 }
 
-export async function bajarImagenes(servicio: ServicioRemoto, ahora: Date = new Date()): Promise<ResumenBajadaImagenes> {
-  const resumen: ResumenBajadaImagenes = { estado: 'completa', bajadas: 0, no_disponibles: 0 };
+/** Avance de la bajada de fotos, para la pantalla de carga inicial (documento 17, sección 4). */
+export interface AvanceFotos {
+  bajadas: number;
+  total: number;
+}
 
-  for (const { animal_id, fotografia_id } of await imagenesPorBajar(ahora)) {
+export async function bajarImagenes(
+  servicio: ServicioRemoto,
+  ahora: Date = new Date(),
+  alAvanzar: (avance: AvanceFotos) => void = () => {},
+): Promise<ResumenBajadaImagenes> {
+  const resumen: ResumenBajadaImagenes = { estado: 'completa', bajadas: 0, no_disponibles: 0 };
+  const faltantes = await imagenesPorBajar(ahora);
+  // A diferencia de los datos, de las fotos sí se sabe el total antes de empezar.
+  if (faltantes.length > 0) alAvanzar({ bajadas: 0, total: faltantes.length });
+
+  for (const { animal_id, fotografia_id } of faltantes) {
     const resultado = await servicio.descargarImagen(rutaImagen(animal_id, fotografia_id, 'reducida'));
     switch (clasificarDescarga(resultado)) {
       case 'recibida':
         await guardarImagenBajada(animal_id, fotografia_id, (resultado as { imagen: Blob }).imagen);
         resumen.bajadas++;
+        alAvanzar({ bajadas: resumen.bajadas, total: faltantes.length });
         break;
       case 'no_existe':
         await anotarDescargaFallida(fotografia_id, ahora);

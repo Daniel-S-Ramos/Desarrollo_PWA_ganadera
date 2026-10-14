@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { formatearBytes, type Espacio } from '../../datos/almacenamiento';
 import { contarImagenesPendientes, contarPendientes } from '../../datos/repositorio';
 import { contarConflictos } from '../../datos/sincronizacionLocal';
-import { leerEstadoMotor, suscribirseAlMotor, type EstadoMotor } from '../../sync/motor';
+import { useEnLinea, useEstadoMotor } from '../useEstadoMotor';
 import { describirBarra } from '../estadoSincronizacion';
 
 /**
@@ -20,7 +20,7 @@ export function BarraEstado({ espacio, conSesion }: { espacio: Espacio | null; c
   const ahora = useReloj(30_000);
 
   const lineas = conSesion
-    ? describirBarra({ pendientes, imagenes, conflictos, enLinea, sincronizando: motor.sincronizando, ultima: motor.ultima, ultimaEn: motor.ultimaEn, ahora })
+    ? describirBarra({ pendientes, imagenes, conflictos, enLinea, sincronizando: motor.sincronizando, ultima: motor.ultima, ultimaEn: motor.ultimaEn, ahora, fotosBajando: motor.avance?.fotos ?? null })
     : [];
 
   return (
@@ -39,26 +39,6 @@ export function BarraEstado({ espacio, conSesion }: { espacio: Espacio | null; c
       )}
     </footer>
   );
-}
-
-function useEstadoMotor(): EstadoMotor {
-  const [estado, setEstado] = useState(leerEstadoMotor);
-  useEffect(() => suscribirseAlMotor(setEstado), []);
-  return estado;
-}
-
-function useEnLinea(): boolean {
-  const [enLinea, setEnLinea] = useState(() => navigator.onLine);
-  useEffect(() => {
-    const actualizar = () => setEnLinea(navigator.onLine);
-    window.addEventListener('online', actualizar);
-    window.addEventListener('offline', actualizar);
-    return () => {
-      window.removeEventListener('online', actualizar);
-      window.removeEventListener('offline', actualizar);
-    };
-  }, []);
-  return enLinea;
 }
 
 /** Hora actual, renovada periódicamente para que «hace 5 min» se mantenga al día. */

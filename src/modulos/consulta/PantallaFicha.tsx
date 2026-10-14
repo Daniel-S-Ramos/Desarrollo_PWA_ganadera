@@ -10,6 +10,7 @@ import { crearServicioRemoto } from '../../servicios/servicioRemotoSupabase';
 import { supabase } from '../../servicios/supabase';
 import type { Identidad } from '../../sesion/token';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
+import { useCargaInicialCompleta, useEnLinea } from '../../ui/useEstadoMotor';
 import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
 import { agregarFotografia } from '../identificacion/actualizarFotos';
 import { CapturaFoto } from '../identificacion/CapturaFoto';
@@ -33,6 +34,7 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
   const { id = '' } = useParams();
   const [hoy] = useState(() => fechaDelPredio());
   const [verFotos, setVerFotos] = useState(false);
+  const cargaCompleta = useCargaInicialCompleta();
   // Envuelto para distinguir «cargando» (undefined) de «no está en el teléfono» ({ ficha: undefined }).
   const resultado = useLiveQuery(async () => ({ ficha: await consolidarFicha(id) }), [id]);
 
@@ -55,6 +57,11 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
       <Link className="enlace" to="/animales">
         ← Volver al listado
       </Link>
+
+      {cargaCompleta === false && (
+        // Carga inicial (documento técnico 17, sección 5): pueden faltar registros de este animal.
+        <p className="aviso aviso--atencion aviso--en-contenido">La información del predio todavía está llegando a este teléfono.</p>
+      )}
 
       <Encabezado ficha={ficha} hoy={hoy} verFotos={verFotos} alAlternarFotos={() => setVerFotos((v) => !v)} />
 
@@ -251,18 +258,4 @@ function textoPeso(ficha: FichaAnimal): string {
 /** 14,5 en lugar de 14.5: la coma decimal de Colombia (litros y kilos). */
 function formatearNumero(valor: number): string {
   return valor.toLocaleString('es-CO', { maximumFractionDigits: 1 });
-}
-
-function useEnLinea(): boolean {
-  const [enLinea, setEnLinea] = useState(() => navigator.onLine);
-  useEffect(() => {
-    const actualizar = () => setEnLinea(navigator.onLine);
-    window.addEventListener('online', actualizar);
-    window.addEventListener('offline', actualizar);
-    return () => {
-      window.removeEventListener('online', actualizar);
-      window.removeEventListener('offline', actualizar);
-    };
-  }, []);
-  return enLinea;
 }

@@ -26,6 +26,8 @@ export interface SituacionSincronizacion {
   ultima: ResultadoSincronizacion | null;
   ultimaEn: Date | null;
   ahora: Date;
+  /** Fotos de otros teléfonos que se están bajando (documento 17, sección 5). */
+  fotosBajando?: { bajadas: number; total: number } | null;
 }
 
 const plural = (n: number, singular: string, plural: string) => (n === 1 ? `1 ${singular}` : `${n} ${plural}`);
@@ -54,7 +56,11 @@ export function describirBarra(s: SituacionSincronizacion): Linea[] {
   const sinSenal = 'Sin conexión: se enviarán cuando vuelva la señal';
 
   if (s.sincronizando) {
-    lineas.push({ icono: '↻', texto: 'Enviando…', detalle: null, tono: 'informacion' });
+    lineas.push(
+      s.fotosBajando
+        ? { icono: '↻', texto: 'Bajando fotos de los animales', detalle: `${s.fotosBajando.bajadas} de ${s.fotosBajando.total}`, tono: 'informacion' }
+        : { icono: '↻', texto: 'Enviando…', detalle: null, tono: 'informacion' },
+    );
   } else {
     if (s.pendientes > 0) {
       const texto = plural(s.pendientes, 'registro pendiente de enviar', 'registros pendientes de enviar');

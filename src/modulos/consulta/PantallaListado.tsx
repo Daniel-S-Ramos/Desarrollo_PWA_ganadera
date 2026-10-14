@@ -24,7 +24,7 @@ const NOMBRE_FILTRO: Record<FiltroEstado, [string, string]> = {
  * Listado de animales con búsqueda por chapeta (CU-03, RF-06).
  * Especificación: docs/tecnica/15-listado-de-animales.md, secciones 2 a 4 y 7
  */
-export function PantallaListado({ puedeRegistrar }: { puedeRegistrar: boolean }) {
+export function PantallaListado({ puedeRegistrar, informacionIncompleta = false }: { puedeRegistrar: boolean; informacionIncompleta?: boolean }) {
   const navegar = useNavigate();
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<FiltroEstado>('activos');
@@ -41,6 +41,10 @@ export function PantallaListado({ puedeRegistrar }: { puedeRegistrar: boolean })
   return (
     <div className="listado">
       <p className="titulo-seccion">Animales</p>
+      {informacionIncompleta && (
+        // Carga inicial (documento técnico 17, sección 5): la lista todavía no tiene todos los animales.
+        <p className="aviso aviso--atencion aviso--en-contenido">La información del predio todavía está llegando a este teléfono.</p>
+      )}
 
       <label className="campo">
         <span>Buscar por chapeta</span>
@@ -82,7 +86,7 @@ export function PantallaListado({ puedeRegistrar }: { puedeRegistrar: boolean })
         ))}
       </ul>
 
-      {resultado.ofrecerRegistro && (
+      {resultado.ofrecerRegistro && !informacionIncompleta && (
         // CU-03, 2a, y 3.11.1: si el animal no aparece, se registra en ese momento.
         <div className="aviso aviso--atencion aviso--en-contenido">
           <p>

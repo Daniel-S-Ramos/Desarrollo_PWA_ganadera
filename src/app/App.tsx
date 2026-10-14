@@ -15,6 +15,8 @@ import type { Identidad } from '../sesion/token';
 import { AvisoAlmacenamiento } from '../ui/componentes/AvisoAlmacenamiento';
 import { BarraEstado } from '../ui/componentes/BarraEstado';
 import { ConfirmacionCierre } from '../ui/componentes/ConfirmacionCierre';
+import { PreparandoTelefono, RegistroEnEspera } from '../ui/componentes/PreparandoTelefono';
+import { useCargaInicialCompleta } from '../ui/useEstadoMotor';
 import { PantallaDefinirCodigo } from '../ui/pantallas/PantallaDefinirCodigo';
 import { PantallaDesbloqueo } from '../ui/pantallas/PantallaDesbloqueo';
 import { PantallaInicioSesion } from '../ui/pantallas/PantallaInicioSesion';
@@ -82,22 +84,7 @@ export function App() {
         )}
 
         {identidad && cerradura === 'abierta' && (
-          <Routes>
-            <Route path="/" element={<Inicio identidad={identidad} alCerrar={salirAlIngreso} />} />
-            <Route
-              path="/animales/nuevo"
-              element={puedeUsar(identidad.perfil, 'CU-02') ? <PantallaRegistrarAnimal identidad={identidad} /> : <Navigate to="/" replace />}
-            />
-            <Route
-              path="/animales"
-              element={puedeUsar(identidad.perfil, 'CU-03') ? <PantallaListado puedeRegistrar={puedeUsar(identidad.perfil, 'CU-02')} /> : <Navigate to="/" replace />}
-            />
-            <Route
-              path="/animales/:id"
-              element={puedeUsar(identidad.perfil, 'CU-03') ? <PantallaFicha identidad={identidad} /> : <Navigate to="/" replace />}
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <RutasDelPredio identidad={identidad} alCerrar={salirAlIngreso} />
         )}
       </main>
 
@@ -109,22 +96,59 @@ export function App() {
 }
 
 /**
+ * Las pantallas del predio. Durante la carga inicial de un teléfono nuevo se consulta pero no se
+ * registra (documento técnico 17, sección 2).
+ */
+function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerrar: () => void }) {
+  const cargaCompleta = useCargaInicialCompleta();
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-02') && cargaCompleta === true;
+  return (
+          <Routes>
+            <Route path="/" element={<Inicio identidad={identidad} alCerrar={alCerrar} cargaCompleta={cargaCompleta} />} />
+            <Route
+              path="/animales/nuevo"
+              element={
+                !puedeUsar(identidad.perfil, 'CU-02') ? (
+                  <Navigate to="/" replace />
+                ) : cargaCompleta === false ? (
+                  <RegistroEnEspera />
+                ) : (
+                  <PantallaRegistrarAnimal identidad={identidad} />
+                )
+              }
+            />
+            <Route
+              path="/animales"
+              element={puedeUsar(identidad.perfil, 'CU-03') ? <PantallaListado puedeRegistrar={puedeRegistrar} informacionIncompleta={cargaCompleta === false} /> : <Navigate to="/" replace />}
+            />
+            <Route
+              path="/animales/:id"
+              element={puedeUsar(identidad.perfil, 'CU-03') ? <PantallaFicha identidad={identidad} /> : <Navigate to="/" replace />}
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+  );
+}
+
+/**
  * Pantalla de inicio. Los accesos se muestran solo a los perfiles que pueden usarlos (Tabla 27);
  * los recordatorios llegarán en la Iteración 5 (3.10.4.4).
  */
-function Inicio({ identidad, alCerrar }: { identidad: Identidad; alCerrar: () => void }) {
+function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; alCerrar: () => void; cargaCompleta: boolean | undefined }) {
   return (
     <>
       <p className="titulo-seccion">Prototipo en construcción</p>
       <p className="texto-secundario">Iteración 2 · Identificación animal y ficha</p>
 
-      {puedeUsar(identidad.perfil, 'CU-03') && (
+      {cargaCompleta === false && <PreparandoTelefono />}
+
+      {puedeUsar(identidad.perfil, 'CU-03') && cargaCompleta !== false && (
         <Link className="boton boton--principal boton--ancho" to="/animales">
           Animales
         </Link>
       )}
 
-      {puedeUsar(identidad.perfil, 'CU-02') && (
+      {puedeUsar(identidad.perfil, 'CU-02') && cargaCompleta === true && (
         <Link className="boton boton--secundario boton--ancho separado" to="/animales/nuevo">
           Registrar animal
         </Link>
