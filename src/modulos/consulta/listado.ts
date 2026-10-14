@@ -1,13 +1,15 @@
 /**
  * Listado de animales y búsqueda por chapeta (RF-06, CU-03).
- * Especificación: docs/tecnica/15-listado-de-animales.md, secciones 2 a 4
+ * Especificación: docs/tecnica/15-listado-de-animales.md, secciones 2 a 4; filtro por destino en
+ * docs/tecnica/19-destino-productivo.md, sección 6
  *
  * La búsqueda y el orden son funciones puras sobre los animales ya cargados: con unos cientos de
  * animales, filtrar en memoria mientras se escribe es instantáneo y no exige índices adicionales.
  */
 import { consulta, reducidasLocales } from '../../datos/repositorio';
+import { destinoVigente } from '../../dominio/destino';
 import { vistaPrincipal } from '../../dominio/fotografias';
-import type { EstadoSync, FechaPredio, Sexo, Uuid } from '../../dominio/tipos';
+import type { Destino, EstadoSync, FechaPredio, Sexo, Uuid } from '../../dominio/tipos';
 import { errorDeChapeta, normalizarChapeta } from '../identificacion/registroAnimal';
 
 /** Lo que muestra una fila del listado (sección 4). */
@@ -18,6 +20,8 @@ export interface AnimalListado {
   fecha_nacimiento: FechaPredio | null;
   fecha_nacimiento_exacta: boolean;
   retirado: boolean;
+  /** Destino vigente, o null si no tiene (documento 19, sección 6). */
+  destino: Destino | null;
   estado_sync: EstadoSync;
   detalle_conflicto?: string;
   /** Reducida de la vista principal, o de otra vista si la principal no está en el teléfono. */
@@ -25,6 +29,8 @@ export interface AnimalListado {
 }
 
 export type FiltroEstado = 'activos' | 'retirados' | 'todos';
+/** Las fichas del filtro por destino: todos, uno de los seis o los que no tienen (documento 19, sección 6). */
+export type FiltroDestino = 'todos' | Destino | 'sin_destino';
 
 /** Orden numérico de las chapetas: 9 antes que 10, A2 antes que A10, los números antes que las letras. */
 export function compararChapetas(a: string, b: string): number {
@@ -40,12 +46,21 @@ export interface ResultadoBusqueda {
 }
 
 /**
- * Filtra por estado y por el inicio de la chapeta; la coincidencia exacta va primero y el resto en
- * orden numérico (sección 2).
+ * Filtra por estado, por destino y por el inicio de la chapeta; la coincidencia exacta va primero y
+ * el resto en orden numérico (sección 2).
  */
-export function buscar(animales: readonly AnimalListado[], texto: string, filtro: FiltroEstado): ResultadoBusqueda {
+export function buscar(
+  animales: readonly AnimalListado[],
+  texto: string,
+  filtro: FiltroEstado,
+  filtroDestino: FiltroDestino = 'todos',
+): ResultadoBusqueda {
   const buscada = normalizarChapeta(texto);
-  const porEstado = animales.filter((a) => filtro === 'todos' || (filtro === 'retirados') === a.retirado);
+  const porEstado = animales.filter(
+    (a) =>
+      (filtro === 'todos' || (filtro === 'retirados') === a.retirado) &&
+      (filtroDestino === 'todos' || (filtroDestino === 'sin_destino' ? a.destino === null : a.destino === filtroDestino)),
+  );
   // No hace falta una regla aparte para poner la exacta primero: todas empiezan por lo buscado y son
   // más largas que la exacta, así que el orden numérico ya la deja primera (4 antes que 40, A1 antes que A10).
   const coinciden = porEstado
@@ -75,14 +90,17 @@ export function elegirFoto(
 
 /** Todos los animales del teléfono con lo que necesita cada fila. */
 export async function cargarListado(): Promise<AnimalListado[]> {
-  const [animales, salidas, fotografias, reducidas] = await Promise.all([
+  const [animales, salidas, destinos, fotografias, reducidas] = await Promise.all([
     consulta.animal.toArray(),
     consulta.salida.toArray(),
+    consulta.destino_productivo.toArray(),
     consulta.fotografia.toArray(),
     reducidasLocales(),
   ]);
   const retirados = new Set(salidas.map((s) => s.animal_id));
   const fotosPorAnimal = new Map<Uuid, typeof fotografias>();
+  const destinosPorAnimal = new Map<Uuid, typeof destinos>();
+  for (const d of destinos) destinosPorAnimal.set(d.animal_id, [...(destinosPorAnimal.get(d.animal_id) ?? []), d]);
   for (const foto of fotografias) fotosPorAnimal.set(foto.animal_id, [...(fotosPorAnimal.get(foto.animal_id) ?? []), foto]);
 
   return animales.map((a) => ({
@@ -92,6 +110,7 @@ export async function cargarListado(): Promise<AnimalListado[]> {
     fecha_nacimiento: a.fecha_nacimiento,
     fecha_nacimiento_exacta: a.fecha_nacimiento_exacta,
     retirado: retirados.has(a.id),
+    destino: destinoVigente(destinosPorAnimal.get(a.id) ?? [])?.destino ?? null,
     estado_sync: a.estado_sync,
     ...(a.detalle_conflicto ? { detalle_conflicto: a.detalle_conflicto } : {}),
     foto: elegirFoto(fotosPorAnimal.get(a.id) ?? [], reducidas),

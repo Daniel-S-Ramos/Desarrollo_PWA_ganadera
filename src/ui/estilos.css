@@ -769,3 +769,50 @@ a.boton {
   font-size: 1.1rem;
   font-weight: 700;
 }
+
+/* Los seis destinos en dos columnas: «Producción de leche» no cabe en tres (documento técnico 19). */
+.opciones--dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Fichas pulsables del filtro por destino del listado (documento técnico 19, sección 6). */
+.fichas-filtro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ficha-filtro {
+  min-height: 44px;
+  border-radius: 22px;
+  border: 2px solid var(--verde-oscuro);
+  background: var(--blanco);
+  color: var(--verde-oscuro);
+  font: inherit;
+  font-weight: 600;
+  padding: 0 14px;
+}
+
+.ficha-filtro[aria-pressed='true'] {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+}
+
+/* Historial del destino (documento técnico 19, sección 2). */
+.historial {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.historial__entrada {
+  padding: 12px 0;
+}
+
+.historial__entrada + .historial__entrada {
+  border-top: 1px solid var(--borde);
+}
+
+.historial__entrada p {
+  margin: 0 0 4px;
+}

@@ -5,26 +5,23 @@ import { imagenCompletaLocal } from '../../datos/repositorio';
 import { describirEdad } from '../../dominio/edad';
 import { fechaDelPredio, formatearFecha, formatearInstante } from '../../dominio/fechas';
 import { rutaImagen } from '../../dominio/fotografias';
-import { TIPOS_FOTOGRAFIA, type Destino, type TipoFotografia } from '../../dominio/tipos';
+import { NOMBRE_DESTINO } from '../../dominio/destino';
+import { TIPOS_FOTOGRAFIA, type TipoFotografia } from '../../dominio/tipos';
 import { crearServicioRemoto } from '../../servicios/servicioRemotoSupabase';
 import { supabase } from '../../servicios/supabase';
+import { puedeUsar } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
 import { useCargaInicialCompleta, useEnLinea } from '../../ui/useEstadoMotor';
 import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
 import { agregarFotografia } from '../identificacion/actualizarFotos';
 import { CapturaFoto } from '../identificacion/CapturaFoto';
+import { CambiarDestino } from '../destino/CambiarDestino';
+import { cargarContextoDestino } from '../destino/destino';
+import { HistorialDestino } from '../destino/HistorialDestino';
 import { consolidarFicha, type FichaAnimal, type FotoFicha, type Progenitor } from './ficha';
 
 const NOMBRE_VISTA: Record<TipoFotografia, string> = { izquierdo: 'Costado izquierdo', derecho: 'Costado derecho', frontal: 'Frente' };
-const NOMBRE_DESTINO: Record<Destino, string> = {
-  reproductor: 'Reproductor',
-  reproductora: 'Reproductora',
-  leche: 'Leche',
-  ceba: 'Ceba',
-  venta: 'Venta',
-  sacrificio: 'Sacrificio',
-};
 
 /**
  * Ficha del animal (CU-03, HU-02, HU-15). Especificación: docs/tecnica/16-ficha-del-animal.md
@@ -83,6 +80,9 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
         />
       </dl>
 
+      {/* CU-12: solo el propietario cambia el destino y ve su historial; al trabajador no se le muestran (HU-06.4). */}
+      {puedeUsar(identidad.perfil, 'CU-12') && <SeccionDestino animalId={ficha.id} identidad={identidad} hoy={hoy} />}
+
       <section className="tarjeta">
         <h2>Origen</h2>
         {ficha.origen === 'nacido' ? (
@@ -116,6 +116,30 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
         Registrado por <strong>{ficha.autor}</strong> el {formatearInstante(ficha.creado_en)}
       </p>
     </div>
+  );
+}
+
+/** Las opciones del propietario sobre el destino (documento técnico 19, secciones 2 y 4). */
+function SeccionDestino({ animalId, identidad, hoy }: { animalId: string; identidad: Identidad; hoy: string }) {
+  const [abierto, setAbierto] = useState<'cambiar' | 'historial' | null>(null);
+  const contexto = useLiveQuery(() => cargarContextoDestino(animalId), [animalId]);
+  const alternar = (opcion: 'cambiar' | 'historial') => setAbierto((actual) => (actual === opcion ? null : opcion));
+
+  return (
+    <>
+      <div className="acciones-formulario">
+        <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={abierto === 'cambiar'} onClick={() => alternar('cambiar')}>
+          Cambiar destino
+        </button>
+        <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={abierto === 'historial'} onClick={() => alternar('historial')}>
+          {abierto === 'historial' ? 'Ocultar historial del destino' : 'Historial del destino'}
+        </button>
+      </div>
+      {abierto === 'cambiar' && contexto && (
+        <CambiarDestino animalId={animalId} contexto={contexto} identidad={identidad} hoy={hoy} alTerminar={() => setAbierto(null)} />
+      )}
+      {abierto === 'historial' && <HistorialDestino animalId={animalId} />}
+    </>
   );
 }
 

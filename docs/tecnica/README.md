@@ -27,3 +27,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 16 | [Ficha del animal con autoría visible](16-ficha-del-animal.md) | 2.4 | RF-05 · HU-02 · HU-15 · 3.10.4.4 |
 | 17 | [Carga inicial de un teléfono nuevo](17-carga-inicial.md) | 2.5 | 3.7.6 · 3.7.7 · RNF-05 |
 | 18 | [Catálogo de medicamentos y parámetros](18-catalogo-de-medicamentos.md) | 3.1 | RF-09 · 3.8.9 · Tablas 30 y 31 |
+| 19 | [Destino productivo y su historial](19-destino-productivo.md) | 3.2 | RF-18 · CU-12 · HU-13 · HU-06.4 |

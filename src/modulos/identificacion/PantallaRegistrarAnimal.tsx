@@ -4,7 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { consulta } from '../../datos/repositorio';
 import { fechaDelPredio } from '../../dominio/fechas';
 import type { RegistroLocal } from '../../dominio/tipos';
+import { puedeUsar } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
+import { BotonesDestino } from '../destino/CambiarDestino';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
 import { etiquetaPeso } from '../../dominio/origen';
 import { SeccionFotografias } from './SeccionFotografias';
@@ -376,6 +378,31 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
           )}
         </div>
       </details>
+
+      {/* 7. Destino productivo: opcional y solo para el propietario (documento técnico 19, sección 5). */}
+      {puedeUsar(identidad.perfil, 'CU-12') && (
+        <details className="plegable" open={formulario.destino !== null || (intentado && !!(errores.destino || errores.destino_desde))}>
+          <summary>Destino productivo (opcional)</summary>
+          <div className="formulario">
+            <BotonesDestino valor={formulario.destino} alElegir={(destino) => cambiar({ destino })} error={errores.destino} />
+            {formulario.destino !== null && (
+              <>
+                <CampoFecha
+                  etiqueta="Desde"
+                  valor={formulario.destino_desde}
+                  maximo={hoy}
+                  error={errores.destino_desde}
+                  alCambiar={(destino_desde) => cambiar({ destino_desde })}
+                  alSalir={() => tocar('destino_desde')}
+                />
+                <button type="button" className="boton boton--secundario boton--ancho" onClick={() => cambiar({ destino: null, destino_desde: hoy })}>
+                  Quitar el destino
+                </button>
+              </>
+            )}
+          </div>
+        </details>
+      )}
 
       {intentado && !validacion.ok && (
         <p className="campo__error" role="alert">

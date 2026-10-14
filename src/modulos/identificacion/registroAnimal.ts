@@ -7,8 +7,9 @@
  * chapeta dentro de la misma transacción que crea el animal (sección 2.2).
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { validarCambioDestino } from '../../dominio/destino';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
-import { TIPOS_FOTOGRAFIA, type DatosNuevos, type FechaPredio, type RegistroLocal, type Sexo, type TipoFotografia, type Uuid } from '../../dominio/tipos';
+import { TIPOS_FOTOGRAFIA, type DatosNuevos, type Destino, type FechaPredio, type RegistroLocal, type Sexo, type TipoFotografia, type Uuid } from '../../dominio/tipos';
 import { PermisoDenegado, puedeCrear } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
 
@@ -94,6 +95,9 @@ export interface FormularioAnimal {
   forma_padre: FormaProgenitor;
   padre_id: string;
   padre_externo: string;
+  /** Destino productivo inicial, opcional y solo para el propietario (documento 19, sección 5). */
+  destino: Destino | null;
+  destino_desde: string;
 }
 
 export type CampoFormulario =
@@ -108,7 +112,9 @@ export type CampoFormulario =
   | 'madre_id'
   | 'madre_externa'
   | 'padre_id'
-  | 'padre_externo';
+  | 'padre_externo'
+  | 'destino'
+  | 'destino_desde';
 
 export type ErroresFormulario = Partial<Record<CampoFormulario, string>>;
 
@@ -131,6 +137,8 @@ export function formularioVacio(hoy: FechaPredio = fechaDelPredio()): Formulario
     forma_padre: 'desconocido',
     padre_id: '',
     padre_externo: '',
+    destino: null,
+    destino_desde: hoy,
   };
 }
 
@@ -163,7 +171,9 @@ function leerNumero(texto: string): number {
   return limpio === '' ? Number.NaN : Number(limpio);
 }
 
-export type ResultadoValidacion = { ok: true; datos: DatosNuevos<'animal'> } | { ok: false; errores: ErroresFormulario };
+export type ResultadoValidacion =
+  | { ok: true; datos: DatosNuevos<'animal'>; destino: { destino: Destino; desde: FechaPredio } | null }
+  | { ok: false; errores: ErroresFormulario };
 
 /**
  * Valida el formulario completo y lo convierte en los datos de la Tabla 24. Devuelve todos los
@@ -243,6 +253,19 @@ export function validarFormulario(formulario: FormularioAnimal, hoy: FechaPredio
     sinTexto: 'Escriba el nombre o la referencia del reproductor',
   });
 
+  // Destino inicial: opcional (documento 19, sección 5). Es la asignación inicial: no hay vigente.
+  let destino: { destino: Destino; desde: FechaPredio } | null = null;
+  if (formulario.destino !== null) {
+    // La llegada al predio: el ingreso si fue comprado, el nacimiento si nació en él; si no es válida, no se compara.
+    const llegada = formulario.origen === 'comprado' ? (errores.fecha_ingreso ? null : fechaIngreso) : errores.fecha_nacimiento ? null : fechaNacimiento;
+    const v = validarCambioDestino({ destino: formulario.destino, desde: formulario.destino_desde }, { vigente: null, retirado: false, llegada }, hoy);
+    if (v.ok) destino = { destino: v.destino, desde: v.desde };
+    else {
+      if (v.errores.destino) errores.destino = v.errores.destino;
+      if (v.errores.desde) errores.destino_desde = v.errores.desde;
+    }
+  }
+
   if (Object.keys(errores).length > 0) return { ok: false, errores };
 
   return {
@@ -260,6 +283,7 @@ export function validarFormulario(formulario: FormularioAnimal, hoy: FechaPredio
       padre_id: padre.id,
       padre_externo: padre.externo,
     },
+    destino,
   };
 }
 
@@ -379,10 +403,13 @@ export async function registrarAnimal(
   fotos: FotosCapturadas = {},
 ): Promise<ResultadoRegistro> {
   if (!puedeCrear(usuario.perfil, 'animal')) throw new PermisoDenegado(usuario.perfil, 'animal');
+  if (formulario.destino !== null && !puedeCrear(usuario.perfil, 'destino_productivo')) {
+    throw new PermisoDenegado(usuario.perfil, 'destino_productivo');
+  }
 
   const validacion = validarFormulario(formulario, hoy);
   if (!validacion.ok) return validacion;
-  const { datos } = validacion;
+  const { datos, destino } = validacion;
 
   try {
     const animal = await unidadDeTrabajo(usuario.usuario_id, async (tx) => {
@@ -399,6 +426,8 @@ export async function registrarAnimal(
         const fotografia = await tx.crear('fotografia', { animal_id: animal.id, tipo });
         await tx.guardarImagen(fotografia, foto);
       }
+      // También en la misma transacción: si el animal se rechaza, no queda destino (documento 19, sección 5).
+      if (destino) await tx.crear('destino_productivo', { animal_id: animal.id, ...destino });
       return animal;
     });
     return { ok: true, animal, fotografias: TIPOS_FOTOGRAFIA.filter((t) => fotos[t]).length };

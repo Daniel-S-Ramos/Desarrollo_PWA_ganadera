@@ -1,17 +1,26 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { NOMBRE_DESTINO } from '../../dominio/destino';
 import { describirEdad } from '../../dominio/edad';
+import { DESTINOS } from '../../dominio/tipos';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
 import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
 import { normalizarChapeta } from '../identificacion/registroAnimal';
-import { buscar, cargarListado, type AnimalListado, type FiltroEstado } from './listado';
+import { buscar, cargarListado, type AnimalListado, type FiltroDestino, type FiltroEstado } from './listado';
 
 const FILTROS: [FiltroEstado, string][] = [
   ['activos', 'Activos'],
   ['retirados', 'Retirados'],
   ['todos', 'Todos'],
+];
+
+/** Fichas pulsables del filtro por destino (documento técnico 19, sección 6; 3.10.4.4). */
+const FILTROS_DESTINO: [FiltroDestino, string][] = [
+  ['todos', 'Todos'],
+  ...DESTINOS.map((d): [FiltroDestino, string] => [d, NOMBRE_DESTINO[d]]),
+  ['sin_destino', 'Sin destino'],
 ];
 
 const NOMBRE_FILTRO: Record<FiltroEstado, [string, string]> = {
@@ -28,13 +37,14 @@ export function PantallaListado({ puedeRegistrar, informacionIncompleta = false 
   const navegar = useNavigate();
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<FiltroEstado>('activos');
+  const [filtroDestino, setFiltroDestino] = useState<FiltroDestino>('todos');
   const [hoy] = useState(() => fechaDelPredio());
   // La lista observa la base local: se actualiza sola cuando llega un animal o una foto.
   const animales = useLiveQuery(() => cargarListado(), []);
 
   if (!animales) return <p className="texto-secundario">Cargando…</p>;
 
-  const resultado = buscar(animales, texto, filtro);
+  const resultado = buscar(animales, texto, filtro, filtroDestino);
   const buscada = normalizarChapeta(texto);
   const [singular, plural] = NOMBRE_FILTRO[filtro];
 
@@ -63,6 +73,14 @@ export function PantallaListado({ puedeRegistrar, informacionIncompleta = false 
       <div className="opciones opciones--tres" role="group" aria-label="Estado">
         {FILTROS.map(([clave, nombre]) => (
           <button key={clave} type="button" className="opcion" aria-pressed={filtro === clave} onClick={() => setFiltro(clave)}>
+            {nombre}
+          </button>
+        ))}
+      </div>
+
+      <div className="fichas-filtro" role="group" aria-label="Destino productivo">
+        {FILTROS_DESTINO.map(([clave, nombre]) => (
+          <button key={clave} type="button" className="ficha-filtro" aria-pressed={filtroDestino === clave} onClick={() => setFiltroDestino(clave)}>
             {nombre}
           </button>
         ))}
@@ -125,6 +143,7 @@ function FilaAnimal({ animal, hoy, exacta, alAbrir }: { animal: AnimalListado; h
           <span className="fila-animal__chapeta">{animal.codigo_chapeta}</span>
           <span className="fila-animal__detalle">
             {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'} · {describirEdad(animal.fecha_nacimiento, animal.fecha_nacimiento_exacta, hoy)}
+            {animal.destino ? ` · ${NOMBRE_DESTINO[animal.destino]}` : ''}
           </span>
           {animal.retirado && <span className="fila-animal__retirado">{animal.sexo === 'hembra' ? 'Retirada' : 'Retirado'}</span>}
           <DistintivoSync estado={animal.estado_sync} {...(animal.detalle_conflicto ? { detalle: animal.detalle_conflicto } : {})} />
