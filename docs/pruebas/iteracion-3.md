@@ -22,6 +22,8 @@ comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
 | PE-25 | Registro sanitario en el navegador real (cierra HU-02.4) | 3.3 | CU-04 · CU-05 · HU-03 · HU-02.1 y 4 · Tabla 31 | ✅ |
 | PU-22 | Advertencia por repetición de un medicamento | 3.4 | RF-09 · CU-04 5a · HU-09 | ✅ |
 | PE-26 | Advertencia por repetición en el navegador real | 3.4 | RF-09 · HU-09 · Figura 19 | ✅ |
+| PU-23 | Ronda de ordeño | 3.5 | RF-10 · CU-06 · HU-04 · 3.8.6 | ✅ |
+| PE-27 | Ronda de ordeño en el navegador real | 3.5 | CU-06 · HU-04 · 3.10.4.4 | ✅ |
 
 ---
 
@@ -250,3 +252,56 @@ paso 2. (2) El documento 21 decía que el aviso mostraría «✓ Enviado»; una 
 distintivo, como en el resto de la aplicación (documento 11, sección 4). Se corrigió el documento, no
 la aplicación. (3) «pp prueba» es un medicamento de prueba sin el prefijo «Prueba»; se incluye en la
 limpieza previa a la evaluación.
+
+## PU-23 · Ronda de ordeño
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las vacas de la ronda, la siguiente vaca, la validación de los litros con el cero, el promedio solo sobre días con registro, las palabras y sus umbrales, el reemplazo como corrección, los permisos del reemplazo, el valor vigente y la verificación dentro de la transacción |
+| Requerimiento | RF-10 · CU-06 · HU-04 · apartados 3.8.6 y 3.9.5 |
+| Tipo | Unitaria, automática |
+| Código | [`src/dominio/leche.ts`](../../src/dominio/leche.ts) · [`src/modulos/leche/ronda.ts`](../../src/modulos/leche/ronda.ts) · prueba [`ronda.test.ts`](../../src/modulos/leche/ronda.test.ts) · especificación [documento técnico 22](../tecnica/22-ronda-de-ordeno.md), sección 10 |
+| Resultado obtenido | **40 de 40 aprobadas**. Total del conjunto automático: **647 de 647** ([informe](resultados/2026-10-15_000856_7cae766.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-15 |
+
+**Mutaciones.** Veintiuna, todas detectadas: quitar el máximo de litros, admitir dos decimales, admitir
+fecha futura, incluir la fecha en el promedio, quitar el límite inferior de la ventana, cambiar los
+límites de «similar» y «muy por debajo», quitar el aviso de atención, tomar la primera corrección en vez
+de la más reciente, aplicar correcciones de otros campos, admitir vacas sin destino leche, machos o
+retiradas, no verificar el permiso, reemplazar sin confirmar o con el mismo valor, guardar el valor
+original como anterior, usar otro motivo, crear un segundo registro en vez de la corrección, no verificar
+la producción al guardar y mostrar en la ficha el valor original.
+
+**Observación.** Se retiró una prueba que esperaba rechazar a un perfil inexistente: los dos perfiles
+registran producción (Tabla 27), así que no verificaba nada; se reemplazó por la que comprueba que el
+trabajador registra ordeños nuevos.
+
+## PE-27 · Ronda de ordeño en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario la ronda sin vacas, la ronda de un día anterior y la de hoy con el promedio y las palabras, el registro existente, el reemplazo y el valor vigente en la ficha; y como trabajador que no puede reemplazar un registro del propietario |
+| Requerimiento | CU-06 (2a, 3a, 3b) · HU-04 (1, 3, 4) · apartados 3.8.6 y 3.10.4.4 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-3` (commit 7cae766) |
+| Resultado obtenido | Todos los pasos se comportaron como se esperaba; un ajuste de redacción (observación 1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-15 |
+
+| # | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|
+| 1 | Propietario | Abrir la ronda sin vacas con destino leche | «Ninguna vaca tiene el destino Producción de leche. Asígnelo desde la ficha de cada vaca», con enlace al listado (CU-06, 2a) | [captura](evidencias/iteracion-3/PE-27-01-sin-vacas-en-produccion.png) |
+| 2 | Propietario | Asignar Producción de leche a Z920, Z921, Z926, Z927 y Z931 | La ronda las lista en orden de chapeta, «0 de 5», abierta en la primera | [captura](evidencias/iteracion-3/PE-27-02-ronda-cinco-vacas.png) |
+| 3 | Propietario | Ronda del 13 de octubre: 10, 12, 0, 0 y 5 litros | «Sin registros en los últimos 7 días»; los ceros quedan como «✓ 0 litros»; «Ronda completa: 5 de 5 vacas» | [captura](evidencias/iteracion-3/PE-27-03-ronda-13-completa.png) |
+| 4 | Propietario | Tocar Z920 en la ronda del 13 | «Ya hay un registro… 10 litros, registrado por Jose Ramos. El valor nuevo lo reemplazará», con la casilla; el botón inhabilitado (CU-06, 3a) | [captura](evidencias/iteracion-3/PE-27-04-registro-existente-13.png) |
+| 5 | Propietario | Ronda del 14: Z920 = 10,5; Z921 = 8; Z926 = 0 | «Similar a su promedio: 0,5 litros más»; «⚠ Muy por debajo de su promedio: 4 litros menos», en amarillo; con promedio 0, el 0 es igual; la ronda pasa sola a la siguiente | [similar](evidencias/iteracion-3/PE-27-05-similar-al-promedio.png) · [muy por debajo](evidencias/iteracion-3/PE-27-06-muy-por-debajo.png) · [promedio 0](evidencias/iteracion-3/PE-27-07-promedio-cero.png) |
+| 6 | Propietario | Reemplazar los 10,5 litros de Z920 por 11, confirmando | Se reemplaza; la ficha muestra «Leche más reciente: 11 litros · 14 de octubre de 2026», el valor vigente | [reemplazo](evidencias/iteracion-3/PE-27-08-reemplazo-confirmado.png) · [ficha](evidencias/iteracion-3/PE-27-11-ficha-valor-vigente.png) |
+| 7 | Trabajador | Ronda del 13 en el otro teléfono; tocar Z920 | Los cinco registros del propietario llegaron con ✓; «No puede reemplazar este registro: la enmienda corresponde al propietario», campo y botón inhabilitados (CU-06, 3b) | [ronda](evidencias/iteracion-3/PE-27-10-trabajador-ronda-13.png) · [sin permiso](evidencias/iteracion-3/PE-27-09-trabajador-no-puede-reemplazar.png) |
+
+**Observaciones.** (1) Con un valor igual al promedio el texto decía «Similar a su promedio: igual a su
+promedio»; se ajustó para decir solo «Igual a su promedio». (2) Los destinos se asignaron con fecha 15
+de octubre y la ronda admitió registrar el 13 y el 14: la ronda toma el destino **vigente**, no el que
+tenía la vaca en la fecha del ordeño (documento 22, sección 4). Es razonable, porque asignar el destino es
+un acto administrativo posterior a que la vaca ya se ordeñe, y queda anotado. (3) Algunas vacas de prueba
+tienen pocos días de nacidas, lo que hace irreales sus litros; sirven para la prueba y se borrarán con la
+serie Z900–Z999.

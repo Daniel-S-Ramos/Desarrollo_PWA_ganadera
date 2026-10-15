@@ -90,7 +90,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 3.2 | Destino productivo y su historial (CU-12) | ✅ |
 | 3.3 | Registro sanitario e historial (CU-04, CU-05) | ✅ |
 | 3.4 | Advertencia por repetición de medicamento (RF-09) | ✅ |
-| 3.5 | Ronda de ordeño con regla de un registro por vaca y fecha (CU-06) | ⬜ |
+| 3.5 | Ronda de ordeño con regla de un registro por vaca y fecha (CU-06) | ✅ |
 | 3.6 | Consulta de producción diaria, semanal y mensual | ⬜ |
 | 3.7 | Pruebas y cierre de iteración | ⬜ |
 

@@ -229,7 +229,10 @@ function FormularioVaca({
       {comparacion && (
         <p className={comparacion.atencion ? 'aviso aviso--atencion aviso--en-contenido' : 'texto-secundario'} role="status">
           {comparacion.atencion && '⚠ '}
-          {comparacion.palabras}: {comparacion.diferencia.charAt(0).toLowerCase() + comparacion.diferencia.slice(1)}.
+          {/* Igual al promedio basta con decirlo una vez (PE-27: «Similar a su promedio: igual a su promedio»). */}
+          {comparacion.diferencia === 'Igual a su promedio'
+            ? 'Igual a su promedio.'
+            : `${comparacion.palabras}: ${comparacion.diferencia.charAt(0).toLowerCase() + comparacion.diferencia.slice(1)}.`}
         </p>
       )}
       {igual && <p className="texto-secundario">Ya tiene ese valor.</p>}
