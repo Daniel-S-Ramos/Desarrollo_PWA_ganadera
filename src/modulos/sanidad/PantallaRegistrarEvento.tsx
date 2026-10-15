@@ -19,7 +19,9 @@ import type { Identidad } from '../../sesion/token';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
 import { buscarPorChapeta, normalizarChapeta } from '../identificacion/registroAnimal';
 import { listarCatalogo, type MedicamentoLocal } from './catalogo';
-import { cargarContextoEvento, formularioComo, puedeVerCosto, registrarEvento, ultimaDosisDe, type EventoLocal } from './eventos';
+import { useCargaInicialCompleta } from '../../ui/useEstadoMotor';
+import { AvisoRepeticion } from './AvisoRepeticion';
+import { cargarContextoEvento, formularioComo, puedeVerCosto, registrarEvento, ultimaDosisDe, verificarRepeticion, type EventoLocal } from './eventos';
 import { FormularioMedicamento } from './FormularioMedicamento';
 
 /**
@@ -64,9 +66,19 @@ function Formulario({ animal, identidad, como, ronda }: { animal: RegistroLocal<
   const [guardando, setGuardando] = useState(false);
   const [erroresDeGuardado, setErroresDeGuardado] = useState<ErroresEvento>({});
   const [registrado, setRegistrado] = useState<EventoLocal | null>(null);
+  // Documento técnico 21, sección 4: la confirmación de una repetición.
+  const [confirmado, setConfirmado] = useState(false);
+  const [faltaConfirmar, setFaltaConfirmar] = useState(false);
+  const cargaCompleta = useCargaInicialCompleta();
 
   const catalogo = useLiveQuery(() => listarCatalogo(), [], []);
   const contexto = useLiveQuery(() => cargarContextoEvento(animal.id, formulario.medicamento_id), [animal.id, formulario.medicamento_id]);
+  // Se recalcula sola si llega una aplicación desde otro teléfono (documento técnico 21, sección 5).
+  const verificacion = useLiveQuery(
+    () => verificarRepeticion(animal.id, formulario.medicamento_id, formulario.fecha),
+    [animal.id, formulario.medicamento_id, formulario.fecha],
+  );
+  const advertencia = verificacion?.repeticion.nivel === 'advertencia';
 
   // Ronda: el formulario llega con el evento anterior copiado (sección 7).
   useEffect(() => {
@@ -77,6 +89,11 @@ function Formulario({ animal, identidad, como, ronda }: { animal: RegistroLocal<
   const cambiar = (cambios: Partial<FormularioEvento>) => {
     setFormulario((f) => ({ ...f, ...cambios }));
     setErroresDeGuardado({});
+    // La advertencia confirmada ya no es la misma si cambia el medicamento o la fecha (sección 4).
+    if ('medicamento_id' in cambios || 'fecha' in cambios) {
+      setConfirmado(false);
+      setFaltaConfirmar(false);
+    }
   };
 
   async function elegirMedicamento(medicamento: MedicamentoLocal) {
@@ -94,12 +111,16 @@ function Formulario({ animal, identidad, como, ronda }: { animal: RegistroLocal<
   async function guardar(evento: FormEvent) {
     evento.preventDefault();
     setIntentado(true);
-    if (!validacion?.ok) return;
+    if (!validacion?.ok || (advertencia && !confirmado)) return;
     setGuardando(true);
     try {
-      const resultado = await registrarEvento(animal.id, formulario, identidad, hoy);
+      const resultado = await registrarEvento(animal.id, formulario, identidad, hoy, confirmado);
       if (resultado.ok) setRegistrado(resultado.evento);
-      else setErroresDeGuardado(resultado.errores);
+      else if ('requiereConfirmacion' in resultado) {
+        // Llegó una aplicación dentro del intervalo entre la vista y el guardado (sección 5).
+        setConfirmado(false);
+        setFaltaConfirmar(true);
+      } else setErroresDeGuardado(resultado.errores);
     } finally {
       setGuardando(false);
     }
@@ -205,7 +226,25 @@ function Formulario({ animal, identidad, como, ronda }: { animal: RegistroLocal<
         </div>
       )}
 
-      {/* Paso 3.4: aquí aparecerá la última aplicación de este medicamento al animal (documento 18, sección 2). */}
+      {/* La última aplicación de este medicamento al animal, en dos niveles (documento técnico 21). */}
+      {verificacion && (
+        <AvisoRepeticion
+          verificacion={verificacion}
+          chapeta={animal.codigo_chapeta}
+          hoy={hoy}
+          confirmado={confirmado}
+          alConfirmar={(valor) => {
+            setConfirmado(valor);
+            setFaltaConfirmar(false);
+          }}
+          cargaIncompleta={cargaCompleta === false}
+        />
+      )}
+      {faltaConfirmar && advertencia && (
+        <p className="campo__error" role="alert">
+          Se encontró una aplicación reciente de este medicamento. Revísela y confirme para guardar.
+        </p>
+      )}
 
       {/* 3. Fecha (CU-04, paso 2) */}
       <label className="campo">
@@ -266,7 +305,7 @@ function Formulario({ animal, identidad, como, ronda }: { animal: RegistroLocal<
       )}
 
       <div className="acciones-formulario">
-        <button className="boton boton--principal boton--ancho" type="submit" disabled={guardando || agregando}>
+        <button className="boton boton--principal boton--ancho" type="submit" disabled={guardando || agregando || (advertencia && !confirmado)}>
           {guardando ? 'Guardando…' : 'Guardar evento'}
         </button>
         <Link className="boton boton--secundario boton--ancho" to={`/animales/${animal.id}`}>

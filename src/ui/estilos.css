@@ -872,3 +872,9 @@ a.boton {
   padding-left: 12px;
   border-left: 3px solid var(--borde);
 }
+
+/* Aviso informativo, sin alerta: la última aplicación fuera del intervalo (documento técnico 21, sección 3). */
+.aviso--neutro {
+  background: var(--blanco);
+  border-color: var(--borde);
+}

@@ -29,3 +29,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 18 | [Catálogo de medicamentos y parámetros](18-catalogo-de-medicamentos.md) | 3.1 | RF-09 · 3.8.9 · Tablas 30 y 31 |
 | 19 | [Destino productivo y su historial](19-destino-productivo.md) | 3.2 | RF-18 · CU-12 · HU-13 · HU-06.4 |
 | 20 | [Registro sanitario e historial](20-registro-sanitario.md) | 3.3 | RF-07 · RF-08 · CU-04 · CU-05 · HU-03 |
+| 21 | [Advertencia por repetición de un medicamento](21-advertencia-por-repeticion.md) | 3.4 | RF-09 · CU-04 5a · HU-09 · Figura 19 |

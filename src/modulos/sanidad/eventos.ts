@@ -1,9 +1,11 @@
 /**
- * Registro de eventos sanitarios e historial del animal (CU-04, CU-05, HU-03).
- * Especificación: docs/tecnica/20-registro-sanitario.md
+ * Registro de eventos sanitarios e historial del animal (CU-04, CU-05, HU-03), con la advertencia por
+ * repetición (RF-09, HU-09).
+ * Especificación: docs/tecnica/20-registro-sanitario.md · docs/tecnica/21-advertencia-por-repeticion.md
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
 import { fechaDelPredio } from '../../dominio/fechas';
+import { evaluarRepeticion, type Repeticion } from '../../dominio/repeticion';
 import { copiarEvento, ordenarHistorial, ultimaDosis, validarEvento, type ContextoEvento, type ErroresEvento, type FormularioEvento } from '../../dominio/sanidad';
 import type { FechaPredio, Perfil, RegistroLocal, UnidadDosis, Uuid } from '../../dominio/tipos';
 import { PermisoDenegado, puedeCrear, puedeUsar } from '../../sesion/permisos';
@@ -42,7 +44,56 @@ export async function formularioComo(eventoId: Uuid, perfil: Perfil): Promise<Fo
   return evento ? copiarEvento(evento, puedeVerCosto(perfil)) : null;
 }
 
-export type ResultadoEvento = { ok: true; evento: EventoLocal } | { ok: false; errores: ErroresEvento };
+// ---------------------------------------------------------------------------
+// Advertencia por repetición: documento técnico 21
+// ---------------------------------------------------------------------------
+
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * El nivel para una fecha y un medicamento. Solo lee tablas que participan en la transacción de
+ * registro, para poder repetirse dentro de ella (sección 5).
+ */
+async function repeticionDe(animalId: Uuid, medicamentoId: Uuid, fecha: FechaPredio): Promise<{ repeticion: Repeticion<EventoLocal>; intervalo: number } | null> {
+  const medicamento = await consulta.medicamento.get(medicamentoId);
+  if (!medicamento || !FECHA.test(fecha) || Number.isNaN(Date.parse(fecha))) return null;
+  const aplicaciones = (await consulta.evento_sanitario.where('animal_id').equals(animalId).toArray()).filter((e) => e.medicamento_id === medicamentoId);
+  return { repeticion: evaluarRepeticion(aplicaciones, fecha, medicamento.intervalo_advertencia_dias), intervalo: medicamento.intervalo_advertencia_dias };
+}
+
+export interface VerificacionRepeticion {
+  repeticion: Repeticion<EventoLocal>;
+  medicamento: string;
+  intervalo: number;
+  /** Quién registró la aplicación que se muestra (HU-15). */
+  autor: string | null;
+}
+
+/** Lo que muestra el aviso al elegir el medicamento y la fecha (secciones 2 y 3); null si falta alguno. */
+export async function verificarRepeticion(animalId: Uuid, medicamentoId: Uuid | null, fecha: FechaPredio): Promise<VerificacionRepeticion | null> {
+  if (!medicamentoId) return null;
+  const resultado = await repeticionDe(animalId, medicamentoId, fecha);
+  if (!resultado) return null;
+  const { repeticion, intervalo } = resultado;
+  const [medicamento, autor] = await Promise.all([
+    consulta.medicamento.get(medicamentoId),
+    repeticion.nivel === 'ninguno' ? Promise.resolve(undefined) : consulta.usuario.get(repeticion.aplicacion.autor_id),
+  ]);
+  return {
+    repeticion,
+    medicamento: medicamento?.nombre ?? '',
+    intervalo,
+    autor: repeticion.nivel === 'ninguno' ? null : (autor?.nombre ?? 'un usuario que ya no está en el predio'),
+  };
+}
+
+export type ResultadoEvento =
+  | { ok: true; evento: EventoLocal }
+  | { ok: false; errores: ErroresEvento }
+  /** Hay una aplicación dentro del intervalo y no se confirmó (sección 5). */
+  | { ok: false; requiereConfirmacion: true };
+
+class SinConfirmar extends Error {}
 
 class Invalido extends Error {
   constructor(readonly errores: ErroresEvento) {
@@ -51,8 +102,9 @@ class Invalido extends Error {
 }
 
 /**
- * Registra un evento sanitario. El animal y el medicamento se verifican otra vez dentro de la
- * transacción (sección 6).
+ * Registra un evento sanitario. El animal, el medicamento y la repetición se verifican otra vez dentro
+ * de la transacción (documento 20, sección 6; documento 21, sección 5). Con una aplicación del mismo
+ * medicamento dentro del intervalo, solo se guarda si el usuario confirmó.
  *
  * @throws PermisoDenegado si el perfil no puede registrar eventos, o si un trabajador envía un costo (sección 5.2).
  */
@@ -61,6 +113,7 @@ export async function registrarEvento(
   formulario: FormularioEvento,
   usuario: Identidad,
   hoy: FechaPredio = fechaDelPredio(),
+  confirmado = false,
 ): Promise<ResultadoEvento> {
   if (!puedeCrear(usuario.perfil, 'evento_sanitario')) throw new PermisoDenegado(usuario.perfil, 'evento_sanitario');
   if (formulario.costo.trim() !== '' && !puedeVerCosto(usuario.perfil)) throw new PermisoDenegado(usuario.perfil, 'evento_sanitario');
@@ -70,11 +123,14 @@ export async function registrarEvento(
       if (!contexto) throw new Invalido({ animal: 'El animal no está en este teléfono' });
       const validacion = validarEvento(formulario, contexto, hoy);
       if (!validacion.ok) throw new Invalido(validacion.errores);
+      const verificacion = await repeticionDe(animalId, validacion.datos.medicamento_id, validacion.datos.fecha);
+      if (verificacion?.repeticion.nivel === 'advertencia' && !confirmado) throw new SinConfirmar();
       return tx.crear('evento_sanitario', { animal_id: animalId, ...validacion.datos });
     });
     return { ok: true, evento };
   } catch (error) {
     if (error instanceof Invalido) return { ok: false, errores: error.errores };
+    if (error instanceof SinConfirmar) return { ok: false, requiereConfirmacion: true };
     throw error;
   }
 }
