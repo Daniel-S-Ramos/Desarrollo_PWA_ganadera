@@ -1,0 +1,13 @@
+PE-25 · Costo de los eventos sanitarios según el perfil del autor (2026-10-14)
+Consulta de solo lectura al servicio: npx supabase db query --linked
+  select e.tipo, e.dosis, e.costo, u.perfil from public.evento_sanitario e
+  join public.usuario u on u.id = e.autor_id order by e.creado_en;
+
+tipo     dosis  costo  perfil
+vacuna   1      3000   propietario   (Z920, ronda)
+vacuna   1      3000   propietario   (Z921, ronda)
+vacuna   1      3000   propietario   (Z923, ronda)
+otro     2      4000   propietario   (Z921, con síntomas)
+vacuna   20     null   trabajador    (Z925)
+
+El evento del trabajador llegó al servicio sin costo (documento técnico 20, sección 5.2).

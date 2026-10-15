@@ -18,6 +18,8 @@ comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
 | PE-23 | Catálogo de medicamentos en el navegador real | 3.1 | 3.8.9 · Tabla 31 | ✅ |
 | PU-20 | Destino productivo y su historial | 3.2 | RF-18 · RF-19 · CU-12 · HU-13 · Tabla 27 | ✅ |
 | PE-24 | Destino productivo en el navegador real (cierra HU-06.4) | 3.2 | CU-12 · HU-13 · HU-06.4 · 3.10.4.4 | ✅ |
+| PU-21 | Registro sanitario e historial | 3.3 | RF-07 · RF-08 · CU-04 · CU-05 · HU-03 · Tabla 27 | ✅ |
+| PE-25 | Registro sanitario en el navegador real (cierra HU-02.4) | 3.3 | CU-04 · CU-05 · HU-03 · HU-02.1 y 4 · Tabla 31 | ✅ |
 
 ---
 
@@ -130,3 +132,66 @@ choca con esas pruebas mientras no repitan ese número, y se borrará en la limp
 evaluación con el resto de la serie Z900–Z999. (2) Los trabajadores del predio usan Android; esta
 prueba del perfil trabajador se hizo en un iPhone, lo que basta porque se verifica qué se muestra, no la
 cámara.
+
+## PU-21 · Registro sanitario e historial
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las validaciones del evento, el filtro del catálogo por tipo, la dosis precargada, el registro (también dentro de la transacción), el costo solo para el propietario, la copia para aplicar lo mismo a otro animal y el orden del historial |
+| Requerimiento | RF-07 · RF-08 · CU-04 · CU-05 · HU-03 · Tablas 27 y 30 |
+| Tipo | Unitaria, automática |
+| Código | [`src/dominio/sanidad.ts`](../../src/dominio/sanidad.ts) · [`src/modulos/sanidad/eventos.ts`](../../src/modulos/sanidad/eventos.ts) · prueba [`eventos.test.ts`](../../src/modulos/sanidad/eventos.test.ts) · especificación [documento técnico 20](../tecnica/20-registro-sanitario.md), sección 10 |
+| Resultado obtenido | **25 de 25 aprobadas**. Total del conjunto automático: **585 de 585** ([informe](resultados/2026-10-14_231346_5baa449.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-14 |
+
+**Mutaciones.** Diecinueve, todas detectadas: quitar «otro» de los medicamentos de un tratamiento,
+proponer «otro» en lugar de antibiótico, invertir el desempate por UUID, no descartar los eventos sin
+dosis, tomar la dosis de cualquier medicamento, copiar los síntomas, copiar el costo sin permiso,
+quitar las reglas de animal retirado, medicamento del catálogo y nacimiento, validar la fecha con
+`Date.parse`, admitir dosis 0, quitar el máximo del costo, admitir costo con decimales, quitar el
+límite de los síntomas, dejar que el trabajador envíe costo, mostrar el costo a todos y no ordenar el
+historial.
+
+## PE-25 · Registro sanitario en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario el registro con un medicamento agregado desde la misma pantalla, las validaciones, la ronda para varios animales, la dosis precargada, el historial con costo y la última vacuna; y como trabajador el registro sin costo y el historial sin costo |
+| Requerimiento | CU-04 · CU-05 · HU-03 · HU-02.1 y 4 · Tablas 27, 30 y 31 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-3` (commit 5baa449) |
+| Resultado obtenido | Un defecto en la primera ejecución, corregido (hallazgo 1). En la segunda, todos los pasos como se esperaba |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-14 |
+
+| # | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|
+| 1 | Propietario | En Z920, Vacuna → **Agregar un medicamento**: «Prueba Aftosa» | Queda elegido sin salir del registro; tipo Vacuna propuesto; dosis vacía por ser el primer uso | [agregar](evidencias/iteracion-3/PE-25-01-agregar-medicamento-desde-registro.png) · [elegido](evidencias/iteracion-3/PE-25-02-medicamento-elegido-dosis-vacia.png) |
+| 2 | Propietario | Fecha de mañana y dosis 0 | «La fecha no puede ser posterior a hoy»; «La dosis debe ser mayor que 0 y hasta 9.999» | [fecha](evidencias/iteracion-3/PE-25-03-fecha-futura.png) · [dosis](evidencias/iteracion-3/PE-25-04-dosis-cero.png) |
+| 3 | Propietario | Guardar con dosis 1 y costo 3.000; **Aplicar lo mismo a otro animal** con Z921 y Z923 | Cada formulario llega con tipo, medicamento, fecha, dosis y costo copiados y «Ya se aplicó en esta ronda a: …»; la confirmación final dice «3 animales (Z920, Z921, Z923)» | [1](evidencias/iteracion-3/PE-25-05-confirmacion-ronda-1.png) · [Z921](evidencias/iteracion-3/PE-25-06-ronda-z921-copiado.png) · [Z923](evidencias/iteracion-3/PE-25-07-ronda-z923-copiado.png) · [3 animales](evidencias/iteracion-3/PE-25-08-ronda-3-animales.png) |
+| 4 | Propietario | Ficha de Z921 e historial | «Última vacuna: Prueba Aftosa · 14 de octubre de 2026»; el detalle muestra «Costo: $ 3.000» | [captura](evidencias/iteracion-3/PE-25-09-ficha-ultima-vacuna-e-historial-con-costo.png) |
+| 5 | Propietario | Purga, sin purgas en el catálogo → **Ver todo el catálogo** | Lista los demás medicamentos | [captura](evidencias/iteracion-3/PE-25-10-ver-todo-el-catalogo.png) |
+| 6 | Propietario | Evento de tipo Otro en Z921 con síntomas y costo 4.000 | Se guarda; el historial lo pone primero (mismo día, registrado después) con síntomas y «$ 4.000» | [captura](evidencias/iteracion-3/PE-25-11-evento-con-sintomas-y-costo.png) |
+| 7 | Propietario | En Z924, Vacuna → Prueba Aftosa | Dosis precargada en 1 con «Tomada del último registro de este medicamento: revísela» | [captura](evidencias/iteracion-3/PE-25-12-dosis-precargada.png) |
+| 8 | Trabajador | Registrar una vacuna en Z925 | Registrado; llega al computador con «Registrado por Daniel Ramos» y en el servicio con costo vacío | [teléfono](evidencias/iteracion-3/PE-25-14-trabajador-evento-registrado.webp) · [computador](evidencias/iteracion-3/PE-25-13-propietario-ve-evento-del-trabajador.png) · [servicio](evidencias/iteracion-3/PE-25-18-costo-por-perfil.txt) |
+| 9 | Trabajador | Ficha e historial de Z921 | Llegaron los eventos del propietario; el detalle muestra síntomas y fecha de registro, **sin el costo** (que el propietario sí ve: $ 3.000 y $ 4.000) | [ficha](evidencias/iteracion-3/PE-25-15-trabajador-ficha-vacuna-llego.png) · [detalle](evidencias/iteracion-3/PE-25-16-trabajador-detalle-sin-costo.png) · [síntomas](evidencias/iteracion-3/PE-25-17-trabajador-sintomas-sin-costo.png) |
+
+**Hallazgo 1 (defecto, corregido).** En la primera ejecución, al pulsar **Agregar medicamento** dentro
+del registro la página se recargaba, pedía el código de desbloqueo y el medicamento no se guardaba
+(consultado en el servicio: no existía). Causa: el formulario del catálogo quedó dentro del formulario
+del evento, un formulario dentro de otro, que el HTML no admite; el navegador enviaba el exterior de la
+manera tradicional. Las pruebas automáticas no lo detectan porque no dibujan las pantallas. Corrección
+(commit 5baa449): el bloque de agregar un medicamento dejó de ser un formulario y su botón guarda
+directamente. [Ficha antes](evidencias/iteracion-3/PE-25-00a-hallazgo-ficha-antes.png) ·
+[formulario](evidencias/iteracion-3/PE-25-00b-hallazgo-agregar-medicamento.png) ·
+[página recargada](evidencias/iteracion-3/PE-25-00c-hallazgo-pagina-recargada.png)
+
+**Observaciones.** (1) El trabajador registró «Prueba ivermectina» como **Vacuna**, y la ficha de Z925
+la muestra como última vacuna. Es lo previsto (se guarda el tipo que elige quien registra, documento
+20, sección 4), pero muestra que la clasificación depende de quien registra; con un dato real se
+enmendará con una corrección (Iteración 4). (2) No se tomó captura del formulario del trabajador sin el
+campo de costo; lo respaldan el evento que llegó al servicio con costo vacío y la prueba automática
+PU-21.6, que rechaza un costo enviado por el trabajador. (3) El costo copiado en la ronda se muestra
+como «3000», sin separador de miles; se acepta igual y el historial lo presenta como «$ 3.000».
+(4) Los medicamentos «Prueba Aftosa», «Prueba ivermectina» y «Otro mas» son de prueba y se borrarán
+antes de la evaluación; «Otro mas» no lleva el prefijo «Prueba» y debe incluirse a mano en la limpieza.
