@@ -30,3 +30,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 19 | [Destino productivo y su historial](19-destino-productivo.md) | 3.2 | RF-18 · CU-12 · HU-13 · HU-06.4 |
 | 20 | [Registro sanitario e historial](20-registro-sanitario.md) | 3.3 | RF-07 · RF-08 · CU-04 · CU-05 · HU-03 |
 | 21 | [Advertencia por repetición de un medicamento](21-advertencia-por-repeticion.md) | 3.4 | RF-09 · CU-04 5a · HU-09 · Figura 19 |
+| 22 | [Ronda de ordeño](22-ronda-de-ordeno.md) | 3.5 | RF-10 · CU-06 · HU-04 · 3.8.6 |
