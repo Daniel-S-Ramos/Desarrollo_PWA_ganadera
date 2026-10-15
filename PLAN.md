@@ -58,7 +58,7 @@ repite, y las siguientes tienen más pantallas. Se recalibra al cierre de cada i
 |---|---|---|---|---|---|
 | 1 · Fundación técnica | 16 | 2026-10-06 | — | 2026-10-12 | 16 puntos / 7 días |
 | 2 · Identificación y ficha | 15 | 2026-10-12 | 2026-10-19 | 2026-10-13 | 15 puntos / 2 días |
-| 3 · Sanidad, leche y destino | 16 | 2026-10-20 | 2026-10-26 | | |
+| 3 · Sanidad, leche y destino | 16 | 2026-10-13 | 2026-10-26 | 2026-10-15 | 16 puntos / 3 días |
 | 4 · Peso, partos y correcciones | 13 | 2026-10-27 | 2026-11-02 | | |
 | 5 · Consultas, alertas y economía | 16 | 2026-11-03 | 2026-11-09 | | |
 | Cierre · Evaluación del prototipo | — | 2026-11-10 | 2026-11-23 | | |
@@ -80,19 +80,19 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 2.5 | Carga inicial de un dispositivo nuevo (3.7.6) | ✅ |
 | 2.6 | Pruebas y cierre de iteración | ✅ |
 
-## Iteración 3 — Sanidad, leche y destino (HU-03, HU-04, HU-09, HU-13 · 16 puntos)
+## Iteración 3 — Sanidad, leche y destino (HU-03, HU-04, HU-09, HU-13 · 16 puntos) · cerrada el 2026-10-15 · `v0.3`
 
 **Criterios de cierre heredados de la Iteración 2:** HU-02.4 (acceso desde la ficha al historial sanitario), HU-06.4 (opciones exclusivas del propietario ocultas al trabajador, con el destino y la salida) y la comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
 
 | Paso | Contenido | Estado |
 |---|---|---|
-| 3.1 | Catálogo de medicamentos y tabla de parámetros | ⬜ |
-| 3.2 | Destino productivo y su historial (CU-12) | ⬜ |
-| 3.3 | Registro sanitario e historial (CU-04, CU-05) | ⬜ |
-| 3.4 | Advertencia por repetición de medicamento (RF-09) | ⬜ |
-| 3.5 | Ronda de ordeño con regla de un registro por vaca y fecha (CU-06) | ⬜ |
-| 3.6 | Consulta de producción diaria, semanal y mensual | ⬜ |
-| 3.7 | Pruebas y cierre de iteración | ⬜ |
+| 3.1 | Catálogo de medicamentos y tabla de parámetros | ✅ |
+| 3.2 | Destino productivo y su historial (CU-12) | ✅ |
+| 3.3 | Registro sanitario e historial (CU-04, CU-05) | ✅ |
+| 3.4 | Advertencia por repetición de medicamento (RF-09) | ✅ |
+| 3.5 | Ronda de ordeño con regla de un registro por vaca y fecha (CU-06) | ✅ |
+| 3.6 | Consulta de producción diaria, semanal y mensual | ✅ |
+| 3.7 | Pruebas y cierre de iteración | ✅ |
 
 ## Iteración 4 — Peso, partos y correcciones (HU-05, HU-12, HU-17 · 13 puntos)
 
@@ -192,9 +192,16 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-12 | Los dispositivos del predio son Android; iPhone queda fuera del alcance de la evaluación | El propietario y los trabajadores usan Android. Las fotos dependen de que el navegador genere WebP, que Chrome para Android sí hace (PE-18) |
 | 2026-10-13 | El peso inicial se nombra según el origen: «peso de compra» (comprado) o «peso al nacer» (nacido en el predio), en la ficha y en el formulario | A pedido del autor: «peso inicial» no le dice al propietario qué peso es; el campo sigue siendo uno solo (documento técnico 16, sección 3.1) |
 | 2026-10-13 | La ficha se construye con su lógica completa (último peso, vacuna, leche, destino) aunque esos registros lleguen en las Iteraciones 3 y 4 | Cuando se guarden, la ficha los mostrará sin cambios; mientras tanto dice que no hay datos (CU-03, 4a) |
+| 2026-10-15 | Consulta de producción: solo el propietario (CU-07); ventanas de 30 días, 12 semanas de lunes a domingo y 12 meses, con anterior y siguiente; total, promedio por día registrado y días registrados; barras horizontales sin librerías | Decisiones A–F aprobadas por el autor (documento técnico 23) |
+| 2026-10-14 | Ronda de ordeño: desde Inicio, en espera durante la carga inicial; vacas con destino leche; promedio de los 7 días anteriores solo con días registrados; palabras con umbrales de 10 % y 25 % (de presentación); el reemplazo es una corrección de litros con motivo «registro duplicado»; el valor vigente de los litros se adelanta del paso 4.3 | Decisiones A–G aprobadas por el autor (documento técnico 22) |
+| 2026-10-14 | Advertencia por repetición: se compara con la aplicación del mismo medicamento al animal más cercana a la fecha elegida, antes o después; advierte si la distancia es menor que el intervalo; la confirmación se pierde al cambiar medicamento o fecha, se verifica otra vez al guardar y **no se almacena** | Decisiones A–G aprobadas por el autor (documento técnico 21) |
+| 2026-10-14 | Registro sanitario: desde la ficha; el tipo filtra el catálogo; la dosis se precarga con la última del medicamento en el predio; **el costo solo lo ve y lo registra el propietario**; la fecha puede ser anterior al ingreso pero no al nacimiento; «Aplicar lo mismo a otro animal» para los ciclos de vacunación | Decisiones A–H aprobadas por el autor (documento técnico 20) |
 | 2026-10-13 | Durante la carga inicial de un teléfono nuevo se puede consultar pero no registrar, hasta que lleguen los datos; las fotos no bloquean | Corrige el documento técnico 10: registrar sin el inventario completo puede producir un conflicto de chapeta (documento técnico 17, sección 2) |
 | 2026-10-13 | La fila de datos de una foto se cuenta como fotografía, no como registro: un animal con una foto es «1 registro y 1 fotografía». El reingreso cuenta también las fotos | Hallazgo de PE-22: «2 registros» se leía como dos animales (documento técnico 14, sección 8.2) |
 | 2026-10-13 | Conflicto de chapeta, según el propietario: si son dos animales distintos con la misma chapeta por error humano, se corrige la chapeta del que llegó segundo; si es el mismo animal registrado dos veces, se anula el duplicado y **sus eventos se pasan al animal correcto** | Respuesta al pendiente de diseño 2.1; se implementa con las correcciones (CU-17) en la Iteración 4 |
+| 2026-10-13 | La última aplicación de un medicamento a un animal se muestra siempre: como información fuera del intervalo y como advertencia con confirmación dentro de él | Precisión del autor: aunque una nueva aplicación sea correcta en teoría, quien registra debe saber cuándo fue la anterior (documento técnico 18, sección 2) |
+| 2026-10-13 | El catálogo de medicamentos lo registra el propietario desde la aplicación, no por SQL | Por SQL quedaría a nombre de quien ejecuta el script (HU-15); 14 productos propuestos en el documento técnico 18, sección 7 |
+| 2026-10-13 | 35 días de intervalo de advertencia para los seis productos sin intervalo deducible (dosis única y vacunas) | Decisión del autor; la última aplicación se muestra siempre, y el valor puede corregirse si el veterinario indica otro |
 | 2026-10-12 | El origen se pregunta como «nacido en el predio» o «comprado», con edad aproximada para los comprados; no se almacena, se deduce de la fecha de ingreso | El propietario conoce de manera aproximada la edad de un animal comprado (3.8.10) |
 | 2026-10-12 | La genealogía se captura al registrar el animal, opcional | La ficha no se modifica; en la carga inicial se perdería la madre de los nacidos en el predio |
 | 2026-10-12 | El destino productivo inicial se agrega al formulario de registro en el paso 3.2 | Es exclusivo del propietario (CU-12) y su historial se construye en la Iteración 3 |
@@ -210,7 +217,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** En PE-22 el registro de datos sin conexión funcionó en Chrome para iOS; falta probar la foto. Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
-| 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros | Documento técnico 13, sección 2.4 |
+| 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros (fotos, destinos, eventos sanitarios), y los medicamentos de prueba: los que empiezan por «Prueba» y además «Otro mas» (PE-25) y «pp prueba» (PE-26) | Documento técnico 13, sección 2.4 · PE-25, observación 4 |
 | 6.x | Opcional: dividir el código por pantallas (el paquete pesa 633 kB, 188 kB comprimido) para aligerar la primera carga | Aviso de Vite en la compilación del paso 2.1 |
 | ~~2.3~~ | **Hecho en los pasos 2.3 y 2.4:** distintivo junto a cada animal en el listado y la ficha. Falta observarlo a mano con pendientes y conflictos (paso 2.6). Mostrar el distintivo de sincronización junto a cada registro en el listado y la ficha, y observar a mano los estados con pendientes y conflictos | PE-15, observación 1 |
 | 4.3 | **Resolver un conflicto de chapeta** con la regla que dio el propietario el 2026-10-13: dos animales distintos → corregir la chapeta del que llegó segundo; el mismo animal dos veces → anular el duplicado y pasar sus eventos (y fotos) al animal correcto. Implica: (1) el animal en conflicto nunca llegó al servicio, así que la corrección debe crear un animal nuevo con la chapeta corregida o reenviarlo, no corregir una fila del servicio; (2) «pasar los eventos» encaja con la corrección del campo `animal_id` con el motivo «animal equivocado» (3.9.5); (3) la foto del animal rechazado, que hoy queda pendiente para siempre (PE-22), debe seguir al animal. Diseñarlo en el documento técnico de las correcciones | 3.7.3, tercera regla · PE-22 · decisión del propietario del 2026-10-13 |
@@ -227,6 +234,9 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 - Apartado 3.7.3, segunda regla, y Tabla 21, fila «La ficha de un animal modificada en ambos dispositivos»: la ficha ya no tiene campos que cambien; la regla de «prevalece la más reciente» se aplica a las correcciones (documento técnico 05, sección 2.1).
 - Modelo de fotografía: la ruta en el servicio de archivos se deduce como `{animal_id}/{id}.webp` y no se almacena.
 - RF-04, apartado 3.8.8 y Tabla 24 (fila `animal`): la madre también puede ser externa al predio (`madre_externa`), decisión del propietario del 2026-10-12. Precisar también en 3.8.10 la numeración de las chapetas (1 a 9999, luego letra sin O y 1 a 999) y que los ceros a la izquierda no cuentan (documento técnico 13, sección 2.1).
+- Tabla 28: agregar la pantalla «Medicamentos» (catálogo, ambos perfiles), que permite cargar el catálogo antes de usarlo en el registro sanitario (documento técnico 18, sección 6).
+- RF-09 y apartado 3.8.9: precisar que el intervalo de advertencia es el mínimo de días entre dos aplicaciones del mismo medicamento al mismo animal, que se cuenta en días porque el evento registra la fecha, y que la última aplicación se muestra siempre (documento técnico 18, sección 2).
+- Apartado 3.8.9: el nombre del medicamento es único sin distinguir mayúsculas, tildes ni espacios repetidos (documento técnico 18, sección 3).
 - Unificar qué casos de uso extiende CU-15 (2.8.6.3 dice CU-04 y CU-08; 2.8.6.5 dice CU-06 y CU-08).
 
 ## Temas de estudio para la sustentación

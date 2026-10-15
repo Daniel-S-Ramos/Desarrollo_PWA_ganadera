@@ -13,6 +13,7 @@ Migraciones del servicio remoto, en orden de aplicación. Especificación:
 | `20261012000100_formato_chapeta.sql` | La chapeta debe llegar normalizada: de 1 a 20 letras mayúsculas, dígitos o guiones (documento técnico 13, sección 8) |
 | `20261012000200_chapeta_del_predio_y_madre_externa.sql` | Reemplaza el formato por la numeración del predio (1 a 9999, luego letra sin O y 1 a 999) y agrega la madre externa |
 | `20261012000300_almacen_fotografias.sql` | Bucket privado `fotografias` (solo WebP, hasta 1 MB) con políticas de subir y leer; nadie reemplaza ni borra (documento técnico 14, sección 7) |
+| `20261013000100_nombre_medicamento_normalizado.sql` | Nombre de medicamento único sin mayúsculas, tildes ni espacios repetidos: función `normalizar_nombre` e índice nuevo (documento técnico 18, sección 3) |
 
 Se aplican con `npm run db:push` (CLI de Supabase), que registra en el servicio cuáles ya se
 aplicaron. Una migración aplicada no se edita: los cambios van en un archivo nuevo.

@@ -3,10 +3,12 @@
  * Especificación: docs/tecnica/16-ficha-del-animal.md
  *
  * Las reglas de cada dato son funciones puras; consolidarFicha solo reúne los registros y las aplica.
- * Cuando la Iteración 4 construya las correcciones, el valor vigente de cada dato se calculará aquí.
+ * Cuando la Iteración 4 construya las correcciones, el valor vigente de cada dato se calculará aquí;
+ * el de los litros ya se aplica (documento técnico 22, sección 8).
  */
 import { consulta, reducidasLocales } from '../../datos/repositorio';
 import { fotografiasVigentes } from '../../dominio/fotografias';
+import { litrosVigentes } from '../../dominio/leche';
 import {
   TIPOS_FOTOGRAFIA,
   type Destino,
@@ -144,6 +146,10 @@ export async function consolidarFicha(animalId: Uuid): Promise<FichaAnimal | und
 
   const vacuna = ultimaVacuna(eventos);
   const ordeno = masReciente(ordenos, (o) => o.fecha);
+  // Los litros vigentes: con su corrección más reciente aplicada (documento técnico 22, sección 8).
+  const litrosOrdeno = ordeno
+    ? (litrosVigentes([ordeno], await consulta.correccion.where('registro_id').equals(ordeno.id).toArray()).get(ordeno.id) ?? ordeno.litros)
+    : null;
   const destino = masReciente(destinos, (d) => d.desde);
   const vigentes = fotografiasVigentes(fotografias);
 
@@ -164,7 +170,7 @@ export async function consolidarFicha(animalId: Uuid): Promise<FichaAnimal | und
     vacuna: vacuna
       ? { nombre: medicamentos.find((m) => m.id === vacuna.medicamento_id)?.nombre ?? 'Vacuna', fecha: vacuna.fecha }
       : null,
-    leche: animal.sexo === 'macho' ? null : ordeno ? { litros: ordeno.litros, fecha: ordeno.fecha } : 'sin_registros',
+    leche: animal.sexo === 'macho' ? null : ordeno ? { litros: litrosOrdeno!, fecha: ordeno.fecha } : 'sin_registros',
     destino: destino ? { destino: destino.destino, desde: destino.desde } : null,
 
     madre: progenitor(animal.madre_id, animal.madre_externa, chapetas),

@@ -18,6 +18,7 @@ function animal(codigo: string, retirado = false): AnimalListado {
     fecha_nacimiento: null,
     fecha_nacimiento_exacta: false,
     retirado,
+    destino: null,
     estado_sync: 'sincronizado',
     foto: null,
   };

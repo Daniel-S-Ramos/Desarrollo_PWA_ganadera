@@ -743,3 +743,235 @@ a.boton {
   gap: 6px;
   font-size: 1.05rem;
 }
+
+/* Catálogo de medicamentos (documento técnico 18, sección 6). */
+.medicamentos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.medicamento {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 0;
+}
+
+.medicamento + .medicamento {
+  border-top: 1px solid var(--borde);
+}
+
+.medicamento__nombre {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Los seis destinos en dos columnas: «Producción de leche» no cabe en tres (documento técnico 19). */
+.opciones--dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Fichas pulsables del filtro por destino del listado (documento técnico 19, sección 6). */
+.fichas-filtro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ficha-filtro {
+  min-height: 44px;
+  border-radius: 22px;
+  border: 2px solid var(--verde-oscuro);
+  background: var(--blanco);
+  color: var(--verde-oscuro);
+  font: inherit;
+  font-weight: 600;
+  padding: 0 14px;
+}
+
+.ficha-filtro[aria-pressed='true'] {
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+}
+
+/* Historial del destino (documento técnico 19, sección 2). */
+.historial {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.historial__entrada {
+  padding: 12px 0;
+}
+
+.historial__entrada + .historial__entrada {
+  border-top: 1px solid var(--borde);
+}
+
+.historial__entrada p {
+  margin: 0 0 4px;
+}
+
+/* Registro sanitario (documento técnico 20, secciones 4 y 7). */
+.campo__titulo {
+  font-weight: 600;
+}
+
+.evento__animal {
+  margin: 0;
+}
+
+.lista-medicamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opcion--medicamento {
+  text-align: left;
+  padding: 8px 16px;
+}
+
+.medicamento-elegido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--alto-control);
+  padding: 0 16px;
+  border: 2px solid var(--verde-oscuro);
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.acciones-en-linea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+/* Historial sanitario: cada fila se despliega con su detalle (sección 8). */
+.evento-fila {
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.evento-fila__detalle {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 3px solid var(--borde);
+}
+
+/* Aviso informativo, sin alerta: la última aplicación fuera del intervalo (documento técnico 21, sección 3). */
+.aviso--neutro {
+  background: var(--blanco);
+  border-color: var(--borde);
+}
+
+/* Ronda de ordeño (documento técnico 22, sección 5). */
+.ronda__titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.campo input.campo__litros {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ronda__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ronda__vaca {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ronda__vaca--actual {
+  border: 2px solid var(--verde-oscuro);
+}
+
+.ronda__chapeta {
+  font-weight: 700;
+}
+
+/* Consulta de producción (documento técnico 23, secciones 4 a 6). */
+.produccion__navegacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.produccion__resumen p {
+  margin: 0;
+}
+
+.produccion__filas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.produccion__fila {
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.produccion__texto {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.produccion__etiqueta {
+  font-weight: 700;
+}
+
+.produccion__barra {
+  margin-top: 6px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--verde-claro);
+}
+
+.produccion__relleno {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--verde-oscuro);
+}

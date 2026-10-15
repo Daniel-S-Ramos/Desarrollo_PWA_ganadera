@@ -3,6 +3,10 @@ import { Link, Navigate, Route, Routes } from 'react-router';
 import { PantallaFicha } from '../modulos/consulta/PantallaFicha';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
+import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
+import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
+import { PantallaMedicamentos } from '../modulos/sanidad/PantallaMedicamentos';
+import { PantallaRegistrarEvento } from '../modulos/sanidad/PantallaRegistrarEvento';
 import { puedeUsar } from '../sesion/permisos';
 import { crearServicioRemoto } from '../servicios/servicioRemotoSupabase';
 import { supabase } from '../servicios/supabase';
@@ -125,6 +129,26 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
               path="/animales/:id"
               element={puedeUsar(identidad.perfil, 'CU-03') ? <PantallaFicha identidad={identidad} /> : <Navigate to="/" replace />}
             />
+            <Route
+              path="/animales/:id/evento-sanitario"
+              element={puedeUsar(identidad.perfil, 'CU-04') ? <PantallaRegistrarEvento identidad={identidad} /> : <Navigate to="/" replace />}
+            />
+            <Route
+              path="/ordeno"
+              element={
+                !puedeUsar(identidad.perfil, 'CU-06') ? (
+                  <Navigate to="/" replace />
+                ) : cargaCompleta === false ? (
+                  // Documento técnico 22, sección 3: sin el historial, el promedio y el registro existente serían incompletos.
+                  <RegistroEnEspera titulo="Ronda de ordeño" razon="Así se evita registrar dos veces la misma vaca." />
+                ) : (
+                  <PantallaRondaOrdeno identidad={identidad} />
+                )
+              }
+            />
+            {/* Documento técnico 23, sección 2: solo el propietario (CU-07). */}
+            <Route path="/produccion" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaProduccion /> : <Navigate to="/" replace />} />
+            <Route path="/medicamentos" element={<PantallaMedicamentos identidad={identidad} puedeAgregar={puedeUsar(identidad.perfil, 'CU-04')} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
   );
@@ -138,7 +162,7 @@ function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; 
   return (
     <>
       <p className="titulo-seccion">Prototipo en construcción</p>
-      <p className="texto-secundario">Iteración 2 · Identificación animal y ficha</p>
+      <p className="texto-secundario">Iteración 3 · Sanidad, leche y destino</p>
 
       {cargaCompleta === false && <PreparandoTelefono />}
 
@@ -151,6 +175,24 @@ function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; 
       {puedeUsar(identidad.perfil, 'CU-02') && cargaCompleta === true && (
         <Link className="boton boton--secundario boton--ancho separado" to="/animales/nuevo">
           Registrar animal
+        </Link>
+      )}
+
+      {puedeUsar(identidad.perfil, 'CU-06') && cargaCompleta === true && (
+        <Link className="boton boton--secundario boton--ancho separado" to="/ordeno">
+          Ronda de ordeño
+        </Link>
+      )}
+
+      {puedeUsar(identidad.perfil, 'CU-07') && cargaCompleta !== false && (
+        <Link className="boton boton--secundario boton--ancho separado" to="/produccion">
+          Producción de leche
+        </Link>
+      )}
+
+      {cargaCompleta !== false && (
+        <Link className="boton boton--secundario boton--ancho separado" to="/medicamentos">
+          Medicamentos
         </Link>
       )}
 

@@ -74,7 +74,7 @@ begin
 
     -- -------------------------------------------------------------- 3. recibido_en
     insert into public.medicamento (id, autor_id, creado_en, recibido_en, nombre, tipo, unidad, intervalo_advertencia_dias)
-    values (med, usuario, now(), '2000-01-01T00:00:00Z', 'Ivermectina', 'purga', 'ml', 30);
+    values (med, usuario, now(), '2000-01-01T00:00:00Z', 'Prueba Ivermectina', 'purga', 'ml', 30);
     select recibido_en::text into valor from public.medicamento where id = med;
     r := r || jsonb_build_object('n',3,'v','recibido_en la fija el servicio aunque el dispositivo envíe otra',
            'ok', (select recibido_en > now() - interval '5 minutes' from public.medicamento where id = med),
@@ -122,8 +122,8 @@ begin
            'ok', codigos = array_fill('23514'::text, array[8]), 'd', 'códigos: ' || array_to_string(codigos, ', '));
 
     -- -------------------------------------------------------------- 8. Medicamento sin distinguir mayúsculas
-    valor := pg_temp.intentar(format('insert into public.medicamento (id, autor_id, creado_en, nombre, tipo, unidad, intervalo_advertencia_dias) values (%L,%L,%s,%L,%L,%L,30)', gen_random_uuid(), usuario, ahora, ' ivermectina ', 'purga', 'ml'));
-    r := r || jsonb_build_object('n',8,'v','«ivermectina» se rechaza si ya existe «Ivermectina» (3.8.9)','ok', valor = '23505','d','código: ' || valor);
+    valor := pg_temp.intentar(format('insert into public.medicamento (id, autor_id, creado_en, nombre, tipo, unidad, intervalo_advertencia_dias) values (%L,%L,%s,%L,%L,%L,30)', gen_random_uuid(), usuario, ahora, ' prueba ivermectina ', 'purga', 'ml'));
+    r := r || jsonb_build_object('n',8,'v','«prueba ivermectina» se rechaza si ya existe «Prueba Ivermectina» (3.8.9)','ok', valor = '23505','d','código: ' || valor);
 
     -- -------------------------------------------------------------- 9. Una compra por animal
     insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor)
@@ -168,6 +168,16 @@ begin
       pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, madre_externa) values (%L,%L,%s,%L,%L,true,%L)', gen_random_uuid(), usuario, ahora, 'Z907', 'hembra', 'Vaca del vecino'))];
     r := r || jsonb_build_object('n',13,'v','Madre del predio y externa a la vez se rechaza; solo externa se admite',
            'ok', codigos = array['23514','OK'], 'd', 'ambas: ' || codigos[1] || ' · solo externa: ' || codigos[2]);
+
+    -- -------------------------------------------------------------- 14. Medicamento sin tildes ni espacios repetidos
+    -- Con «Prueba Ivermectina» registrada (verificación 3), las otras escrituras del mismo nombre se rechazan
+    -- y un nombre distinto se admite (docs/tecnica/18-catalogo-de-medicamentos.md, sección 3).
+    codigos := array(
+      select pg_temp.intentar(format('insert into public.medicamento (id, autor_id, creado_en, nombre, tipo, unidad, intervalo_advertencia_dias) values (%L,%L,%s,%L,%L,%L,30)', gen_random_uuid(), usuario, ahora, c, 'purga', 'ml'))
+        from unnest(array['Prueba Ivermectína', '  prueba   IVERMECTINA ', 'Prueba Ivermectina 1%']) with ordinality as t(c, i)
+       order by i);
+    r := r || jsonb_build_object('n',14,'v','Medicamento con tilde o espacios repetidos se rechaza; otro nombre se admite',
+           'ok', codigos = array['23505','23505','OK'], 'd', 'códigos: ' || array_to_string(codigos, ', '));
 
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.
     raise exception using errcode = 'P0099', message = 'REVERTIR';

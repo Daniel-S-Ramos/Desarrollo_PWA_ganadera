@@ -55,13 +55,17 @@ export function PreparandoTelefono() {
 }
 
 /** Lo que se muestra en lugar del formulario de registro durante la carga inicial (sección 5). */
-export function RegistroEnEspera() {
+export function RegistroEnEspera({
+  titulo = 'Registrar animal',
+  razon = 'Así se evita registrar una chapeta que ya existe en otro teléfono.',
+}: {
+  titulo?: string;
+  razon?: string;
+}) {
   return (
     <div className="formulario">
-      <p className="titulo-seccion">Registrar animal</p>
-      <p className="aviso aviso--atencion aviso--en-contenido">
-        Espere a que termine de llegar la información del predio para registrar. Así se evita registrar una chapeta que ya existe en otro teléfono.
-      </p>
+      <p className="titulo-seccion">{titulo}</p>
+      <p className="aviso aviso--atencion aviso--en-contenido">Espere a que termine de llegar la información del predio para registrar. {razon}</p>
       <Link className="boton boton--secundario boton--ancho" to="/">
         Volver al inicio
       </Link>
