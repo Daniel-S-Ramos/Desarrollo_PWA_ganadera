@@ -14,13 +14,16 @@ export function FormularioMedicamento({
   identidad,
   alTerminar,
   alCancelar,
+  tipoInicial = null,
 }: {
   identidad: Identidad;
+  /** Tipo propuesto: desde el registro sanitario, el que corresponde al tipo de evento (documento 20, sección 4). */
+  tipoInicial?: TipoMedicamento | null;
   /** Recibe el medicamento creado, o el existente que eligió el usuario. */
   alTerminar: (medicamento: MedicamentoLocal) => void;
   alCancelar: () => void;
 }) {
-  const [formulario, setFormulario] = useState<Formulario>(formularioMedicamentoVacio);
+  const [formulario, setFormulario] = useState<Formulario>(() => ({ ...formularioMedicamentoVacio(), ...(tipoInicial ? { tipo: tipoInicial } : {}) }));
   const [intentado, setIntentado] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const catalogo = useLiveQuery(() => listarCatalogo(), [], []);

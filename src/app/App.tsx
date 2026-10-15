@@ -4,6 +4,7 @@ import { PantallaFicha } from '../modulos/consulta/PantallaFicha';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
 import { PantallaMedicamentos } from '../modulos/sanidad/PantallaMedicamentos';
+import { PantallaRegistrarEvento } from '../modulos/sanidad/PantallaRegistrarEvento';
 import { puedeUsar } from '../sesion/permisos';
 import { crearServicioRemoto } from '../servicios/servicioRemotoSupabase';
 import { supabase } from '../servicios/supabase';
@@ -125,6 +126,10 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
             <Route
               path="/animales/:id"
               element={puedeUsar(identidad.perfil, 'CU-03') ? <PantallaFicha identidad={identidad} /> : <Navigate to="/" replace />}
+            />
+            <Route
+              path="/animales/:id/evento-sanitario"
+              element={puedeUsar(identidad.perfil, 'CU-04') ? <PantallaRegistrarEvento identidad={identidad} /> : <Navigate to="/" replace />}
             />
             <Route path="/medicamentos" element={<PantallaMedicamentos identidad={identidad} puedeAgregar={puedeUsar(identidad.perfil, 'CU-04')} />} />
             <Route path="*" element={<Navigate to="/" replace />} />

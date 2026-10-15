@@ -28,3 +28,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 17 | [Carga inicial de un teléfono nuevo](17-carga-inicial.md) | 2.5 | 3.7.6 · 3.7.7 · RNF-05 |
 | 18 | [Catálogo de medicamentos y parámetros](18-catalogo-de-medicamentos.md) | 3.1 | RF-09 · 3.8.9 · Tablas 30 y 31 |
 | 19 | [Destino productivo y su historial](19-destino-productivo.md) | 3.2 | RF-18 · CU-12 · HU-13 · HU-06.4 |
+| 20 | [Registro sanitario e historial](20-registro-sanitario.md) | 3.3 | RF-07 · RF-08 · CU-04 · CU-05 · HU-03 |

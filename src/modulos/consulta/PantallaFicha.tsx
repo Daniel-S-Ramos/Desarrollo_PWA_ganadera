@@ -19,6 +19,8 @@ import { CapturaFoto } from '../identificacion/CapturaFoto';
 import { CambiarDestino } from '../destino/CambiarDestino';
 import { cargarContextoDestino } from '../destino/destino';
 import { HistorialDestino } from '../destino/HistorialDestino';
+import { puedeVerCosto } from '../sanidad/eventos';
+import { HistorialSanitario } from '../sanidad/HistorialSanitario';
 import { consolidarFicha, type FichaAnimal, type FotoFicha, type Progenitor } from './ficha';
 
 const NOMBRE_VISTA: Record<TipoFotografia, string> = { izquierdo: 'Costado izquierdo', derecho: 'Costado derecho', frontal: 'Frente' };
@@ -80,6 +82,8 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
         />
       </dl>
 
+      <SeccionSanidad animalId={ficha.id} identidad={identidad} />
+
       {/* CU-12: solo el propietario cambia el destino y ve su historial; al trabajador no se le muestran (HU-06.4). */}
       {puedeUsar(identidad.perfil, 'CU-12') && <SeccionDestino animalId={ficha.id} identidad={identidad} hoy={hoy} />}
 
@@ -116,6 +120,30 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
         Registrado por <strong>{ficha.autor}</strong> el {formatearInstante(ficha.creado_en)}
       </p>
     </div>
+  );
+}
+
+/** Registro e historial sanitario, para ambos perfiles (documento técnico 20, secciones 3 y 8; HU-02.4). */
+function SeccionSanidad({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
+  const [verHistorial, setVerHistorial] = useState(false);
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-04');
+  if (!puedeRegistrar && !puedeUsar(identidad.perfil, 'CU-05')) return null;
+  return (
+    <>
+      <div className="acciones-formulario">
+        {puedeRegistrar && (
+          <Link className="boton boton--principal boton--ancho" to={`/animales/${animalId}/evento-sanitario`}>
+            Registrar evento sanitario
+          </Link>
+        )}
+        {puedeUsar(identidad.perfil, 'CU-05') && (
+          <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={verHistorial} onClick={() => setVerHistorial((v) => !v)}>
+            {verHistorial ? 'Ocultar historial sanitario' : 'Historial sanitario'}
+          </button>
+        )}
+      </div>
+      {verHistorial && <HistorialSanitario animalId={animalId} verCosto={puedeVerCosto(identidad.perfil)} puedeRegistrar={puedeRegistrar} />}
+    </>
   );
 }
 

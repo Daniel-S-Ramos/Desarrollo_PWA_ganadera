@@ -816,3 +816,59 @@ a.boton {
 .historial__entrada p {
   margin: 0 0 4px;
 }
+
+/* Registro sanitario (documento técnico 20, secciones 4 y 7). */
+.campo__titulo {
+  font-weight: 600;
+}
+
+.evento__animal {
+  margin: 0;
+}
+
+.lista-medicamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opcion--medicamento {
+  text-align: left;
+  padding: 8px 16px;
+}
+
+.medicamento-elegido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--alto-control);
+  padding: 0 16px;
+  border: 2px solid var(--verde-oscuro);
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.acciones-en-linea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+/* Historial sanitario: cada fila se despliega con su detalle (sección 8). */
+.evento-fila {
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.evento-fila__detalle {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 3px solid var(--borde);
+}
