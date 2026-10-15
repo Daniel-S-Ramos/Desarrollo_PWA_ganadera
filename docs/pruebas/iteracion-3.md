@@ -7,7 +7,7 @@ al historial sanitario), HU-06.4 (opciones exclusivas del propietario ocultas al
 comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
 
 **Responsable:** Daniel Santiago Ramos Pintor
-**Estado:** en curso
+**Estado:** cerrada el 2026-10-15 · `v0.3`
 
 ## Resumen de resultados
 
@@ -24,6 +24,8 @@ comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
 | PE-26 | Advertencia por repetición en el navegador real | 3.4 | RF-09 · HU-09 · Figura 19 | ✅ |
 | PU-23 | Ronda de ordeño | 3.5 | RF-10 · CU-06 · HU-04 · 3.8.6 | ✅ |
 | PE-27 | Ronda de ordeño en el navegador real | 3.5 | CU-06 · HU-04 · 3.10.4.4 | ✅ |
+| PU-24 | Consulta de producción diaria, semanal y mensual | 3.6 | RF-11 · CU-07 · HU-04.2 | ✅ |
+| PE-28 | Consulta de producción en el navegador real | 3.6 | RF-11 · CU-07 · HU-04.2 | ✅ |
 
 ---
 
@@ -296,7 +298,7 @@ trabajador registra ordeños nuevos.
 | 4 | Propietario | Tocar Z920 en la ronda del 13 | «Ya hay un registro… 10 litros, registrado por Jose Ramos. El valor nuevo lo reemplazará», con la casilla; el botón inhabilitado (CU-06, 3a) | [captura](evidencias/iteracion-3/PE-27-04-registro-existente-13.png) |
 | 5 | Propietario | Ronda del 14: Z920 = 10,5; Z921 = 8; Z926 = 0 | «Similar a su promedio: 0,5 litros más»; «⚠ Muy por debajo de su promedio: 4 litros menos», en amarillo; con promedio 0, el 0 es igual; la ronda pasa sola a la siguiente | [similar](evidencias/iteracion-3/PE-27-05-similar-al-promedio.png) · [muy por debajo](evidencias/iteracion-3/PE-27-06-muy-por-debajo.png) · [promedio 0](evidencias/iteracion-3/PE-27-07-promedio-cero.png) |
 | 6 | Propietario | Reemplazar los 10,5 litros de Z920 por 11, confirmando | Se reemplaza; la ficha muestra «Leche más reciente: 11 litros · 14 de octubre de 2026», el valor vigente | [reemplazo](evidencias/iteracion-3/PE-27-08-reemplazo-confirmado.png) · [ficha](evidencias/iteracion-3/PE-27-11-ficha-valor-vigente.png) |
-| 7 | Trabajador | Ronda del 13 en el otro teléfono; tocar Z920 | Los cinco registros del propietario llegaron con ✓; «No puede reemplazar este registro: la enmienda corresponde al propietario», campo y botón inhabilitados (CU-06, 3b) | [ronda](evidencias/iteracion-3/PE-27-10-trabajador-ronda-13.png) · [sin permiso](evidencias/iteracion-3/PE-27-09-trabajador-no-puede-reemplazar.png) |
+| 7 | Trabajador | Ronda del 13 en el otro teléfono; tocar Z920 (y Z921 el 14, según el guion) | Los cinco registros del propietario llegaron con ✓; «No puede reemplazar este registro: la enmienda corresponde al propietario», campo y botón inhabilitados (CU-06, 3b) | [ronda](evidencias/iteracion-3/PE-27-10-trabajador-ronda-13.png) · [sin permiso](evidencias/iteracion-3/PE-27-09-trabajador-no-puede-reemplazar.png) · [Z921 el 14](evidencias/iteracion-3/PE-27-12-trabajador-z921-14-sin-permiso.png) |
 
 **Observaciones.** (1) Con un valor igual al promedio el texto decía «Similar a su promedio: igual a su
 promedio»; se ajustó para decir solo «Igual a su promedio». (2) Los destinos se asignaron con fecha 15
@@ -305,3 +307,157 @@ tenía la vaca en la fecha del ordeño (documento 22, sección 4). Es razonable,
 un acto administrativo posterior a que la vaca ya se ordeñe, y queda anotado. (3) Algunas vacas de prueba
 tienen pocos días de nacidas, lo que hace irreales sus litros; sirven para la prueba y se borrarán con la
 serie Z900–Z999.
+
+## PU-24 · Consulta de producción diaria, semanal y mensual
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las ventanas, las semanas de lunes a domingo, los meses con su longitud real, los agregados con el periodo en curso, el cero frente al día sin registro, el valor vigente, las vacas consultables y el permiso |
+| Requerimiento | RF-11 · CU-07 pasos 1 a 4 · HU-04.2 · apartado 3.8.6 · Tabla 27 |
+| Tipo | Unitaria, automática |
+| Código | [`src/dominio/periodos.ts`](../../src/dominio/periodos.ts) · [`src/modulos/leche/produccion.ts`](../../src/modulos/leche/produccion.ts) · prueba [`produccion.test.ts`](../../src/modulos/leche/produccion.test.ts) · especificación [documento técnico 23](../tecnica/23-consulta-de-produccion.md), sección 9 |
+| Resultado obtenido | **16 de 16 aprobadas**. Total del conjunto automático: **663 de 663** ([informe](resultados/2026-10-15_003043_82f3bd6.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-15 |
+
+**Mutaciones.** Doce, todas detectadas: empezar la semana el domingo, ventana diaria de 31, invertir el
+desplazamiento, fijar el fin de mes en el día 30, contar completo el periodo en curso, promediar sobre
+todos los días, tratar el vacío como cero, quitar el mes de inicio en la etiqueta semanal, no marcar el
+periodo en curso, consultar sin valor vigente, incluir machos y excluir las vacas con destino leche sin
+registros.
+
+**Hallazgo en una prueba anterior.** Al ejecutar el conjunto completo el 15 de octubre falló una prueba
+de PU-23 (permiso de reemplazo «del mismo día»): creaba el ordeño con la hora real y lo comparaba con
+una hora fija del 14. Coincidían el día en que se escribió y dejaron de coincidir al cambiar el día. Se
+corrigió **la prueba**, que ahora usa la hora real y «dos días después» (commit 82f3bd6). La aplicación
+no cambió.
+
+## PE-28 · Consulta de producción en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las tres agregaciones con los registros reales, el valor vigente, la navegación, el caso sin registros, el cero frente al día sin registro y la entrada desde la ficha |
+| Requerimiento | RF-11 · CU-07 (pasos 1 a 4 y 3a) · HU-04.2 · apartado 3.8.6 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-3` (commit 82f3bd6) |
+| Resultado obtenido | Todos los pasos del propietario como se esperaba; un ajuste de redacción (observación 1) |
+| Estado | ✅ Aprobada, con la observación 2 |
+| Fecha | 2026-10-15 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Z920, diaria | 15 oct «Sin registro»; 14 oct **11 litros** (el valor reemplazado en PE-27); 13 oct 10 litros; resumen «21 litros · 10,5 por día registrado · 2 de 30 días registrados»; Siguiente inhabilitado | [captura](evidencias/iteracion-3/PE-28-01-diaria-z920.png) |
+| 2 | Semanal | «12 – 18 oct (en curso): 21 litros · 10,5 por día · 2 de 4 días registrados» (hoy jueves) | [captura](evidencias/iteracion-3/PE-28-02-semanal-z920.png) |
+| 3 | Mensual | «octubre de 2026 (en curso): … 2 de 15 días registrados» | [captura](evidencias/iteracion-3/PE-28-03-mensual-z920.png) |
+| 4 | ← Anterior en mensual, diaria y semanal | «Sin registros de Z920 en este periodo», con «Ver el periodo anterior» y, salvo en mensual, «Ver por semanas» o «Ver por meses» (CU-07, 3a) | [mensual](evidencias/iteracion-3/PE-28-04-mensual-sin-registros.png) · [diaria](evidencias/iteracion-3/PE-28-05-diaria-sin-registros.png) · [semanal](evidencias/iteracion-3/PE-28-06-semanal-sin-registros.png) |
+| 5 | Z926 | 13 oct «0 litros», con la barra vacía; 14 y 15 oct «Sin registro» (apartado 3.8.6) | [captura](evidencias/iteracion-3/PE-28-07-cero-frente-a-sin-registro.png) |
+| 6 | Ficha de Z921 → **Ver producción** | Abre en Z921: 12 litros el 13 y 8 el 14 | [ficha](evidencias/iteracion-3/PE-28-08-ficha-ver-produccion.png) · [consulta](evidencias/iteracion-3/PE-28-09-desde-la-ficha-z921.png) |
+
+**Observaciones.** (1) En semanal, el título del resumen decía «Z920 · 27 jul – 2 ago a 12 – 18 oct»;
+se cambió por los días extremos, «Z920 · 27 jul a 18 oct». (2) **El paso del trabajador no quedó
+evidenciado en pantalla**: las capturas enviadas muestran su ronda de ordeño (que además confirma, con
+Z921 el 14 de octubre, el caso 3b de PE-27), no el Inicio ni la ficha sin los accesos a la producción.
+Lo respaldan la ruta, que devuelve al inicio a quien no tiene CU-07, y PU-24.8. Se verificará en
+pantalla en la prueba de la comparación entre vacas (paso 5.1), que usa la misma pantalla.
+[Ronda del trabajador](evidencias/iteracion-3/PE-28-10-trabajador-ronda-15.png)
+
+---
+
+## Acta de cierre de la Iteración 3
+
+| Campo | Contenido |
+|---|---|
+| Iteración | 3 · Sanidad, leche y destino (Tabla 13) |
+| Historias | HU-03 (5 puntos) · HU-04 (5 puntos) · HU-09 (3 puntos) · HU-13 (3 puntos) · **16 puntos** |
+| Periodo | 13 al 15 de octubre de 2026 (3 días calendario; estimado: 20 al 26 de octubre) |
+| Rama | `iteracion-3` · se fusiona con `main` y se etiqueta `v0.3` |
+| Pasos | 3.1 a 3.7 |
+| Casos de prueba | 13 casos (PU-19 a PU-24, PI-01 verificación 14, PE-23 a PE-28): 13 aprobados; 1 defecto encontrado en pantalla y corregido (PE-25) |
+| Pruebas automáticas | 663 de 663 aprobadas (531 al empezar la iteración); 86 mutaciones en los grupos nuevos, todas detectadas |
+| Documentación técnica | Documentos 18 a 23, nuevos; el 21 corregido tras PE-26 |
+| Publicación | Dirección de la rama `iteracion-3`; al fusionar, https://desarrollo-pwa-ganadera.vercel.app |
+
+### Criterios de aceptación
+
+Fuente: tarjetas del Anexo B. ✅ verificado de extremo a extremo · ⚙️ verificado a nivel técnico, con la
+verificación en pantalla en una etapa posterior · ➡️ trasladado.
+
+**HU-03 · Registro del evento sanitario en el momento de su aplicación (Tabla B3)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | El registro exige fecha, tipo de evento y medicamento | ✅ | PU-21.1; PE-25 (validaciones en pantalla) |
+| 2 | Permite consignar de manera opcional la dosis, el costo y los síntomas | ✅ | PU-21.1 y 6; PE-25 (dosis precargada, costo solo del propietario, síntomas) |
+| 3 | El evento queda asociado a un animal identificado | ✅ | Registro desde la ficha (documento 20, sección 3); PE-25 |
+| 4 | El historial sanitario presenta los eventos ordenados cronológicamente | ✅ | PU-21.8; PE-25 (historial con detalle, en ambos perfiles) |
+| 5 | El registro se completa sin conexión | ⚙️ | PU-21.4: se escribe en la base local y en la cola, el mismo camino verificado sin conexión en PE-17 y PE-18. La prueba en pantalla sin señal queda para la verificación en conectividad limitada (paso 6.4) |
+
+**HU-04 · Registro de la producción diaria de leche (Tabla B4)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | El registro se asocia a una vaca y a una fecha | ✅ | PU-23; PE-27 |
+| 2 | La producción puede consultarse en periodos diario, semanal y mensual | ✅ | PU-24; PE-28 |
+| 3 | El sistema impide registrar dos veces la misma vaca en una jornada sin advertirlo | ✅ | PU-23.6, 7 y 9; PE-27 (aviso con valor y autor, reemplazo como corrección, trabajador sin permiso) |
+| 4 | El registro se completa sin conexión | ⚙️ | PU-23 (base local y cola); en pantalla sin señal, paso 6.4 |
+
+**HU-09 · Advertencia por medicamento recientemente aplicado (Tabla B9)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | Al registrar un evento se verifican las aplicaciones previas del mismo medicamento | ✅ | PU-22.5; PE-26 |
+| 2 | Si hay una dentro del intervalo, se advierte con la fecha de la anterior | ✅ | PU-22.1 a 4; PE-26 (también una posterior a la fecha registrada y la del trabajador) |
+| 3 | El registro solo continúa tras la confirmación explícita | ✅ | PU-22.6 y 7; PE-26 (Guardar inhabilitado; la casilla se desmarca al cambiar la fecha) |
+| 4 | La verificación se resuelve sin conexión | ⚙️ | PU-22: se calcula solo con la base local; en pantalla sin señal, paso 6.4 |
+
+**HU-13 · Asignación y seguimiento del destino productivo (Tabla B13)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | El destino se selecciona entre los seis | ✅ | PU-20; PE-24 |
+| 2 | El destino vigente se muestra en la ficha | ✅ | PE-24 (también en el teléfono del trabajador) |
+| 3 | Cada cambio conserva la fecha y el destino anterior | ✅ | PU-20.2; PE-24 («Reemplazó a Producción de leche») |
+| 4 | El historial de destinos puede consultarse | ✅ | PE-24 (historial con autor y hora) |
+
+### Criterios heredados de la Iteración 2
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| HU-02.1 · La ficha muestra última vacuna, leche más reciente y destino | ✅ | PE-25 (última vacuna), PE-27 (leche, con el valor vigente), PE-24 (destino). El último peso real llega con los pesajes (Iteración 4); hoy muestra el peso de compra o al nacer |
+| HU-02.4 · Desde la ficha se accede al historial sanitario | ✅ | PE-25 (ambos perfiles). Los accesos a la evolución del peso y al control reproductivo se agregan en la Iteración 4 |
+| HU-06.4 · Las opciones exclusivas del propietario no se presentan al trabajador | ✅ | PE-24 (sin Cambiar destino, Historial ni destino en el registro); PE-25 (sin costo) |
+
+### Decisión de cierre
+
+La Iteración 3 se cierra con **17 de 17 criterios de sus historias cumplidos**: 14 verificados de extremo
+a extremo y 3 a nivel técnico (el registro y la verificación sin conexión de HU-03, HU-04 y HU-09, que
+usan el mismo camino ya verificado sin señal en la Iteración 2 y se probarán en pantalla en el paso
+6.4). Los tres heredados de la Iteración 2 quedan cumplidos.
+
+**Pasan a etapas posteriores:** la prueba en pantalla sin señal de los registros de esta iteración
+(paso 6.4); la verificación en pantalla de que el trabajador no ve la consulta de producción (PE-28,
+observación 2; paso 5.1); los accesos de la ficha a la evolución del peso y al control reproductivo
+(Iteración 4).
+
+**Pendientes que siguen abiertos:** la resolución de conflictos (pendiente de diseño 4.3, Iteración 4,
+que generalizará el valor vigente adelantado para los litros); el catálogo real de 14 medicamentos, que
+registrará el propietario; la limpieza de los datos de prueba antes de la evaluación (PLAN, pendientes
+de diseño).
+
+### Velocidad
+
+16 puntos en 3 días calendario. Acumulado: 47 de 76 puntos (62 %) en 10 días, del 6 al 15 de octubre.
+El calendario estimado ponía el cierre de esta iteración el 26 de octubre.
+
+### Hallazgos de la iteración que cambiaron el diseño o el código
+
+| Hallazgo | Prueba | Cambio |
+|---|---|---|
+| El intervalo de un medicamento es el mínimo entre dos aplicaciones, y la última aplicación debe mostrarse siempre | Revisión con el autor (paso 3.1) | Dos niveles: información y advertencia (documentos 18 y 21) |
+| 35 días para los productos de dosis única y las vacunas | Decisión del autor | Valor por defecto propuesto en el catálogo (documento 18) |
+| La fecha «2026-02-30» se aceptaba en el destino | PU-20 | Validación de fecha que exige que exista |
+| Un formulario dentro de otro recargaba la página y no guardaba el medicamento | PE-25 | El bloque de agregar medicamento dejó de ser un formulario |
+| La expresión de la fecha perdió sus barras al escribirse desde la consola: la advertencia nunca habría aparecido | PU-22 | Corregida antes de publicarse; los archivos con expresiones se escriben sin pasar por la consola |
+| El aviso no puede decir «Enviado»: lo enviado no lleva distintivo | PE-26 | Documento 21 corregido |
+| «Similar a su promedio: igual a su promedio» y el título semanal se leían mal | PE-27, PE-28 | Textos ajustados |
+| Una prueba dependía del día en que se ejecutaba | PU-23 (15 de octubre) | La prueba usa la hora real |
+| La ronda toma el destino vigente, no el que tenía la vaca en la fecha del ordeño | PE-27 | Se conserva y se documenta (documento 22, sección 4) |

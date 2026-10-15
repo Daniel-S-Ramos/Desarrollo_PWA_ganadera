@@ -58,7 +58,7 @@ repite, y las siguientes tienen más pantallas. Se recalibra al cierre de cada i
 |---|---|---|---|---|---|
 | 1 · Fundación técnica | 16 | 2026-10-06 | — | 2026-10-12 | 16 puntos / 7 días |
 | 2 · Identificación y ficha | 15 | 2026-10-12 | 2026-10-19 | 2026-10-13 | 15 puntos / 2 días |
-| 3 · Sanidad, leche y destino | 16 | 2026-10-20 | 2026-10-26 | | |
+| 3 · Sanidad, leche y destino | 16 | 2026-10-13 | 2026-10-26 | 2026-10-15 | 16 puntos / 3 días |
 | 4 · Peso, partos y correcciones | 13 | 2026-10-27 | 2026-11-02 | | |
 | 5 · Consultas, alertas y economía | 16 | 2026-11-03 | 2026-11-09 | | |
 | Cierre · Evaluación del prototipo | — | 2026-11-10 | 2026-11-23 | | |
@@ -80,7 +80,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 2.5 | Carga inicial de un dispositivo nuevo (3.7.6) | ✅ |
 | 2.6 | Pruebas y cierre de iteración | ✅ |
 
-## Iteración 3 — Sanidad, leche y destino (HU-03, HU-04, HU-09, HU-13 · 16 puntos)
+## Iteración 3 — Sanidad, leche y destino (HU-03, HU-04, HU-09, HU-13 · 16 puntos) · cerrada el 2026-10-15 · `v0.3`
 
 **Criterios de cierre heredados de la Iteración 2:** HU-02.4 (acceso desde la ficha al historial sanitario), HU-06.4 (opciones exclusivas del propietario ocultas al trabajador, con el destino y la salida) y la comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
 
@@ -91,8 +91,8 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 3.3 | Registro sanitario e historial (CU-04, CU-05) | ✅ |
 | 3.4 | Advertencia por repetición de medicamento (RF-09) | ✅ |
 | 3.5 | Ronda de ordeño con regla de un registro por vaca y fecha (CU-06) | ✅ |
-| 3.6 | Consulta de producción diaria, semanal y mensual | ⬜ |
-| 3.7 | Pruebas y cierre de iteración | ⬜ |
+| 3.6 | Consulta de producción diaria, semanal y mensual | ✅ |
+| 3.7 | Pruebas y cierre de iteración | ✅ |
 
 ## Iteración 4 — Peso, partos y correcciones (HU-05, HU-12, HU-17 · 13 puntos)
 

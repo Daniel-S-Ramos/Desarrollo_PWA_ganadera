@@ -44,7 +44,8 @@ export function diasEntreInclusive(inicio: FechaPredio, fin: FechaPredio): numbe
   return Math.round((aFecha(fin).getTime() - aFecha(inicio).getTime()) / 86_400_000) + 1;
 }
 
-function etiquetaDia(fecha: FechaPredio): string {
+/** «14 oct». */
+export function etiquetaDia(fecha: FechaPredio): string {
   const d = aFecha(fecha);
   return `${d.getUTCDate()} ${MESES_CORTOS[d.getUTCMonth()]}`;
 }

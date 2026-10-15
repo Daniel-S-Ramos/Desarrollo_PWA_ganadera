@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { formatearLitros } from '../../dominio/leche';
-import { agregar, periodosDeVentana, resumir, type Agregacion, type FilaPeriodo } from '../../dominio/periodos';
+import { agregar, etiquetaDia, periodosDeVentana, resumir, type Agregacion, type FilaPeriodo } from '../../dominio/periodos';
 import { registrosDe, vacasConsultables } from './produccion';
 
 const AGREGACIONES: [Agregacion, string][] = [
@@ -117,7 +117,7 @@ export function PantallaProduccion() {
         <>
           <section className="tarjeta produccion__resumen">
             <h2>
-              {vaca.codigo_chapeta} · {filas.at(-1)!.periodo.etiqueta} a {filas[0]!.periodo.etiqueta}
+              {vaca.codigo_chapeta} · {tituloVentana(filas, agregacion)}
             </h2>
             <p>
               <strong>{formatearLitros(resumen.total)} litros</strong> · {formatearLitros(resumen.promedio!)} por día registrado ·{' '}
@@ -134,6 +134,15 @@ export function PantallaProduccion() {
       )}
     </div>
   );
+}
+
+/**
+ * El rango de la ventana: «16 sep a 15 oct», «27 jul a 18 oct», «noviembre de 2025 a octubre de 2026».
+ * Por semanas se usan los días extremos: «27 jul – 2 ago a 12 – 18 oct» se leía mal (PE-28).
+ */
+function tituloVentana(filas: readonly FilaPeriodo[], agregacion: Agregacion): string {
+  const [reciente, antigua] = [filas[0]!.periodo, filas.at(-1)!.periodo];
+  return agregacion === 'mensual' ? `${antigua.etiqueta} a ${reciente.etiqueta}` : `${etiquetaDia(antigua.inicio)} a ${etiquetaDia(reciente.fin)}`;
 }
 
 /** La barra: litros del día en la diaria, promedio por día registrado en las demás (sección 6). */
