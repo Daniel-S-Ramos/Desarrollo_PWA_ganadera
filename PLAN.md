@@ -89,7 +89,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 3.1 | Catálogo de medicamentos y tabla de parámetros | ✅ |
 | 3.2 | Destino productivo y su historial (CU-12) | ✅ |
 | 3.3 | Registro sanitario e historial (CU-04, CU-05) | ✅ |
-| 3.4 | Advertencia por repetición de medicamento (RF-09) | ⬜ |
+| 3.4 | Advertencia por repetición de medicamento (RF-09) | ✅ |
 | 3.5 | Ronda de ordeño con regla de un registro por vaca y fecha (CU-06) | ⬜ |
 | 3.6 | Consulta de producción diaria, semanal y mensual | ⬜ |
 | 3.7 | Pruebas y cierre de iteración | ⬜ |
@@ -215,7 +215,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** En PE-22 el registro de datos sin conexión funcionó en Chrome para iOS; falta probar la foto. Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
-| 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros (fotos, destinos, eventos sanitarios), y los medicamentos de prueba: los que empiezan por «Prueba» y además «Otro mas» (PE-25) | Documento técnico 13, sección 2.4 · PE-25, observación 4 |
+| 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros (fotos, destinos, eventos sanitarios), y los medicamentos de prueba: los que empiezan por «Prueba» y además «Otro mas» (PE-25) y «pp prueba» (PE-26) | Documento técnico 13, sección 2.4 · PE-25, observación 4 |
 | 6.x | Opcional: dividir el código por pantallas (el paquete pesa 633 kB, 188 kB comprimido) para aligerar la primera carga | Aviso de Vite en la compilación del paso 2.1 |
 | ~~2.3~~ | **Hecho en los pasos 2.3 y 2.4:** distintivo junto a cada animal en el listado y la ficha. Falta observarlo a mano con pendientes y conflictos (paso 2.6). Mostrar el distintivo de sincronización junto a cada registro en el listado y la ficha, y observar a mano los estados con pendientes y conflictos | PE-15, observación 1 |
 | 4.3 | **Resolver un conflicto de chapeta** con la regla que dio el propietario el 2026-10-13: dos animales distintos → corregir la chapeta del que llegó segundo; el mismo animal dos veces → anular el duplicado y pasar sus eventos (y fotos) al animal correcto. Implica: (1) el animal en conflicto nunca llegó al servicio, así que la corrección debe crear un animal nuevo con la chapeta corregida o reenviarlo, no corregir una fila del servicio; (2) «pasar los eventos» encaja con la corrección del campo `animal_id` con el motivo «animal equivocado» (3.9.5); (3) la foto del animal rechazado, que hoy queda pendiente para siempre (PE-22), debe seguir al animal. Diseñarlo en el documento técnico de las correcciones | 3.7.3, tercera regla · PE-22 · decisión del propietario del 2026-10-13 |

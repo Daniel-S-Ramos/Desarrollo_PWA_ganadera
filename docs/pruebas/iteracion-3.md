@@ -20,6 +20,8 @@ comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
 | PE-24 | Destino productivo en el navegador real (cierra HU-06.4) | 3.2 | CU-12 · HU-13 · HU-06.4 · 3.10.4.4 | ✅ |
 | PU-21 | Registro sanitario e historial | 3.3 | RF-07 · RF-08 · CU-04 · CU-05 · HU-03 · Tabla 27 | ✅ |
 | PE-25 | Registro sanitario en el navegador real (cierra HU-02.4) | 3.3 | CU-04 · CU-05 · HU-03 · HU-02.1 y 4 · Tabla 31 | ✅ |
+| PU-22 | Advertencia por repetición de un medicamento | 3.4 | RF-09 · CU-04 5a · HU-09 | ✅ |
+| PE-26 | Advertencia por repetición en el navegador real | 3.4 | RF-09 · HU-09 · Figura 19 | ✅ |
 
 ---
 
@@ -195,3 +197,56 @@ PU-21.6, que rechaza un costo enviado por el trabajador. (3) El costo copiado en
 como «3000», sin separador de miles; se acepta igual y el historial lo presenta como «$ 3.000».
 (4) Los medicamentos «Prueba Aftosa», «Prueba ivermectina» y «Otro mas» son de prueba y se borrarán
 antes de la evaluación; «Otro mas» no lleva el prefijo «Prueba» y debe incluirse a mano en la limpieza.
+
+## PU-22 · Advertencia por repetición de un medicamento
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar los dos niveles, los límites del intervalo, la aplicación posterior a la fecha registrada, cuál aplicación se muestra, el aislamiento por animal y medicamento, el rechazo sin confirmación (también dentro de la transacción) y los textos del aviso |
+| Requerimiento | RF-09 · CU-04 5a · HU-09 |
+| Tipo | Unitaria, automática |
+| Código | [`src/dominio/repeticion.ts`](../../src/dominio/repeticion.ts) · [`src/modulos/sanidad/eventos.ts`](../../src/modulos/sanidad/eventos.ts) · prueba [`repeticion.test.ts`](../../src/modulos/sanidad/repeticion.test.ts) · especificación [documento técnico 21](../tecnica/21-advertencia-por-repeticion.md), sección 9 |
+| Resultado obtenido | **22 de 22 aprobadas**. Total del conjunto automático: **607 de 607** ([informe](resultados/2026-10-14_234519_f91f011.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-14 |
+
+**Hallazgo.** La primera ejecución falló en 5 pruebas: la expresión que reconoce el formato de la fecha
+perdió sus barras invertidas al escribirse desde la consola (`/^d{4}-d{2}-d{2}$/`), y con ella la
+verificación nunca se hacía: **la advertencia no habría aparecido**. Se corrigió antes de la versión
+probada.
+
+**Mutaciones.** Doce, todas detectadas: advertir también a exactamente `intervalo` días, considerar
+solo las aplicaciones anteriores, no señalar la posterior, no ordenar por cercanía, invertir el
+desempate por UUID, informar la más antigua, restar los días con signo, quitar «ayer», contar
+cualquier medicamento del animal, no verificar al guardar, dar por confirmado por defecto y buscar al
+autor equivocado.
+
+## PE-26 · Advertencia por repetición en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario la advertencia con Guardar inhabilitado hasta confirmar, la casilla que se desmarca, la aplicación posterior, la información fuera del intervalo y un intervalo corto; y como trabajador la advertencia sobre una aplicación del propietario |
+| Requerimiento | RF-09 · CU-04 5a · HU-09 · Figura 19 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-3` (commit f91f011) |
+| Resultado obtenido | Todos los pasos se comportaron como se esperaba |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-14 |
+
+| # | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|
+| 1 | Propietario | Z920, Prueba Aftosa (35 días) otra vez hoy | «⚠ Prueba Aftosa ya se aplicó a Z920 el 14 de octubre de 2026 (hoy), registrada por Jose Ramos», el intervalo y la casilla; **Guardar evento inhabilitado**; al confirmar se habilita | [aviso](evidencias/iteracion-3/PE-26-01-advertencia-mismo-dia.png) · [inhabilitado](evidencias/iteracion-3/PE-26-02-guardar-inhabilitado.png) · [confirmado](evidencias/iteracion-3/PE-26-03-confirmado-guardar-habilitado.png) |
+| 2 | Propietario | Cambiar la fecha al 11 de octubre | La casilla se desmarca y el aviso dice «…después de la fecha que está registrando» | [captura](evidencias/iteracion-3/PE-26-04-posterior-casilla-desmarcada.png) |
+| 3 | Propietario | Volver a hoy, confirmar y guardar | Registrado | [captura](evidencias/iteracion-3/PE-26-05-guardado-con-confirmacion.png) |
+| 4 | Propietario | Z924, Prueba Aftosa sin aplicaciones; luego hoy, con una del 2 de octubre | «Sin aplicaciones anteriores…»; después, advertencia «hace 12 días» (dentro de 35) | [sin anteriores](evidencias/iteracion-3/PE-26-06-sin-aplicaciones-anteriores.png) · [12 días](evidencias/iteracion-3/PE-26-07-advertencia-hace-12-dias.png) |
+| 5 | Propietario | Z924, «pp prueba» (purga, 2 días): el 3 de octubre, hoy, otra vez hoy y el 30 de septiembre | Sin anteriores; hoy **informa** «hace 11 días» sin casilla; otra hoy **advierte** (2 días); el 30 de septiembre informa la más reciente, porque la del 3 de octubre está a 3 días | [3 oct](evidencias/iteracion-3/PE-26-08-intervalo-corto-sin-anteriores.png) · [informa](evidencias/iteracion-3/PE-26-09-informacion-hace-11-dias.png) · [advierte](evidencias/iteracion-3/PE-26-10-intervalo-2-dias-advertencia.png) · [30 sep](evidencias/iteracion-3/PE-26-11-informacion-la-mas-reciente.png) |
+| 6 | Propietario | Z921, Prueba Florfenicol LA (2 días), aplicada el 12 de octubre: registrar el 13 y el 14 | El 13 (día siguiente) advierte; el 14 (dos días después) informa | [historial](evidencias/iteracion-3/PE-26-12-historial-z921.png) · [13](evidencias/iteracion-3/PE-26-13-intervalo-2-dias-dia-siguiente.png) · [14](evidencias/iteracion-3/PE-26-14-intervalo-2-dias-informa.png) |
+| 7 | Trabajador | Z921, Prueba Aftosa | La advertencia nombra la aplicación del 14 de octubre registrada por Jose Ramos, con la casilla | [captura](evidencias/iteracion-3/PE-26-15-trabajador-advertencia.webp) |
+
+**Observaciones.** (1) **Desviación del guion:** el paso planeado con Prueba Aftosa el 1 de agosto en
+Z924 no pudo hacerse porque Z924 nació en octubre y la aplicación no admite eventos anteriores al
+nacimiento (documento 20, sección 6), que es el comportamiento correcto. El autor usó el 2 de octubre y
+otro medicamento de intervalo corto; la aplicación posterior a la fecha registrada quedó cubierta en el
+paso 2. (2) El documento 21 decía que el aviso mostraría «✓ Enviado»; una aplicación ya enviada no lleva
+distintivo, como en el resto de la aplicación (documento 11, sección 4). Se corrigió el documento, no
+la aplicación. (3) «pp prueba» es un medicamento de prueba sin el prefijo «Prueba»; se incluye en la
+limpieza previa a la evaluación.
