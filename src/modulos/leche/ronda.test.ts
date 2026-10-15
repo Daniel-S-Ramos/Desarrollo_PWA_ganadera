@@ -17,8 +17,13 @@ const HOY = '2026-10-14';
 const PROPIETARIO: Identidad = { usuario_id: uuidv7(), perfil: 'propietario', nombre: 'José Ramos', vence_en: 0 };
 const TRABAJADOR: Identidad = { usuario_id: uuidv7(), perfil: 'trabajador', nombre: 'Daniel Ramos', vence_en: 0 };
 const OTRO_TRABAJADOR: Identidad = { usuario_id: uuidv7(), perfil: 'trabajador', nombre: 'Pedro Gómez', vence_en: 0 };
-/** Un instante del mismo día del predio que HOY (Colombia, UTC-5). */
-const AHORA = new Date('2026-10-14T20:00:00Z');
+/**
+ * El instante de la prueba. Los registros se crean con la hora real, y la regla de 3.9.5 compara su día
+ * con este: por eso es la hora real, no una fija (una fija dejó de coincidir al cambiar el día, 2026-10-15).
+ */
+const AHORA = new Date();
+/** Dos días después: otro día del predio. */
+const OTRO_DIA = new Date(AHORA.getTime() + 2 * 24 * 60 * 60 * 1000);
 
 function datosAnimal(codigo: string, sexo: Sexo): DatosNuevos<'animal'> {
   return {
@@ -223,8 +228,8 @@ describe('PU-23 · 7. Quién puede reemplazar (sección 7, apartado 3.9.5)', () 
     const a = await animal('Z930');
     const r = await ordeno(a.id, HOY, 12.5, OTRO_TRABAJADOR.usuario_id);
     expect(puedeReemplazar(TRABAJADOR, { registro: r, perfilAutor: 'trabajador' }, AHORA)).toBe(true);
-    expect(puedeReemplazar(TRABAJADOR, { registro: r, perfilAutor: 'trabajador' }, new Date('2026-10-16T20:00:00Z'))).toBe(false);
-    expect(await registrarOrdeno(a.id, HOY, '13', TRABAJADOR, true, HOY, new Date('2026-10-16T20:00:00Z'))).toEqual({ ok: false, sinPermiso: true });
+    expect(puedeReemplazar(TRABAJADOR, { registro: r, perfilAutor: 'trabajador' }, OTRO_DIA)).toBe(false);
+    expect(await registrarOrdeno(a.id, HOY, '13', TRABAJADOR, true, HOY, OTRO_DIA)).toEqual({ ok: false, sinPermiso: true });
     expect(await registrarOrdeno(a.id, HOY, '13', TRABAJADOR, true, HOY, AHORA)).toMatchObject({ ok: true });
   });
 

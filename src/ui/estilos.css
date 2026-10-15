@@ -924,3 +924,54 @@ a.boton {
 .ronda__chapeta {
   font-weight: 700;
 }
+
+/* Consulta de producción (documento técnico 23, secciones 4 a 6). */
+.produccion__navegacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.produccion__resumen p {
+  margin: 0;
+}
+
+.produccion__filas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.produccion__fila {
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.produccion__texto {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.produccion__etiqueta {
+  font-weight: 700;
+}
+
+.produccion__barra {
+  margin-top: 6px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--verde-claro);
+}
+
+.produccion__relleno {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--verde-oscuro);
+}

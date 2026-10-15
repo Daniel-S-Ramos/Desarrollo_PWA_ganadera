@@ -82,6 +82,13 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
         />
       </dl>
 
+      {/* Documento técnico 23, sección 2: la producción de la vaca, solo para el propietario (CU-07). */}
+      {ficha.sexo === 'hembra' && puedeUsar(identidad.perfil, 'CU-07') && (
+        <Link className="boton boton--secundario boton--ancho" to={`/produccion?vaca=${ficha.id}`}>
+          Ver producción
+        </Link>
+      )}
+
       <SeccionSanidad animalId={ficha.id} identidad={identidad} />
 
       {/* CU-12: solo el propietario cambia el destino y ve su historial; al trabajador no se le muestran (HU-06.4). */}
