@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { formularioMedicamentoVacio, NOMBRE_TIPO, validarMedicamento, type FormularioMedicamento as Formulario } from '../../dominio/medicamentos';
 import { TIPOS_MEDICAMENTO, UNIDADES_DOSIS, type TipoMedicamento, type UnidadDosis } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
@@ -9,6 +9,9 @@ import { buscarCoincidencias, crearMedicamento, listarCatalogo, type Medicamento
  * Agregar un medicamento al catálogo (docs/tecnica/18-catalogo-de-medicamentos.md, secciones 4 y 5).
  * Lo usan la pantalla Medicamentos y, desde el paso 3.3, el registro sanitario (Tabla 31).
  * Si el nombre ya existe con otra escritura, ofrece el existente en lugar de crear un duplicado.
+ *
+ * No es un <form>: dentro del registro sanitario quedaría un formulario dentro de otro, y el navegador
+ * enviaría el exterior recargando la página sin guardar el medicamento (hallazgo de PE-25).
  */
 export function FormularioMedicamento({
   identidad,
@@ -33,8 +36,7 @@ export function FormularioMedicamento({
   const { exacta, parecidos } = buscarCoincidencias(formulario.nombre, catalogo);
   const cambiar = (cambios: Partial<Formulario>) => setFormulario((f) => ({ ...f, ...cambios }));
 
-  async function guardar(evento: FormEvent) {
-    evento.preventDefault();
+  async function guardar() {
     setIntentado(true);
     if (!validacion.ok || exacta) return;
     setGuardando(true);
@@ -48,7 +50,7 @@ export function FormularioMedicamento({
   }
 
   return (
-    <form className="formulario tarjeta" onSubmit={guardar} noValidate>
+    <div className="formulario tarjeta" role="group" aria-label="Agregar medicamento">
       <h2>Agregar medicamento</h2>
 
       <label className="campo">
@@ -104,14 +106,14 @@ export function FormularioMedicamento({
       </label>
 
       <div className="acciones-formulario">
-        <button className="boton boton--principal boton--ancho" type="submit" disabled={guardando || !!exacta}>
+        <button className="boton boton--principal boton--ancho" type="button" disabled={guardando || !!exacta} onClick={() => void guardar()}>
           {guardando ? 'Guardando…' : 'Agregar medicamento'}
         </button>
         <button className="boton boton--secundario boton--ancho" type="button" onClick={alCancelar}>
           Cancelar
         </button>
       </div>
-    </form>
+    </div>
   );
 }
 
