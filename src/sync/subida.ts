@@ -36,6 +36,7 @@ const CAUSA_UNICIDAD: Partial<Record<NombreTabla, string>> = {
   medicamento: 'Ya existe un medicamento con ese nombre.',
   movimiento_economico: 'Este animal ya tiene registrada su compra.',
   salida: 'Este animal ya tiene registrada su salida.',
+  colocacion_chapeta: 'Otro teléfono ya registró que este animal tiene la chapeta puesta.',
 };
 
 function causaDefinitiva(operacion: OperacionPendiente, registro: Record<string, unknown>, resultado: ResultadoEnvio): string {

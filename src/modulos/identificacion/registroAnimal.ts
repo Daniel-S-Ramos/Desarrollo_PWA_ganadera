@@ -6,7 +6,7 @@
  * escribe y las pruebas las ejercitan sin almacenamiento. La escritura vuelve a verificar la
  * chapeta dentro de la misma transacción que crea el animal (sección 2.2).
  */
-import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { consulta, unidadDeTrabajo, type Transaccion } from '../../datos/repositorio';
 import { validarCambioDestino } from '../../dominio/destino';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { TIPOS_FOTOGRAFIA, type DatosNuevos, type Destino, type FechaPredio, type RegistroLocal, type Sexo, type TipoFotografia, type Uuid } from '../../dominio/tipos';
@@ -41,6 +41,33 @@ export function errorDeChapeta(chapeta: string): string | null {
   if (FORMATO_CHAPETA.test(chapeta)) return null;
   if (chapeta.startsWith('O')) return 'La letra O no se usa en las chapetas del predio. ¿Quiso escribir un cero?';
   return 'Use un número del 1 al 9999, o una letra seguida de un número del 1 al 999 (por ejemplo, A15)';
+}
+
+/** La secuencia de la numeración del predio: 1…9999, luego A1…A999, B1…, sin la O (sección 2.1). */
+const LETRAS = 'ABCDEFGHIJKLMNPQRSTUVWXYZ';
+
+/** Posición de una chapeta en la secuencia del predio, o null si no pertenece a ella. */
+function posicionEnSecuencia(chapeta: string): number | null {
+  if (!FORMATO_CHAPETA.test(chapeta)) return null;
+  if (/^[0-9]/.test(chapeta)) return Number(chapeta);
+  return 9999 + LETRAS.indexOf(chapeta[0]!) * 999 + Number(chapeta.slice(1));
+}
+
+function chapetaEnPosicion(posicion: number): string | null {
+  if (posicion <= 9999) return String(posicion);
+  const resto = posicion - 10000;
+  const letra = LETRAS[Math.floor(resto / 999)];
+  return letra ? `${letra}${(resto % 999) + 1}` : null;
+}
+
+/**
+ * El número que sigue al mayor de la secuencia del predio: después de 1045, 1046; después de 9999, A1;
+ * después de A999, B1; sin animales, 1 (documento técnico 25, sección 6). Como parte del mayor, siempre
+ * está libre; si la secuencia se agotó (Z999), queda vacío para escribirlo.
+ */
+export function siguienteNumeroLibre(chapetas: readonly string[]): string {
+  const mayor = Math.max(0, ...chapetas.map((c) => posicionEnSecuencia(c) ?? 0));
+  return chapetaEnPosicion(mayor + 1) ?? '';
 }
 
 // ---------------------------------------------------------------------------
@@ -98,6 +125,8 @@ export interface FormularioAnimal {
   /** Destino productivo inicial, opcional y solo para el propietario (documento 19, sección 5). */
   destino: Destino | null;
   destino_desde: string;
+  /** Solo con origen «nació en el predio»: aún no tiene la chapeta física (documento técnico 25, sección 7.4). */
+  sin_chapeta_puesta: boolean;
 }
 
 export type CampoFormulario =
@@ -139,6 +168,7 @@ export function formularioVacio(hoy: FechaPredio = fechaDelPredio()): Formulario
     padre_externo: '',
     destino: null,
     destino_desde: hoy,
+    sin_chapeta_puesta: false,
   };
 }
 
@@ -282,6 +312,8 @@ export function validarFormulario(formulario: FormularioAnimal, hoy: FechaPredio
       madre_externa: madre.externo,
       padre_id: padre.id,
       padre_externo: padre.externo,
+      // La casilla solo cuenta para un nacido en el predio (documento técnico 25, sección 7.4).
+      chapeta_puesta: !(formulario.origen === 'nacido' && formulario.sin_chapeta_puesta),
     },
     destino,
   };
@@ -401,6 +433,8 @@ export async function registrarAnimal(
   usuario: Identidad,
   hoy: FechaPredio = fechaDelPredio(),
   fotos: FotosCapturadas = {},
+  /** Lo que debe crearse en la misma transacción que el animal: el parto de una cría (documento técnico 25, sección 4). */
+  enLaMismaTransaccion?: (tx: Transaccion, animal: RegistroLocal<'animal'>) => Promise<void>,
 ): Promise<ResultadoRegistro> {
   if (!puedeCrear(usuario.perfil, 'animal')) throw new PermisoDenegado(usuario.perfil, 'animal');
   if (formulario.destino !== null && !puedeCrear(usuario.perfil, 'destino_productivo')) {
@@ -428,6 +462,7 @@ export async function registrarAnimal(
       }
       // También en la misma transacción: si el animal se rechaza, no queda destino (documento 19, sección 5).
       if (destino) await tx.crear('destino_productivo', { animal_id: animal.id, ...destino });
+      if (enLaMismaTransaccion) await enLaMismaTransaccion(tx, animal);
       return animal;
     });
     return { ok: true, animal, fotografias: TIPOS_FOTOGRAFIA.filter((t) => fotos[t]).length };

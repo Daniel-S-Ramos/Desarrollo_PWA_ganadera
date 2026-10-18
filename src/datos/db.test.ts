@@ -77,6 +77,8 @@ const INDICES_ESPERADOS: Record<string, string[]> = {
   recordatorio: ['tipo', 'animal_id', 'estado_sync'],
   correccion: ['[entidad_afectada+registro_id]', 'registro_id', 'autor_id', 'creado_en', 'estado_sync'],
   medicamento: ['nombre', 'estado_sync'],
+  // Versión 2 (documento técnico 25, sección 7.1).
+  colocacion_chapeta: ['animal_id', 'estado_sync'],
   usuario: [],
   parametro: [],
   cola_operaciones: ['registro_id'],
@@ -107,7 +109,7 @@ describe('PU-04 · 1. Estructura', () => {
     expect(db.cola_imagenes.schema.primKey.auto).toBe(true);
   });
 
-  it('las doce tablas sincronizables son las entidades que crea el dispositivo', () => {
+  it('las trece tablas sincronizables son las entidades que crea el dispositivo', () => {
     expect([...TABLAS_SINCRONIZABLES].sort()).toEqual(
       Object.keys(INDICES_ESPERADOS)
         .filter((t) => !['usuario', 'parametro', 'cola_operaciones', 'cola_imagenes', 'imagen', 'meta'].includes(t))

@@ -282,6 +282,14 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
         </>
       )}
 
+      {/* Documento técnico 25, sección 7.4: un ternero nacido en el predio puede no tener aún la chapeta. */}
+      {formulario.origen === 'nacido' && (
+        <label className="casilla">
+          <input type="checkbox" checked={formulario.sin_chapeta_puesta} onChange={(e) => cambiar({ sin_chapeta_puesta: e.target.checked })} />
+          Aún no tiene la chapeta puesta
+        </label>
+      )}
+
       {/* 4. Peso inicial */}
       <label className="campo">
         <span>

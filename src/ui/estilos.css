@@ -1028,3 +1028,32 @@ a.boton {
   font-weight: 600;
   font-size: 1.05rem;
 }
+
+/* Terneros sin chapeta puesta (documento técnico 25, sección 7.3). */
+.ternero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  min-height: 48px;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: inherit;
+  text-decoration: none;
+}
+
+.ternero--vencido {
+  background: var(--amarillo-claro);
+  border-color: var(--amarillo);
+  font-weight: 600;
+}
+
+.fila-animal__chapeta-pendiente {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--verde-oscuro);
+}

@@ -19,7 +19,9 @@ import { CapturaFoto } from '../identificacion/CapturaFoto';
 import { CambiarDestino } from '../destino/CambiarDestino';
 import { cargarContextoDestino } from '../destino/destino';
 import { HistorialDestino } from '../destino/HistorialDestino';
+import { AvisoChapeta } from '../identificacion/AvisoChapeta';
 import { EvolucionPeso } from '../peso/EvolucionPeso';
+import { ControlReproductivo } from '../reproduccion/ControlReproductivo';
 import { puedeVerCosto } from '../sanidad/eventos';
 import { HistorialSanitario } from '../sanidad/HistorialSanitario';
 import { consolidarFicha, type FichaAnimal, type FotoFicha, type Progenitor } from './ficha';
@@ -65,6 +67,9 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
 
       <Encabezado ficha={ficha} hoy={hoy} verFotos={verFotos} alAlternarFotos={() => setVerFotos((v) => !v)} />
 
+      {/* Documento técnico 25, sección 7.2: la chapeta pendiente de poner, para ambos perfiles. */}
+      <AvisoChapeta animalId={ficha.id} numero={ficha.codigo_chapeta} nacimiento={ficha.fecha_nacimiento} identidad={identidad} />
+
       {verFotos && <VistasFotos ficha={ficha} identidad={identidad} />}
 
       {/* Los datos que pidió el propietario, en su orden (3.10.4.4). */}
@@ -93,6 +98,8 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
       <SeccionSanidad animalId={ficha.id} identidad={identidad} />
 
       <SeccionPeso animalId={ficha.id} identidad={identidad} />
+
+      {ficha.sexo === 'hembra' && <SeccionReproduccion animalId={ficha.id} identidad={identidad} />}
 
       {/* CU-12: solo el propietario cambia el destino y ve su historial; al trabajador no se le muestran (HU-06.4). */}
       {puedeUsar(identidad.perfil, 'CU-12') && <SeccionDestino animalId={ficha.id} identidad={identidad} hoy={hoy} />}
@@ -138,6 +145,36 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
  * Registro y evolución del peso, para ambos perfiles (documento técnico 24, sección 3; HU-02.4). Al volver
  * de registrar un pesaje (?peso=1), la evolución aparece abierta.
  */
+/**
+ * Partos de la vaca: registrar (ambos perfiles, CU-10) y control reproductivo (solo el propietario, CU-11).
+ * Documento técnico 25, sección 3. Al volver de registrar un parto sin cría (?reproduccion=1), el control
+ * aparece abierto.
+ */
+function SeccionReproduccion({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
+  const [parametros] = useSearchParams();
+  const puedeVerControl = puedeUsar(identidad.perfil, 'CU-11');
+  const [verControl, setVerControl] = useState(() => puedeVerControl && parametros.get('reproduccion') === '1');
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-10');
+  if (!puedeRegistrar && !puedeVerControl) return null;
+  return (
+    <>
+      <div className="acciones-formulario">
+        {puedeRegistrar && (
+          <Link className="boton boton--secundario boton--ancho" to={`/animales/${animalId}/parto`}>
+            Registrar parto
+          </Link>
+        )}
+        {puedeVerControl && (
+          <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={verControl} onClick={() => setVerControl((v) => !v)}>
+            {verControl ? 'Ocultar control reproductivo' : 'Control reproductivo'}
+          </button>
+        )}
+      </div>
+      {verControl && <ControlReproductivo vacaId={animalId} />}
+    </>
+  );
+}
+
 function SeccionPeso({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
   const [parametros] = useSearchParams();
   const [verEvolucion, setVerEvolucion] = useState(() => parametros.get('peso') === '1');

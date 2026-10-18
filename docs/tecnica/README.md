@@ -33,3 +33,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 22 | [Ronda de ordeño](22-ronda-de-ordeno.md) | 3.5 | RF-10 · CU-06 · HU-04 · 3.8.6 |
 | 23 | [Consulta de producción diaria, semanal y mensual](23-consulta-de-produccion.md) | 3.6 | RF-11 · CU-07 · HU-04.2 |
 | 24 | [Pesaje y evolución del peso](24-pesaje-y-evolucion.md) | 4.1 | RF-13 · RF-14 · CU-08 · CU-09 · HU-05 |
+| 25 | [Parto, control reproductivo y chapeta pendiente de poner](25-parto-y-control-reproductivo.md) | 4.2 | RF-16 · RF-17 · CU-10 · CU-11 · HU-12 |

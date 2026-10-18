@@ -139,6 +139,7 @@ export const consulta: Consultas = {
   recordatorio: db.recordatorio,
   correccion: db.correccion,
   medicamento: db.medicamento,
+  colocacion_chapeta: db.colocacion_chapeta,
   usuario: db.usuario,
   parametro: db.parametro,
 };

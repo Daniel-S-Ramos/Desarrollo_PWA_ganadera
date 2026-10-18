@@ -71,6 +71,7 @@ export class BaseLocal extends Dexie {
   declare recordatorio: TablasLocales['recordatorio'];
   declare correccion: TablasLocales['correccion'];
   declare medicamento: TablasLocales['medicamento'];
+  declare colocacion_chapeta: TablasLocales['colocacion_chapeta'];
 
   declare usuario: EntityTable<Usuario, 'id'>;
   declare parametro: EntityTable<Parametro, 'clave'>;
@@ -109,6 +110,11 @@ export class BaseLocal extends Dexie {
       imagen: 'fotografia_id, animal_id',
       meta: 'clave',
     });
+
+    // Versión 2: la colocación de la chapeta de las crías (documento técnico 25, sección 7.1).
+    this.version(2).stores({
+      colocacion_chapeta: 'id, animal_id, estado_sync',
+    });
   }
 }
 
@@ -122,6 +128,7 @@ export const db = new BaseLocal();
 export const TABLAS_SINCRONIZABLES: readonly TablaSincronizable[] = [
   'medicamento',
   'animal',
+  'colocacion_chapeta',
   'fotografia',
   'destino_productivo',
   'evento_sanitario',

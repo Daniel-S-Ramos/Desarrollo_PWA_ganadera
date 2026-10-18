@@ -79,7 +79,7 @@ describe('PU-02 · Valores admitidos según el documento', () => {
 });
 
 describe('PU-02 · Tipos auxiliares de la capa de datos', () => {
-  it('las tablas sincronizables son las doce entidades que crea el dispositivo (Tabla 23 sin usuario ni parametro)', () => {
+  it('las tablas sincronizables son las trece entidades que crea el dispositivo (Tabla 23 sin usuario ni parametro, más la colocación de la chapeta)', () => {
     expectTypeOf<NombreTabla>().toEqualTypeOf<
       | 'animal'
       | 'fotografia'
@@ -93,6 +93,7 @@ describe('PU-02 · Tipos auxiliares de la capa de datos', () => {
       | 'recordatorio'
       | 'correccion'
       | 'medicamento'
+      | 'colocacion_chapeta'
     >();
   });
 

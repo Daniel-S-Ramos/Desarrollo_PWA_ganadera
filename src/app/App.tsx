@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router';
 import { PantallaFicha } from '../modulos/consulta/PantallaFicha';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
+import { TernerosSinChapeta } from '../modulos/identificacion/AvisoChapeta';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
 import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
 import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
 import { PantallaRegistrarPesaje } from '../modulos/peso/PantallaRegistrarPesaje';
+import { PantallaRegistrarParto } from '../modulos/reproduccion/PantallaRegistrarParto';
 import { PantallaMedicamentos } from '../modulos/sanidad/PantallaMedicamentos';
 import { PantallaRegistrarEvento } from '../modulos/sanidad/PantallaRegistrarEvento';
 import { puedeUsar } from '../sesion/permisos';
@@ -135,6 +137,19 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
               element={puedeUsar(identidad.perfil, 'CU-04') ? <PantallaRegistrarEvento identidad={identidad} /> : <Navigate to="/" replace />}
             />
             <Route
+              path="/animales/:id/parto"
+              element={
+                !puedeUsar(identidad.perfil, 'CU-10') ? (
+                  <Navigate to="/" replace />
+                ) : cargaCompleta === false ? (
+                  // Registra una cría: sin el inventario completo podría repetir un número (documento técnico 17).
+                  <RegistroEnEspera titulo="Registrar parto" />
+                ) : (
+                  <PantallaRegistrarParto identidad={identidad} />
+                )
+              }
+            />
+            <Route
               path="/animales/:id/pesaje"
               element={puedeUsar(identidad.perfil, 'CU-08') ? <PantallaRegistrarPesaje identidad={identidad} /> : <Navigate to="/" replace />}
             />
@@ -170,6 +185,9 @@ function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; 
       <p className="texto-secundario">Iteración 4 · Peso, partos y correcciones</p>
 
       {cargaCompleta === false && <PreparandoTelefono />}
+
+      {/* Documento técnico 25, sección 7.3: el recordatorio de la chapeta, para ambos perfiles. */}
+      {cargaCompleta !== false && <TernerosSinChapeta />}
 
       {puedeUsar(identidad.perfil, 'CU-03') && cargaCompleta !== false && (
         <Link className="boton boton--principal boton--ancho" to="/animales">
