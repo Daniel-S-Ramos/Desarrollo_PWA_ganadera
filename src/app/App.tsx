@@ -5,6 +5,7 @@ import { PantallaListado } from '../modulos/consulta/PantallaListado';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
 import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
 import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
+import { PantallaRegistrarPesaje } from '../modulos/peso/PantallaRegistrarPesaje';
 import { PantallaMedicamentos } from '../modulos/sanidad/PantallaMedicamentos';
 import { PantallaRegistrarEvento } from '../modulos/sanidad/PantallaRegistrarEvento';
 import { puedeUsar } from '../sesion/permisos';
@@ -134,6 +135,10 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
               element={puedeUsar(identidad.perfil, 'CU-04') ? <PantallaRegistrarEvento identidad={identidad} /> : <Navigate to="/" replace />}
             />
             <Route
+              path="/animales/:id/pesaje"
+              element={puedeUsar(identidad.perfil, 'CU-08') ? <PantallaRegistrarPesaje identidad={identidad} /> : <Navigate to="/" replace />}
+            />
+            <Route
               path="/ordeno"
               element={
                 !puedeUsar(identidad.perfil, 'CU-06') ? (
@@ -162,7 +167,7 @@ function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; 
   return (
     <>
       <p className="titulo-seccion">Prototipo en construcción</p>
-      <p className="texto-secundario">Iteración 3 · Sanidad, leche y destino</p>
+      <p className="texto-secundario">Iteración 4 · Peso, partos y correcciones</p>
 
       {cargaCompleta === false && <PreparandoTelefono />}
 

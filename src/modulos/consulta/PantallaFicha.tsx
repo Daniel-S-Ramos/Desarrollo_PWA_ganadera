@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { imagenCompletaLocal } from '../../datos/repositorio';
 import { describirEdad } from '../../dominio/edad';
 import { fechaDelPredio, formatearFecha, formatearInstante } from '../../dominio/fechas';
@@ -19,6 +19,7 @@ import { CapturaFoto } from '../identificacion/CapturaFoto';
 import { CambiarDestino } from '../destino/CambiarDestino';
 import { cargarContextoDestino } from '../destino/destino';
 import { HistorialDestino } from '../destino/HistorialDestino';
+import { EvolucionPeso } from '../peso/EvolucionPeso';
 import { puedeVerCosto } from '../sanidad/eventos';
 import { HistorialSanitario } from '../sanidad/HistorialSanitario';
 import { consolidarFicha, type FichaAnimal, type FotoFicha, type Progenitor } from './ficha';
@@ -91,6 +92,8 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
 
       <SeccionSanidad animalId={ficha.id} identidad={identidad} />
 
+      <SeccionPeso animalId={ficha.id} identidad={identidad} />
+
       {/* CU-12: solo el propietario cambia el destino y ve su historial; al trabajador no se le muestran (HU-06.4). */}
       {puedeUsar(identidad.perfil, 'CU-12') && <SeccionDestino animalId={ficha.id} identidad={identidad} hoy={hoy} />}
 
@@ -131,6 +134,34 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
 }
 
 /** Registro e historial sanitario, para ambos perfiles (documento técnico 20, secciones 3 y 8; HU-02.4). */
+/**
+ * Registro y evolución del peso, para ambos perfiles (documento técnico 24, sección 3; HU-02.4). Al volver
+ * de registrar un pesaje (?peso=1), la evolución aparece abierta.
+ */
+function SeccionPeso({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
+  const [parametros] = useSearchParams();
+  const [verEvolucion, setVerEvolucion] = useState(() => parametros.get('peso') === '1');
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-08');
+  if (!puedeRegistrar && !puedeUsar(identidad.perfil, 'CU-09')) return null;
+  return (
+    <>
+      <div className="acciones-formulario">
+        {puedeRegistrar && (
+          <Link className="boton boton--secundario boton--ancho" to={`/animales/${animalId}/pesaje`}>
+            Registrar pesaje
+          </Link>
+        )}
+        {puedeUsar(identidad.perfil, 'CU-09') && (
+          <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={verEvolucion} onClick={() => setVerEvolucion((v) => !v)}>
+            {verEvolucion ? 'Ocultar evolución del peso' : 'Evolución del peso'}
+          </button>
+        )}
+      </div>
+      {verEvolucion && <EvolucionPeso animalId={animalId} puedeRegistrar={puedeRegistrar} />}
+    </>
+  );
+}
+
 function SeccionSanidad({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
   const [verHistorial, setVerHistorial] = useState(false);
   const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-04');

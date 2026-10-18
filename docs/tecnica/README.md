@@ -32,3 +32,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 21 | [Advertencia por repetición de un medicamento](21-advertencia-por-repeticion.md) | 3.4 | RF-09 · CU-04 5a · HU-09 · Figura 19 |
 | 22 | [Ronda de ordeño](22-ronda-de-ordeno.md) | 3.5 | RF-10 · CU-06 · HU-04 · 3.8.6 |
 | 23 | [Consulta de producción diaria, semanal y mensual](23-consulta-de-produccion.md) | 3.6 | RF-11 · CU-07 · HU-04.2 |
+| 24 | [Pesaje y evolución del peso](24-pesaje-y-evolucion.md) | 4.1 | RF-13 · RF-14 · CU-08 · CU-09 · HU-05 |
