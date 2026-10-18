@@ -18,7 +18,7 @@ import {
 import type { DatosNuevos, MetodoPesaje } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { consolidarFicha } from '../consulta/ficha';
-import { cargarEvolucion, cargarParaPesaje, registrarPesaje } from './pesajes';
+import { cargarEvolucion, cargarParaPesaje, registrarPesaje, SIN_CONFIRMAR } from './pesajes';
 
 /**
  * PU-25 · Pesaje y evolución del peso (RF-13, RF-14, CU-08, CU-09, HU-05).
@@ -119,6 +119,12 @@ describe('PU-25 · 2. Peso anterior (sección 6)', () => {
     expect(pesoAnterior({ peso_inicial: 32, fecha_ingreso: null, fecha_nacimiento: '2026-09-20' }, [], HOY)).toMatchObject({ etiqueta: 'Peso al nacer', fecha: '2026-09-20' });
     expect(pesoAnterior({ ...animalBase, peso_inicial: null }, [], HOY)).toBeNull();
   });
+
+  it('el peso inicial no sirve de anterior para una fecha previa a él (PE-29)', () => {
+    expect(pesoAnterior(animalBase, [], '2026-08-31')).toBeNull();
+    expect(pesoAnterior(animalBase, [], '2026-09-01')).toMatchObject({ etiqueta: 'Peso de compra' });
+    expect(pesoAnterior({ ...animalBase, fecha_ingreso: null, fecha_nacimiento: null }, [], '2020-01-01')).toMatchObject({ kg: 300, fecha: null });
+  });
 });
 
 describe('PU-25 · 3. Variación atípica (sección 6, umbrales del autor)', () => {
@@ -142,8 +148,12 @@ describe('PU-25 · 3. Variación atípica (sección 6, umbrales del autor)', () 
 
   it('el texto de la diferencia', () => {
     const anterior = punto('2026-10-05', 300);
-    expect(describirComparacion(compararConAnterior(332, HOY, anterior)!, anterior)).toBe('32 kg más que el 5 de octubre de 2026 (12 días) · 2,7 kg por día');
-    expect(describirComparacion(compararConAnterior(299, '2026-10-06', anterior)!, anterior)).toBe('1 kg menos que el 5 de octubre de 2026 (1 día) · -1 kg por día');
+    expect(describirComparacion(compararConAnterior(332, HOY, anterior)!, anterior)).toBe('Frente al pesaje anterior del 5 de octubre de 2026 (300 kg): +32 kg en 12 días, +2,7 kg por día');
+    expect(describirComparacion(compararConAnterior(299, '2026-10-06', anterior)!, anterior)).toBe('Frente al pesaje anterior del 5 de octubre de 2026 (300 kg): −1 kg en 1 día, −1 kg por día');
+    expect(describirComparacion(compararConAnterior(303, '2026-10-05', anterior)!, anterior)).toBe('Frente al pesaje anterior del 5 de octubre de 2026 (300 kg): +3 kg, el mismo día');
+    // Nombra con qué se compara: el peso de compra no es un pesaje (PE-29).
+    const compra = punto('2026-10-01', 1000, null, null);
+    expect(describirComparacion(compararConAnterior(1010, '2026-10-11', compra)!, compra)).toBe('Frente al peso de compra del 1 de octubre de 2026 (1.000 kg): +10 kg en 10 días, +1 kg por día');
   });
 });
 
@@ -151,7 +161,7 @@ describe('PU-25 · 4. Guardar (secciones 2 y 6)', () => {
   it('crea el pesaje con autor, pendiente y en la cola; la ficha muestra el último peso', async () => {
     const a = await animal('Z940');
     const cola = await db.cola_operaciones.count();
-    const r = await registrarPesaje(a.id, formulario({ peso: '330,5', metodo: 'bascula', fecha: '2026-10-01' }), TRABAJADOR, false, HOY);
+    const r = await registrarPesaje(a.id, formulario({ peso: '330,5', metodo: 'bascula', fecha: '2026-10-01' }), TRABAJADOR, SIN_CONFIRMAR, HOY);
     if (!r.ok) throw new Error('debía registrarse');
     expect(r.pesaje).toMatchObject({ animal_id: a.id, peso: 330.5, metodo: 'bascula', fecha: '2026-10-01', autor_id: TRABAJADOR.usuario_id, estado_sync: 'pendiente' });
     expect(await db.cola_operaciones.count()).toBe(cola + 1);
@@ -160,14 +170,39 @@ describe('PU-25 · 4. Guardar (secciones 2 y 6)', () => {
 
   it('un atípico sin confirmar no escribe; confirmado, sí', async () => {
     const a = await animal('Z940');
-    expect(await registrarPesaje(a.id, formulario({ peso: '600' }), PROPIETARIO, false, HOY)).toEqual({ ok: false, requiereConfirmacion: true });
+    expect(await registrarPesaje(a.id, formulario({ peso: '600' }), PROPIETARIO, SIN_CONFIRMAR, HOY)).toEqual({ ok: false, requiereConfirmacion: 'variacion' });
     expect(await db.pesaje.count()).toBe(0);
-    expect((await registrarPesaje(a.id, formulario({ peso: '600' }), PROPIETARIO, true, HOY)).ok).toBe(true);
+    expect((await registrarPesaje(a.id, formulario({ peso: '600' }), PROPIETARIO, { variacion: true, mismoDia: false }, HOY)).ok).toBe(true);
+  });
+
+  it('otro pesaje en la misma fecha exige su propia confirmación (PE-29)', async () => {
+    const a = await animal('Z940');
+    await pesar(a.id, HOY, 318, 'cinta');
+    expect(await registrarPesaje(a.id, formulario({ peso: '320', metodo: 'bascula' }), PROPIETARIO, SIN_CONFIRMAR, HOY)).toEqual({
+      ok: false,
+      requiereConfirmacion: 'mismo_dia',
+    });
+    // Confirmar la variación no basta: son confirmaciones distintas.
+    expect(await registrarPesaje(a.id, formulario({ peso: '320', metodo: 'bascula' }), PROPIETARIO, { variacion: true, mismoDia: false }, HOY)).toEqual({
+      ok: false,
+      requiereConfirmacion: 'mismo_dia',
+    });
+    expect(await db.pesaje.count()).toBe(1);
+    expect((await registrarPesaje(a.id, formulario({ peso: '320', metodo: 'bascula' }), PROPIETARIO, { variacion: false, mismoDia: true }, HOY)).ok).toBe(true);
+    expect(await db.pesaje.count()).toBe(2);
+  });
+
+  it('el mismo día y atípico: hacen falta las dos confirmaciones', async () => {
+    const a = await animal('Z940');
+    await pesar(a.id, HOY, 300, 'cinta');
+    const otro = formulario({ peso: '340', metodo: 'bascula' }); // más de 10 % el mismo día
+    expect(await registrarPesaje(a.id, otro, PROPIETARIO, { variacion: false, mismoDia: true }, HOY)).toEqual({ ok: false, requiereConfirmacion: 'variacion' });
+    expect((await registrarPesaje(a.id, otro, PROPIETARIO, { variacion: true, mismoDia: true }, HOY)).ok).toBe(true);
   });
 
   it('un error no escribe nada', async () => {
     const a = await animal('Z940');
-    expect(await registrarPesaje(a.id, formulario({ metodo: null }), PROPIETARIO, false, HOY)).toEqual({ ok: false, errores: { metodo: 'Elija cómo se pesó' } });
+    expect(await registrarPesaje(a.id, formulario({ metodo: null }), PROPIETARIO, SIN_CONFIRMAR, HOY)).toEqual({ ok: false, errores: { metodo: 'Elija cómo se pesó' } });
     expect(await db.pesaje.count()).toBe(0);
   });
 
@@ -176,7 +211,7 @@ describe('PU-25 · 4. Guardar (secciones 2 y 6)', () => {
     await pesar(a.id, HOY, 412, 'cinta');
     const datos = await cargarParaPesaje(a.id, HOY);
     expect(datos?.anterior).toMatchObject({ kg: 412 });
-    expect(datos?.mismoDia.map((p) => p.peso)).toEqual([412]);
+    expect(datos?.mismoDia.map((m) => [m.pesaje.peso, m.autor])).toEqual([[412, 'José Ramos']]);
     expect((await cargarParaPesaje(a.id, '2026-10-10'))?.mismoDia).toEqual([]);
   });
 });
@@ -239,8 +274,8 @@ describe('PU-25 · 8. Transacción, autores y permisos', () => {
   it('un animal retirado o que no está no recibe pesajes', async () => {
     const a = await animal('Z940');
     await crear('salida', { animal_id: a.id, fecha: '2026-10-10', motivo: 'venta', peso_venta: 400, valor_venta: 1, comprador: null, causa_muerte: null }, PROPIETARIO.usuario_id);
-    expect(await registrarPesaje(a.id, formulario(), PROPIETARIO, false, HOY)).toEqual({ ok: false, errores: { animal: 'Este animal salió del predio' } });
-    expect(await registrarPesaje(uuidv7(), formulario(), PROPIETARIO, false, HOY)).toEqual({ ok: false, errores: { animal: 'El animal no está en este teléfono' } });
+    expect(await registrarPesaje(a.id, formulario(), PROPIETARIO, SIN_CONFIRMAR, HOY)).toEqual({ ok: false, errores: { animal: 'Este animal salió del predio' } });
+    expect(await registrarPesaje(uuidv7(), formulario(), PROPIETARIO, SIN_CONFIRMAR, HOY)).toEqual({ ok: false, errores: { animal: 'El animal no está en este teléfono' } });
   });
 
   it('un pesaje que llega entre la vista y el guardado cambia la comparación al guardar', async () => {
@@ -249,7 +284,7 @@ describe('PU-25 · 8. Transacción, autores y permisos', () => {
     expect(compararConAnterior(320, HOY, (await cargarParaPesaje(a.id, HOY))!.anterior)?.atipica).toBe(false);
     // ...pero llega de otro teléfono un pesaje de 250 kg de ayer: +70 kg en un día.
     await pesar(a.id, '2026-10-16', 250, 'cinta', TRABAJADOR.usuario_id);
-    expect(await registrarPesaje(a.id, formulario(), PROPIETARIO, false, HOY)).toEqual({ ok: false, requiereConfirmacion: true });
+    expect(await registrarPesaje(a.id, formulario(), PROPIETARIO, SIN_CONFIRMAR, HOY)).toEqual({ ok: false, requiereConfirmacion: 'variacion' });
   });
 
   it('la evolución nombra a quien registró cada pesaje', async () => {

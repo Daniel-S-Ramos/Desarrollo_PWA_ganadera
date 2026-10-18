@@ -52,17 +52,38 @@ El animal se verifica de nuevo **dentro de la transacción** que escribe.
 
 ## 5. Dos pesajes el mismo día (decisión C)
 
-Se admiten (por ejemplo, cinta y luego báscula). Al elegir una fecha que ya tiene pesaje se informa, sin
-bloquear: «Ya tiene un pesaje de esta fecha: 412 kg (cinta)». Entre dos pesajes del mismo día no se
-calcula ganancia diaria.
+Se admiten (por ejemplo, cinta y luego báscula), pero **con una confirmación propia**. Al elegir una fecha
+que ya tiene pesaje, aparece un aviso de atención con cada pesaje de esa fecha, su método y su autor:
+
+> ⚠ Z925 ya tiene un pesaje del 17 de octubre de 2026:
+> · 1.012 kg · cinta bovinométrica · registrado por Jose Ramos
+> Si es el mismo pesaje, no lo registre otra vez.
+> ☐ Es otro pesaje del mismo día
+
+**Guardar** queda inhabilitado hasta marcar la casilla, que se desmarca si cambia la fecha. Es independiente
+de la confirmación de la variación (sección 6): si las dos aplican, se piden las dos. La regla se repite al
+guardar, dentro de la transacción. Entre dos pesajes del mismo día no se calcula ganancia diaria.
+
+*Cambio del 2026-10-17 (PE-29):* el autor pidió que el aviso fuera más visible y tuviera una segunda
+confirmación, para que el ganadero esté seguro de no registrar dos veces el mismo pesaje. Antes era una
+línea informativa que no bloqueaba.
 
 ## 6. Diferencia, ganancia diaria y variación significativa (decisión D, CU-08 3a)
 
-Al escribir el peso se compara con el **último peso anterior a la fecha elegida**: el pesaje más reciente
-por fecha (a igual fecha, el registrado después) o, si no hay pesajes, el peso de compra o al nacer con su
-fecha (documento 16, sección 3.1).
+Al escribir el peso se compara con el **último peso anterior o del mismo día que la fecha elegida**: el
+pesaje más reciente por fecha (a igual fecha, el registrado después) o, si no hay pesajes, el peso de compra
+o al nacer con su fecha (documento 16, sección 3.1). **Nunca uno de fecha posterior**: si la fecha elegida es
+anterior al peso inicial, no hay con qué comparar.
 
-> 32 kg más que el 3 de octubre (12 días) · 2,7 kg por día
+El texto nombra con qué se compara y cuánto pesaba entonces:
+
+> Frente al peso de compra del 1 de octubre de 2026 (1.000 kg): +10 kg en 10 días, +1 kg por día
+> Frente al pesaje anterior del 11 de octubre de 2026 (1.010 kg): +2 kg en 6 días, +0,3 kg por día
+> Frente al pesaje anterior del 17 de octubre de 2026 (1.012 kg): +3 kg, el mismo día
+
+*Cambios del 2026-10-17 (PE-29):* el texto anterior, «10 kg más que el 1 de octubre (10 días) · 1 kg por
+día», no decía que el 1 de octubre era el peso de compra ni cuánto pesaba, y el autor no lo entendió. Además,
+un pesaje del 30 de septiembre se comparaba con la compra del 1 de octubre, posterior, y mostraba «(1 día)».
 
 **Se pide confirmación** cuando el cambio es atípico. Umbrales fijados por el autor el 2026-10-15:
 
@@ -74,7 +95,7 @@ fecha (documento 16, sección 3.1).
 
 Exactamente 2,0 o −2,0 kg/día no piden confirmación. El aviso:
 
-> ⚠ 80 kg más que el 3 de octubre (8 días): 10 kg por día. ¿Es correcto?
+> ⚠ Frente al pesaje anterior del 3 de octubre de 2026 (320 kg): +80 kg en 8 días, +10 kg por día. ¿Es correcto?
 > ☐ Confirmo que el peso es correcto
 
 Con el aviso, **Guardar** queda inhabilitado hasta marcar la casilla, que se desmarca si cambian el peso
@@ -130,8 +151,9 @@ cambia.
 | # | Qué verifica | Criterio de aprobación |
 |---|---|---|
 | 1 | Validaciones | Las reglas de la sección 4, todos los errores juntos |
-| 2 | Peso anterior | El pesaje más reciente antes de la fecha; si no hay, el peso inicial con su fecha |
-| 3 | Variación atípica | Más de 2,0 y menos de −2,0 kg/día piden confirmación; exactamente 2,0 y −2,0 no; mismo día con más de 10 % |
+| 2 | Peso anterior | El pesaje más reciente antes de la fecha; si no hay, el peso inicial con su fecha, nunca de fecha posterior |
+| 3 | Variación atípica | Más de 2,0 y menos de −2,0 kg/día piden confirmación; exactamente 2,0 y −2,0 no; mismo día con más de 10 %; el texto nombra la referencia |
+| 3b | Mismo día | Otro pesaje en la fecha exige su propia confirmación; con atípico, las dos |
 | 4 | Guardar | Sin confirmar un atípico no escribe; confirmado, sí; con autor, pendiente y en la cola |
 | 5 | Serie | Orden, peso inicial al principio, cambio, días, ganancia, mismo día, métodos distintos |
 | 6 | Resumen | Ganancia total y diaria promedio; un solo punto sin ganancia |

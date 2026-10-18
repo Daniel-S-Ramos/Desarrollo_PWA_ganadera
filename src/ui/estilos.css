@@ -975,3 +975,9 @@ a.boton {
   border-radius: 4px;
   background: var(--verde-oscuro);
 }
+
+/* Lista dentro de un aviso: los pesajes que ya tiene la fecha (documento técnico 24, sección 5). */
+.aviso__lista {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}

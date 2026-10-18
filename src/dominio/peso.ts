@@ -120,7 +120,10 @@ export function serieDePeso(animal: AnimalConPeso, pesajes: readonly PesajeSerie
  */
 export function pesoAnterior(animal: AnimalConPeso, pesajes: readonly PesajeSerie[], fecha: FechaPredio): PuntoPeso | null {
   const previos = serieDePeso(animal, pesajes.filter((p) => p.fecha <= fecha)).filter((p) => p.id !== null);
-  return previos.at(-1) ?? puntoInicial(animal);
+  const inicial = puntoInicial(animal);
+  // El peso inicial tampoco puede ser de una fecha posterior (PE-29: un pesaje del 30 de septiembre se
+  // comparaba con la compra del 1 de octubre, «(1 día)»).
+  return previos.at(-1) ?? (inicial && (inicial.fecha === null || inicial.fecha <= fecha) ? inicial : null);
 }
 
 function redondear(valor: number): number {
@@ -148,12 +151,20 @@ export function compararConAnterior(peso: number, fecha: FechaPredio, anterior: 
   return { diferencia, dias, gananciaDiaria: redondear(exacta), atipica: exacta > GANANCIA_DIARIA_MAXIMA || exacta < GANANCIA_DIARIA_MINIMA };
 }
 
-/** «32 kg más que el 3 de octubre (12 días) · 2,7 kg por día». */
+/** «−3» con el signo menos tipográfico, «+10», «0». */
+function conSigno(valor: number): string {
+  return valor === 0 ? '0' : `${valor > 0 ? '+' : '−'}${formatearKg(Math.abs(valor))}`;
+}
+
+/**
+ * «Frente al peso de compra del 1 de octubre de 2026 (1.000 kg): +10 kg en 10 días, 1 kg por día». Nombra
+ * con qué se compara y cuánto pesaba: «10 kg más que el 1 de octubre» no se entendía (PE-29).
+ */
 export function describirComparacion(c: Comparacion, anterior: PuntoPeso): string {
-  const cantidad = c.diferencia === 0 ? 'El mismo peso' : `${formatearKg(Math.abs(c.diferencia))} kg ${c.diferencia > 0 ? 'más' : 'menos'}`;
-  const cuando = c.dias === 0 ? 'mismo día' : c.dias === 1 ? '1 día' : `${c.dias} días`;
-  const base = `${cantidad} que el ${formatearFecha(anterior.fecha!)} (${cuando})`;
-  return c.gananciaDiaria === null ? base : `${base} · ${formatearKg(c.gananciaDiaria)} kg por día`;
+  const referencia = anterior.id === null ? anterior.etiqueta.toLowerCase() : 'pesaje anterior';
+  const base = `Frente al ${referencia} del ${formatearFecha(anterior.fecha!)} (${formatearKg(anterior.kg)} kg): ${conSigno(c.diferencia)} kg`;
+  if (c.gananciaDiaria === null) return `${base}, el mismo día`;
+  return `${base} en ${c.dias === 1 ? '1 día' : `${c.dias} días`}, ${conSigno(c.gananciaDiaria)} kg por día`;
 }
 
 /** 412,5: la coma decimal de Colombia. */

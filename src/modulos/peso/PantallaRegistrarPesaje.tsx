@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { consulta } from '../../datos/repositorio';
-import { fechaDelPredio } from '../../dominio/fechas';
+import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { compararConAnterior, describirComparacion, formatearKg, leerPeso, NOMBRE_METODO, validarPesaje, type FormularioPesaje } from '../../dominio/peso';
 import { METODOS_PESAJE, type RegistroLocal } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
@@ -38,6 +38,8 @@ function Formulario({ animal, identidad }: { animal: RegistroLocal<'animal'>; id
   const [intentado, setIntentado] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [faltaConfirmar, setFaltaConfirmar] = useState(false);
+  // Segunda confirmación: otro pesaje en una fecha que ya tiene uno (sección 5, pedida en PE-29).
+  const [confirmadoMismoDia, setConfirmadoMismoDia] = useState(false);
   const datos = useLiveQuery(() => cargarParaPesaje(animal.id, formulario.fecha), [animal.id, formulario.fecha]);
   const meta = useLiveQuery(() => metaDeGanancia(), [], null);
 
@@ -48,6 +50,7 @@ function Formulario({ animal, identidad }: { animal: RegistroLocal<'animal'>; id
       setConfirmado(false);
       setFaltaConfirmar(false);
     }
+    if ('fecha' in cambios) setConfirmadoMismoDia(false);
   };
 
   const validacion = datos ? validarPesaje(formulario, datos.contexto, hoy) : null;
@@ -56,17 +59,21 @@ function Formulario({ animal, identidad }: { animal: RegistroLocal<'animal'>; id
   const comparacion = peso !== null && datos ? compararConAnterior(peso, formulario.fecha, datos.anterior) : null;
   const atipica = comparacion?.atipica === true;
   const bajoMeta = meta !== null && comparacion?.gananciaDiaria != null && comparacion.gananciaDiaria < meta;
+  const hayMismoDia = (datos?.mismoDia.length ?? 0) > 0;
+  const faltaAlgunaConfirmacion = (atipica && !confirmado) || (hayMismoDia && !confirmadoMismoDia);
 
   async function guardar(e: FormEvent) {
     e.preventDefault();
     setIntentado(true);
-    if (!validacion?.ok || (atipica && !confirmado)) return;
+    if (!validacion?.ok || faltaAlgunaConfirmacion) return;
     setGuardando(true);
     try {
-      const r = await registrarPesaje(animal.id, formulario, identidad, confirmado, hoy);
+      const r = await registrarPesaje(animal.id, formulario, identidad, { variacion: confirmado, mismoDia: confirmadoMismoDia }, hoy);
       if (r.ok) void navegar(`/animales/${animal.id}?peso=1`);
       else if ('requiereConfirmacion' in r) {
-        setConfirmado(false);
+        // Llegó un pesaje de otro teléfono entre la vista y el guardado.
+        if (r.requiereConfirmacion === 'variacion') setConfirmado(false);
+        else setConfirmadoMismoDia(false);
         setFaltaConfirmar(true);
       }
     } finally {
@@ -134,7 +141,7 @@ function Formulario({ animal, identidad }: { animal: RegistroLocal<'animal'>; id
       )}
       {faltaConfirmar && (
         <p className="campo__error" role="alert">
-          Mientras escribía cambió el peso anterior. Revise la diferencia y confirme para guardar.
+          Mientras escribía llegó otro pesaje de este animal. Revise los avisos y confirme para guardar.
         </p>
       )}
 
@@ -156,11 +163,33 @@ function Formulario({ animal, identidad }: { animal: RegistroLocal<'animal'>; id
         {errores.fecha && <span className="campo__error">{errores.fecha}</span>}
       </label>
 
-      {/* Sección 5: otro pesaje en la misma fecha se informa sin bloquear. */}
-      {datos && datos.mismoDia.length > 0 && (
-        <p className="texto-secundario">
-          Ya tiene un pesaje de esta fecha: {formatearKg(datos.mismoDia[0]!.peso)} kg ({NOMBRE_METODO[datos.mismoDia[0]!.metodo].toLowerCase()}).
-        </p>
+      {/* Sección 5: otro pesaje en la misma fecha, visible y con su propia confirmación (PE-29). */}
+      {datos && hayMismoDia && (
+        <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
+          <p>
+            ⚠ {animal.codigo_chapeta} ya tiene {datos.mismoDia.length === 1 ? 'un pesaje' : `${datos.mismoDia.length} pesajes`} del{' '}
+            {formatearFecha(formulario.fecha)}:
+          </p>
+          <ul className="aviso__lista">
+            {datos.mismoDia.map(({ pesaje, autor }) => (
+              <li key={pesaje.id}>
+                {formatearKg(pesaje.peso)} kg · {NOMBRE_METODO[pesaje.metodo].toLowerCase()} · registrado por {autor}
+              </li>
+            ))}
+          </ul>
+          <p className="aviso__detalle">Si es el mismo pesaje, no lo registre otra vez.</p>
+          <label className="casilla">
+            <input
+              type="checkbox"
+              checked={confirmadoMismoDia}
+              onChange={(e) => {
+                setConfirmadoMismoDia(e.target.checked);
+                setFaltaConfirmar(false);
+              }}
+            />
+            Es otro pesaje del mismo día
+          </label>
+        </div>
       )}
 
       {intentado && validacion && !validacion.ok && (
@@ -170,7 +199,7 @@ function Formulario({ animal, identidad }: { animal: RegistroLocal<'animal'>; id
       )}
 
       <div className="acciones-formulario">
-        <button className="boton boton--principal boton--ancho" type="submit" disabled={guardando || (atipica && !confirmado)}>
+        <button className="boton boton--principal boton--ancho" type="submit" disabled={guardando || faltaAlgunaConfirmacion}>
           {guardando ? 'Guardando…' : 'Guardar pesaje'}
         </button>
         <Link className="boton boton--secundario boton--ancho" to={`/animales/${animal.id}`}>
