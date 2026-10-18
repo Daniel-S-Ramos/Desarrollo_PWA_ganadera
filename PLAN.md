@@ -99,7 +99,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | Paso | Contenido | Estado |
 |---|---|---|
 | 4.1 | Registro de pesaje y evolución con ganancia diaria (CU-08, CU-09) | ✅ |
-| 4.2 | Registro de parto con resultado, cría y genealogía (CU-10, CU-11) | ⬜ |
+| 4.2 | Registro de parto con resultado, cría y genealogía (CU-10, CU-11) | ✅ |
 | 4.3 | Corrección y anulación con valor vigente (CU-17) | ⬜ |
 | 4.4 | Consulta de correcciones (CU-18) | ⬜ |
 | 4.5 | Pruebas y cierre de iteración | ⬜ |
