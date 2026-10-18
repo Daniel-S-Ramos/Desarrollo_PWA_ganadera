@@ -64,7 +64,8 @@ export function MarcaCorreccion<T extends { id: Uuid }>({ entidad, vigente }: { 
     return (
       <p className="marca marca--anulado">
         Anulado: {NOMBRE_MOTIVO[a.motivo].toLowerCase()}, por {autor(a.autor_id)} el {formatearInstante(a.creado_en)}
-        {a.nota ? `. ${a.nota}` : ''}
+        {/* Separado con « · »: la hora ya termina en «a. m.» y quedaba «a. m.. Ninguna» (PE-31). */}
+        {a.nota ? ` · ${a.nota}` : ''}
       </p>
     );
   }
