@@ -3,6 +3,8 @@
  * Especificación: docs/tecnica/19-destino-productivo.md
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { animalVigente, leerVigentes, vigentes } from '../../datos/vigentes';
+import type { Vigente } from '../../dominio/vigente';
 import { destinoVigente, historialDestino, validarCambioDestino, type ContextoDestino, type ErroresDestino, type FormularioDestino } from '../../dominio/destino';
 import { fechaDelPredio } from '../../dominio/fechas';
 import type { FechaPredio, RegistroLocal, Uuid } from '../../dominio/tipos';
@@ -17,10 +19,11 @@ export function fechaDeLlegada(animal: Pick<RegistroLocal<'animal'>, 'fecha_ingr
 }
 
 async function contextoDe(animalId: Uuid): Promise<{ registros: RegistroDestinoLocal[]; contexto: ContextoDestino } | null> {
-  const animal = await consulta.animal.get(animalId);
+  // Datos vigentes y destinos sin anular (documento técnico 26, sección 6.3).
+  const animal = await animalVigente(animalId);
   if (!animal) return null;
   const [registros, salidas] = await Promise.all([
-    consulta.destino_productivo.where('animal_id').equals(animalId).toArray(),
+    consulta.destino_productivo.where('animal_id').equals(animalId).toArray().then((r) => vigentes('destino_productivo', r)),
     consulta.salida.where('animal_id').equals(animalId).count(),
   ]);
   return { registros, contexto: { vigente: destinoVigente(registros), retirado: salidas > 0, llegada: fechaDeLlegada(animal) } };
@@ -30,16 +33,34 @@ export interface EntradaHistorial {
   registro: RegistroDestinoLocal;
   anterior: RegistroDestinoLocal | null;
   autor: string;
+  /** Las marcas de anulado (documento técnico 26, sección 6.4). */
+  vigente: Vigente<RegistroDestinoLocal>;
 }
 
-/** El historial del animal con el nombre de quien asignó cada destino (HU-13 criterio 4, HU-15). */
+/**
+ * El historial del animal con el nombre de quien asignó cada destino (HU-13 criterio 4, HU-15). El «anterior»
+ * se calcula sin los anulados; los anulados se listan al final, marcados (documento técnico 26, sección 6).
+ */
 export async function cargarHistorialDestino(animalId: Uuid): Promise<EntradaHistorial[]> {
-  const [registros, usuarios] = await Promise.all([
-    consulta.destino_productivo.where('animal_id').equals(animalId).toArray(),
+  const [todos, usuarios] = await Promise.all([
+    consulta.destino_productivo.where('animal_id').equals(animalId).toArray().then((r) => leerVigentes('destino_productivo', r)),
     consulta.usuario.toArray(),
   ]);
   const nombres = new Map(usuarios.map((u) => [u.id, u.nombre]));
-  return historialDestino(registros).map((e) => ({ ...e, autor: nombres.get(e.registro.autor_id) ?? 'un usuario que ya no está en el predio' }));
+  const autor = (id: Uuid) => nombres.get(id) ?? 'un usuario que ya no está en el predio';
+  const porId = new Map(todos.map((v) => [v.registro.id, v]));
+  const vigentesDelAnimal = historialDestino(todos.filter((v) => v.anulacion === null).map((v) => v.registro)).map((e) => ({
+    ...e,
+    autor: autor(e.registro.autor_id),
+    vigente: porId.get(e.registro.id)!,
+  }));
+  const anulados = historialDestino(todos.filter((v) => v.anulacion !== null).map((v) => v.registro)).map((e) => ({
+    registro: e.registro,
+    anterior: null,
+    autor: autor(e.registro.autor_id),
+    vigente: porId.get(e.registro.id)!,
+  }));
+  return [...vigentesDelAnimal, ...anulados];
 }
 
 /** El contexto que necesita el formulario para validar mientras se escribe. */

@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../datos/db';
 import { crear } from '../../datos/repositorio';
 import { uuidv7 } from '../../datos/uuidv7';
-import { compararConPromedio, leerLitros, litrosVigentes, promedioReciente, restarDias, validarOrdeno } from '../../dominio/leche';
+import { compararConPromedio, leerLitros, promedioReciente, restarDias, validarOrdeno } from '../../dominio/leche';
+import { soloVigentes, type CorreccionVigente } from '../../dominio/vigente';
 import type { DatosNuevos, Sexo } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { consolidarFicha } from '../consulta/ficha';
@@ -247,17 +248,18 @@ describe('PU-23 · 7. Quién puede reemplazar (sección 7, apartado 3.9.5)', () 
 });
 
 describe('PU-23 · 8. Valor vigente (sección 8)', () => {
+  // Desde el paso 4.3a, la regla general del valor vigente (documento técnico 26, sección 6) sustituye a la de los litros.
   it('prevalece la corrección más reciente; a igual instante, la de mayor UUID', () => {
-    const base = { entidad_afectada: 'produccion_leche' as const, registro_id: 'r1', tipo: 'correccion' as const, campo: 'litros' };
+    const base = { entidad_afectada: 'produccion_leche' as const, registro_id: 'r1', tipo: 'correccion' as const, campo: 'litros', valor_anterior: null, motivo: 'registro_duplicado' as const, nota: null, autor_id: 'a' };
     const correcciones = [
       { ...base, id: '01', valor_nuevo: '11', creado_en: '2026-10-14T10:00:00Z' },
       { ...base, id: '03', valor_nuevo: '13', creado_en: '2026-10-14T09:00:00Z' },
       { ...base, id: '02', valor_nuevo: '12', creado_en: '2026-10-14T10:00:00Z' },
       { ...base, id: '04', valor_nuevo: '99', campo: 'fecha', creado_en: '2026-10-14T11:00:00Z' },
       { ...base, id: '05', valor_nuevo: '98', registro_id: 'r2', creado_en: '2026-10-14T11:00:00Z' },
-    ];
-    expect(litrosVigentes([{ id: 'r1', litros: 10 }], correcciones).get('r1')).toBe(12);
-    expect(litrosVigentes([{ id: 'r1', litros: 10 }], []).get('r1')).toBe(10);
+    ] satisfies CorreccionVigente[];
+    expect(soloVigentes('produccion_leche', [{ id: 'r1', litros: 10 }], correcciones)[0]?.litros).toBe(12);
+    expect(soloVigentes('produccion_leche', [{ id: 'r1', litros: 10 }], [])[0]?.litros).toBe(10);
   });
 
   it('la ficha y la ronda muestran el valor vigente', async () => {

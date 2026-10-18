@@ -3,12 +3,11 @@
  * Especificación: docs/tecnica/16-ficha-del-animal.md
  *
  * Las reglas de cada dato son funciones puras; consolidarFicha solo reúne los registros y las aplica.
- * Cuando la Iteración 4 construya las correcciones, el valor vigente de cada dato se calculará aquí;
- * el de los litros ya se aplica (documento técnico 22, sección 8).
+ * Todo con valores vigentes y sin anulados (documento técnico 26, sección 6.3).
  */
 import { consulta, reducidasLocales } from '../../datos/repositorio';
+import { animalVigente, vigentes as soloVigentes } from '../../datos/vigentes';
 import { fotografiasVigentes } from '../../dominio/fotografias';
-import { litrosVigentes } from '../../dominio/leche';
 import {
   TIPOS_FOTOGRAFIA,
   type Destino,
@@ -122,14 +121,15 @@ function progenitor(id: Uuid | null, externo: string | null, chapetas: ReadonlyM
 
 /** Reúne la ficha de un animal desde la base local. undefined si el animal no está en el teléfono. */
 export async function consolidarFicha(animalId: Uuid): Promise<FichaAnimal | undefined> {
-  const animal = await consulta.animal.get(animalId);
+  // Datos y eventos con sus valores vigentes, sin los anulados (documento técnico 26, sección 6.3).
+  const animal = await animalVigente(animalId);
   if (!animal) return undefined;
 
   const [pesajes, eventos, ordenos, destinos, fotografias, salidas, usuarios, reducidas, medicamentos] = await Promise.all([
-    consulta.pesaje.where('animal_id').equals(animalId).toArray(),
-    consulta.evento_sanitario.where('animal_id').equals(animalId).toArray(),
-    consulta.produccion_leche.where('animal_id').equals(animalId).toArray(),
-    consulta.destino_productivo.where('animal_id').equals(animalId).toArray(),
+    consulta.pesaje.where('animal_id').equals(animalId).toArray().then((r) => soloVigentes('pesaje', r)),
+    consulta.evento_sanitario.where('animal_id').equals(animalId).toArray().then((r) => soloVigentes('evento_sanitario', r)),
+    consulta.produccion_leche.where('animal_id').equals(animalId).toArray().then((r) => soloVigentes('produccion_leche', r)),
+    consulta.destino_productivo.where('animal_id').equals(animalId).toArray().then((r) => soloVigentes('destino_productivo', r)),
     consulta.fotografia.where('animal_id').equals(animalId).toArray(),
     consulta.salida.where('animal_id').equals(animalId).count(),
     consulta.usuario.toArray(),
@@ -146,10 +146,6 @@ export async function consolidarFicha(animalId: Uuid): Promise<FichaAnimal | und
 
   const vacuna = ultimaVacuna(eventos);
   const ordeno = masReciente(ordenos, (o) => o.fecha);
-  // Los litros vigentes: con su corrección más reciente aplicada (documento técnico 22, sección 8).
-  const litrosOrdeno = ordeno
-    ? (litrosVigentes([ordeno], await consulta.correccion.where('registro_id').equals(ordeno.id).toArray()).get(ordeno.id) ?? ordeno.litros)
-    : null;
   const destino = masReciente(destinos, (d) => d.desde);
   const vigentes = fotografiasVigentes(fotografias);
 
@@ -170,7 +166,7 @@ export async function consolidarFicha(animalId: Uuid): Promise<FichaAnimal | und
     vacuna: vacuna
       ? { nombre: medicamentos.find((m) => m.id === vacuna.medicamento_id)?.nombre ?? 'Vacuna', fecha: vacuna.fecha }
       : null,
-    leche: animal.sexo === 'macho' ? null : ordeno ? { litros: litrosOrdeno!, fecha: ordeno.fecha } : 'sin_registros',
+    leche: animal.sexo === 'macho' ? null : ordeno ? { litros: ordeno.litros, fecha: ordeno.fecha } : 'sin_registros',
     destino: destino ? { destino: destino.destino, desde: destino.desde } : null,
 
     madre: progenitor(animal.madre_id, animal.madre_externa, chapetas),

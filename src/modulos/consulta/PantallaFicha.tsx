@@ -20,6 +20,8 @@ import { CambiarDestino } from '../destino/CambiarDestino';
 import { cargarContextoDestino } from '../destino/destino';
 import { HistorialDestino } from '../destino/HistorialDestino';
 import { AvisoChapeta } from '../identificacion/AvisoChapeta';
+import { cargarVigente } from '../correcciones/correcciones';
+import { EnlaceCorregir, MarcaCorreccion } from '../correcciones/MarcaCorreccion';
 import { EvolucionPeso } from '../peso/EvolucionPeso';
 import { ControlReproductivo } from '../reproduccion/ControlReproductivo';
 import { puedeVerCosto } from '../sanidad/eventos';
@@ -131,6 +133,9 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
         </p>
       </section>
 
+      {/* Documento técnico 26, sección 3: los datos del animal se corrigen (la chapeta no). */}
+      <DatosCorregidos animalId={ficha.id} identidad={identidad} />
+
       {/* HU-15: quién registró y cuándo, al pie (3.10.4.4). */}
       <p className="ficha__autoria">
         {/* Sin punto final: en Android la hora ya termina en «p. m.» y quedaría «p. m..» (PE-20). */}
@@ -145,6 +150,18 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
  * Registro y evolución del peso, para ambos perfiles (documento técnico 24, sección 3; HU-02.4). Al volver
  * de registrar un pesaje (?peso=1), la evolución aparece abierta.
  */
+/** La marca de los datos corregidos del animal y la opción de corregirlos. */
+function DatosCorregidos({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
+  const vigente = useLiveQuery(() => cargarVigente('animal', animalId), [animalId]);
+  if (!vigente) return null;
+  return (
+    <div className="ficha__correccion">
+      <MarcaCorreccion entidad="animal" vigente={vigente} />
+      <EnlaceCorregir entidad="animal" registro={vigente.original} identidad={identidad} texto="Corregir datos del animal" />
+    </div>
+  );
+}
+
 /**
  * Partos de la vaca: registrar (ambos perfiles, CU-10) y control reproductivo (solo el propietario, CU-11).
  * Documento técnico 25, sección 3. Al volver de registrar un parto sin cría (?reproduccion=1), el control
@@ -170,7 +187,7 @@ function SeccionReproduccion({ animalId, identidad }: { animalId: string; identi
           </button>
         )}
       </div>
-      {verControl && <ControlReproductivo vacaId={animalId} />}
+      {verControl && <ControlReproductivo vacaId={animalId} identidad={identidad} />}
     </>
   );
 }
@@ -194,7 +211,7 @@ function SeccionPeso({ animalId, identidad }: { animalId: string; identidad: Ide
           </button>
         )}
       </div>
-      {verEvolucion && <EvolucionPeso animalId={animalId} puedeRegistrar={puedeRegistrar} />}
+      {verEvolucion && <EvolucionPeso animalId={animalId} puedeRegistrar={puedeRegistrar} identidad={identidad} />}
     </>
   );
 }
@@ -217,7 +234,7 @@ function SeccionSanidad({ animalId, identidad }: { animalId: string; identidad: 
           </button>
         )}
       </div>
-      {verHistorial && <HistorialSanitario animalId={animalId} verCosto={puedeVerCosto(identidad.perfil)} puedeRegistrar={puedeRegistrar} />}
+      {verHistorial && <HistorialSanitario animalId={animalId} verCosto={puedeVerCosto(identidad.perfil)} puedeRegistrar={puedeRegistrar} identidad={identidad} />}
     </>
   );
 }
@@ -241,7 +258,7 @@ function SeccionDestino({ animalId, identidad, hoy }: { animalId: string; identi
       {abierto === 'cambiar' && contexto && (
         <CambiarDestino animalId={animalId} contexto={contexto} identidad={identidad} hoy={hoy} alTerminar={() => setAbierto(null)} />
       )}
-      {abierto === 'historial' && <HistorialDestino animalId={animalId} />}
+      {abierto === 'historial' && <HistorialDestino animalId={animalId} identidad={identidad} />}
     </>
   );
 }

@@ -1,8 +1,9 @@
 /**
- * Producción de leche: litros, valor vigente, promedio y comparación (RF-10, HU-04, apartado 3.8.6).
- * Especificación: docs/tecnica/22-ronda-de-ordeno.md, secciones 6 y 8
+ * Producción de leche: litros, promedio y comparación (RF-10, HU-04, apartado 3.8.6).
+ * Especificación: docs/tecnica/22-ronda-de-ordeno.md, sección 6. El valor vigente de los litros, adelantado
+ * en el paso 3.5, pasó a la regla general (docs/tecnica/26-correccion-y-anulacion.md, sección 6).
  */
-import type { Correccion, FechaPredio, ProduccionLeche, Uuid } from './tipos';
+import type { FechaPredio } from './tipos';
 
 export const LITROS_MAXIMO = 60;
 /** Si el parámetro dias_promedio_produccion no está en el teléfono (sección 6.2). */
@@ -37,32 +38,6 @@ export function validarOrdeno(texto: string, fecha: string, hoy: FechaPredio): {
   else if (fecha > hoy) errores.fecha = 'La fecha no puede ser posterior a hoy';
   if (Object.keys(errores).length > 0) return { ok: false, errores };
   return { ok: true, litros: litros! };
-}
-
-// ---------------------------------------------------------------------------
-// Valor vigente: sección 8
-// ---------------------------------------------------------------------------
-
-type CorreccionDeLitros = Pick<Correccion, 'id' | 'entidad_afectada' | 'registro_id' | 'tipo' | 'campo' | 'valor_nuevo' | 'creado_en'>;
-
-/**
- * Los litros vigentes de cada registro: el original con su corrección de litros más reciente aplicada
- * (mayor creado_en y, a igual instante, mayor UUID). Las anulaciones llegan con el paso 4.3.
- */
-export function litrosVigentes(registros: readonly Pick<ProduccionLeche, 'id' | 'litros'>[], correcciones: readonly CorreccionDeLitros[]): Map<Uuid, number> {
-  const ultima = new Map<Uuid, CorreccionDeLitros>();
-  for (const c of correcciones) {
-    if (c.entidad_afectada !== 'produccion_leche' || c.tipo !== 'correccion' || c.campo !== 'litros' || c.valor_nuevo === null) continue;
-    const actual = ultima.get(c.registro_id);
-    if (!actual || c.creado_en > actual.creado_en || (c.creado_en === actual.creado_en && c.id > actual.id)) ultima.set(c.registro_id, c);
-  }
-  return new Map(
-    registros.map((r) => {
-      const correccion = ultima.get(r.id);
-      const corregido = correccion ? Number(correccion.valor_nuevo) : Number.NaN;
-      return [r.id, Number.isNaN(corregido) ? r.litros : corregido];
-    }),
-  );
 }
 
 // ---------------------------------------------------------------------------

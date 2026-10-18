@@ -34,3 +34,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 23 | [Consulta de producción diaria, semanal y mensual](23-consulta-de-produccion.md) | 3.6 | RF-11 · CU-07 · HU-04.2 |
 | 24 | [Pesaje y evolución del peso](24-pesaje-y-evolucion.md) | 4.1 | RF-13 · RF-14 · CU-08 · CU-09 · HU-05 |
 | 25 | [Parto, control reproductivo y chapeta pendiente de poner](25-parto-y-control-reproductivo.md) | 4.2 | RF-16 · RF-17 · CU-10 · CU-11 · HU-12 |
+| 26 | [Corrección, anulación, valor vigente y resolución de conflictos](26-correccion-y-anulacion.md) | 4.3 | RF-31 · CU-17 · HU-17 · Tabla 21 |

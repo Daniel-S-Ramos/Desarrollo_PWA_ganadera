@@ -4,6 +4,8 @@
  * Especificación: docs/tecnica/20-registro-sanitario.md · docs/tecnica/21-advertencia-por-repeticion.md
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { animalVigente, leerVigentes, vigentes } from '../../datos/vigentes';
+import type { Vigente } from '../../dominio/vigente';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { evaluarRepeticion, type Repeticion } from '../../dominio/repeticion';
 import { copiarEvento, ordenarHistorial, ultimaDosis, validarEvento, type ContextoEvento, type ErroresEvento, type FormularioEvento } from '../../dominio/sanidad';
@@ -18,11 +20,17 @@ export function puedeVerCosto(perfil: Perfil): boolean {
   return puedeUsar(perfil, 'CU-14');
 }
 
+/** Un medicamento con su tipo, unidad e intervalo vigentes (documento técnico 26, sección 6.3). */
+async function medicamentoVigente(id: Uuid): Promise<RegistroLocal<'medicamento'> | undefined> {
+  const medicamento = await consulta.medicamento.get(id);
+  return medicamento ? (await vigentes('medicamento', [medicamento]))[0] : undefined;
+}
+
 async function contextoDe(animalId: Uuid, medicamentoId: Uuid | null): Promise<ContextoEvento | null> {
   const [animal, salidas, medicamento] = await Promise.all([
-    consulta.animal.get(animalId),
+    animalVigente(animalId),
     consulta.salida.where('animal_id').equals(animalId).count(),
-    medicamentoId ? consulta.medicamento.get(medicamentoId) : Promise.resolve(undefined),
+    medicamentoId ? medicamentoVigente(medicamentoId) : Promise.resolve(undefined),
   ]);
   if (!animal) return null;
   return { nacimiento: animal.fecha_nacimiento, retirado: salidas > 0, medicamentoExiste: !!medicamento };
@@ -35,12 +43,13 @@ export function cargarContextoEvento(animalId: Uuid, medicamentoId: Uuid | null)
 
 /** La última dosis de un medicamento en el predio, para precargar el campo (sección 5.1). */
 export async function ultimaDosisDe(medicamentoId: Uuid): Promise<number | null> {
-  return ultimaDosis(await consulta.evento_sanitario.toArray(), medicamentoId);
+  return ultimaDosis(await vigentes('evento_sanitario', await consulta.evento_sanitario.toArray()), medicamentoId);
 }
 
 /** El formulario del siguiente animal de una ronda, copiado de un evento; null si no está en el teléfono (sección 7). */
 export async function formularioComo(eventoId: Uuid, perfil: Perfil): Promise<FormularioEvento | null> {
-  const evento = await consulta.evento_sanitario.get(eventoId);
+  const original = await consulta.evento_sanitario.get(eventoId);
+  const evento = original ? (await vigentes('evento_sanitario', [original]))[0] : undefined;
   return evento ? copiarEvento(evento, puedeVerCosto(perfil)) : null;
 }
 
@@ -55,9 +64,12 @@ const FECHA = /^\d{4}-\d{2}-\d{2}$/;
  * registro, para poder repetirse dentro de ella (sección 5).
  */
 async function repeticionDe(animalId: Uuid, medicamentoId: Uuid, fecha: FechaPredio): Promise<{ repeticion: Repeticion<EventoLocal>; intervalo: number } | null> {
-  const medicamento = await consulta.medicamento.get(medicamentoId);
+  const medicamento = await medicamentoVigente(medicamentoId);
   if (!medicamento || !FECHA.test(fecha) || Number.isNaN(Date.parse(fecha))) return null;
-  const aplicaciones = (await consulta.evento_sanitario.where('animal_id').equals(animalId).toArray()).filter((e) => e.medicamento_id === medicamentoId);
+  // Sin anulados, con el medicamento y la fecha vigentes (documento técnico 26, sección 6.3).
+  const aplicaciones = (await vigentes('evento_sanitario', await consulta.evento_sanitario.where('animal_id').equals(animalId).toArray())).filter(
+    (e) => e.medicamento_id === medicamentoId,
+  );
   return { repeticion: evaluarRepeticion(aplicaciones, fecha, medicamento.intervalo_advertencia_dias), intervalo: medicamento.intervalo_advertencia_dias };
 }
 
@@ -136,7 +148,10 @@ export async function registrarEvento(
 }
 
 export interface EntradaHistorialSanitario {
+  /** Con sus valores vigentes. */
   evento: EventoLocal;
+  /** Las marcas de corregido y anulado (documento técnico 26, sección 6.4). */
+  vigente: Vigente<EventoLocal>;
   medicamento: string;
   unidad: UnidadDosis | undefined;
   autor: string;
@@ -145,16 +160,19 @@ export interface EntradaHistorialSanitario {
 /** El historial sanitario del animal, del más reciente al más antiguo, con nombres (sección 8). */
 export async function cargarHistorialSanitario(animalId: Uuid): Promise<EntradaHistorialSanitario[]> {
   const [eventos, medicamentos, usuarios] = await Promise.all([
-    consulta.evento_sanitario.where('animal_id').equals(animalId).toArray(),
-    consulta.medicamento.toArray(),
+    consulta.evento_sanitario.where('animal_id').equals(animalId).toArray().then((r) => leerVigentes('evento_sanitario', r)),
+    consulta.medicamento.toArray().then((r) => vigentes('medicamento', r)),
     consulta.usuario.toArray(),
   ]);
   const porId = new Map(medicamentos.map((m) => [m.id, m]));
   const nombres = new Map(usuarios.map((u) => [u.id, u.nombre]));
-  return ordenarHistorial(eventos).map((evento) => {
+  const porEvento = new Map(eventos.map((v) => [v.registro.id, v]));
+  // Los anulados siguen en el historial, marcados (apartado 3.9.5).
+  return ordenarHistorial(eventos.map((v) => v.registro)).map((evento) => {
     const medicamento = porId.get(evento.medicamento_id);
     return {
       evento,
+      vigente: porEvento.get(evento.id)!,
       medicamento: medicamento?.nombre ?? 'Medicamento que aún no llega al teléfono',
       unidad: medicamento?.unidad,
       autor: nombres.get(evento.autor_id) ?? 'un usuario que ya no está en el predio',

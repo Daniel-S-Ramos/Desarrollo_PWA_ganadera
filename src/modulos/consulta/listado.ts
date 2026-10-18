@@ -7,6 +7,7 @@
  * animales, filtrar en memoria mientras se escribe es instantáneo y no exige índices adicionales.
  */
 import { consulta, reducidasLocales } from '../../datos/repositorio';
+import { animalesVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
 import { vistaPrincipal } from '../../dominio/fotografias';
 import type { Destino, EstadoSync, FechaPredio, Sexo, Uuid } from '../../dominio/tipos';
@@ -94,9 +95,9 @@ export function elegirFoto(
 /** Todos los animales del teléfono con lo que necesita cada fila. */
 export async function cargarListado(): Promise<AnimalListado[]> {
   const [animales, salidas, destinos, fotografias, reducidas, colocaciones] = await Promise.all([
-    consulta.animal.toArray(),
+    animalesVigentes(),
     consulta.salida.toArray(),
-    consulta.destino_productivo.toArray(),
+    consulta.destino_productivo.toArray().then((r) => vigentes('destino_productivo', r)),
     consulta.fotografia.toArray(),
     reducidasLocales(),
     consulta.colocacion_chapeta.toArray(),

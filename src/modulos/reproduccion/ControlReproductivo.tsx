@@ -4,6 +4,8 @@ import { formatearFecha } from '../../dominio/fechas';
 import { NOMBRE_RESULTADO } from '../../dominio/reproduccion';
 import type { Uuid } from '../../dominio/tipos';
 import { cargarControlReproductivo } from './partos';
+import { EnlaceCorregir, MarcaCorreccion } from '../correcciones/MarcaCorreccion';
+import type { Identidad } from '../../sesion/token';
 
 function meses(valor: number): string {
   return `${valor.toLocaleString('es-CO', { maximumFractionDigits: 1 })} ${valor === 1 ? 'mes' : 'meses'}`;
@@ -13,7 +15,7 @@ function meses(valor: number): string {
  * Control reproductivo de la vaca (CU-11, RF-17, HU-12.3). Solo el propietario. Especificación:
  * docs/tecnica/25-parto-y-control-reproductivo.md, sección 8.
  */
-export function ControlReproductivo({ vacaId }: { vacaId: Uuid }) {
+export function ControlReproductivo({ vacaId, identidad }: { vacaId: Uuid; identidad: Identidad }) {
   const control = useLiveQuery(() => cargarControlReproductivo(vacaId), [vacaId]);
   if (!control) return <p className="texto-secundario">Cargando…</p>;
 
@@ -43,9 +45,27 @@ export function ControlReproductivo({ vacaId }: { vacaId: Uuid }) {
                   </p>
                 )}
                 {t.parto.observacion && <p className="texto-secundario">{t.parto.observacion}</p>}
+                {control.vigentes.get(t.parto.id) && <MarcaCorreccion entidad="parto" vigente={control.vigentes.get(t.parto.id)!} />}
+                <EnlaceCorregir entidad="parto" registro={t.parto} identidad={identidad} />
               </li>
             ))}
           </ol>
+
+          {control.anulados.length > 0 && (
+            <>
+              <h3>Partos anulados</h3>
+              <ul className="historial">
+                {control.anulados.map(({ vigente, autor }) => (
+                  <li key={vigente.registro.id} className="historial__entrada historial__entrada--anulada">
+                    <p>
+                      {formatearFecha(vigente.registro.fecha)} · {NOMBRE_RESULTADO[vigente.registro.resultado]} · registrado por {autor}
+                    </p>
+                    <MarcaCorreccion entidad="parto" vigente={vigente} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           <h3>Descendencia</h3>
           {control.crias.length === 0 ? (

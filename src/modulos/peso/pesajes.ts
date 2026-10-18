@@ -4,6 +4,8 @@
  */
 import { leerParametro } from '../../datos/parametros';
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { animalVigente, leerVigentes } from '../../datos/vigentes';
+import type { Vigente } from '../../dominio/vigente';
 import { fechaDelPredio } from '../../dominio/fechas';
 import {
   compararConAnterior,
@@ -25,14 +27,19 @@ import { fechaDeLlegada } from '../destino/destino';
 
 export type PesajeLocal = RegistroLocal<'pesaje'>;
 
-async function datosDe(animalId: Uuid): Promise<{ animal: RegistroLocal<'animal'>; pesajes: PesajeLocal[]; contexto: ContextoPesaje } | null> {
-  const animal = await consulta.animal.get(animalId);
+/**
+ * El animal y sus pesajes con valores vigentes. `pesajes` excluye los anulados, que no cuentan en ningún
+ * cálculo; `todos` los incluye, para mostrarlos marcados (documento técnico 26, sección 6).
+ */
+async function datosDe(animalId: Uuid): Promise<{ animal: RegistroLocal<'animal'>; pesajes: PesajeLocal[]; todos: Vigente<PesajeLocal>[]; contexto: ContextoPesaje } | null> {
+  const animal = await animalVigente(animalId);
   if (!animal) return null;
-  const [pesajes, salidas] = await Promise.all([
-    consulta.pesaje.where('animal_id').equals(animalId).toArray(),
+  const [todos, salidas] = await Promise.all([
+    consulta.pesaje.where('animal_id').equals(animalId).toArray().then((r) => leerVigentes('pesaje', r)),
     consulta.salida.where('animal_id').equals(animalId).count(),
   ]);
-  return { animal, pesajes, contexto: { llegada: fechaDeLlegada(animal), retirado: salidas > 0 } };
+  const pesajes = todos.filter((v) => v.anulacion === null).map((v) => v.registro);
+  return { animal, pesajes, todos, contexto: { llegada: fechaDeLlegada(animal), retirado: salidas > 0 } };
 }
 
 /** Lo que necesita el formulario para validar y comparar mientras se escribe (secciones 4 a 6). */
@@ -110,7 +117,9 @@ export async function metaDeGanancia(): Promise<number | null> {
 }
 
 export interface EvolucionPeso {
-  tramos: (TramoPeso & { autor: string | null })[];
+  tramos: (TramoPeso & { autor: string | null; vigente: Vigente<PesajeLocal> | null })[];
+  /** Los pesajes anulados, visibles pero fuera de la serie (documento técnico 26, sección 6.4). */
+  anulados: { vigente: Vigente<PesajeLocal>; autor: string }[];
   resumen: ReturnType<typeof resumenPeso>;
   meta: number | null;
 }
@@ -120,12 +129,16 @@ export async function cargarEvolucion(animalId: Uuid): Promise<EvolucionPeso | n
   const [datos, usuarios, meta] = await Promise.all([datosDe(animalId), consulta.usuario.toArray(), metaDeGanancia()]);
   if (!datos) return null;
   const nombres = new Map(usuarios.map((u) => [u.id, u.nombre]));
+  const nombre = (id: Uuid) => nombres.get(id) ?? 'un usuario que ya no está en el predio';
+  const porId = new Map(datos.todos.map((v) => [v.registro.id, v]));
   const serie: PuntoPeso[] = serieDePeso(datos.animal, datos.pesajes);
   return {
     tramos: tramos(serie, meta).map((t) => ({
       ...t,
-      autor: t.punto.autor_id ? (nombres.get(t.punto.autor_id) ?? 'un usuario que ya no está en el predio') : null,
+      autor: t.punto.autor_id ? nombre(t.punto.autor_id) : null,
+      vigente: t.punto.id ? (porId.get(t.punto.id) ?? null) : null,
     })),
+    anulados: datos.todos.filter((v) => v.anulacion !== null).map((v) => ({ vigente: v, autor: nombre(v.original.autor_id) })),
     resumen: resumenPeso(serie),
     meta,
   };

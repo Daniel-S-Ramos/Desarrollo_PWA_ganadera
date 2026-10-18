@@ -4,15 +4,17 @@ import { formatearFecha } from '../../dominio/fechas';
 import { formatearKg, NOMBRE_METODO } from '../../dominio/peso';
 import type { Uuid } from '../../dominio/tipos';
 import { cargarEvolucion } from './pesajes';
+import { EnlaceCorregir, MarcaCorreccion } from '../correcciones/MarcaCorreccion';
+import type { Identidad } from '../../sesion/token';
 
 /**
  * Evolución del peso (CU-09, RF-14, HU-05.2 y 3). Especificación: docs/tecnica/24-pesaje-y-evolucion.md,
  * secciones 7 y 8. Se despliega en la ficha, para ambos perfiles.
  */
-export function EvolucionPeso({ animalId, puedeRegistrar }: { animalId: Uuid; puedeRegistrar: boolean }) {
+export function EvolucionPeso({ animalId, puedeRegistrar, identidad }: { animalId: Uuid; puedeRegistrar: boolean; identidad: Identidad }) {
   const evolucion = useLiveQuery(() => cargarEvolucion(animalId), [animalId]);
   if (!evolucion) return <p className="texto-secundario">Cargando…</p>;
-  const { tramos, resumen, meta } = evolucion;
+  const { tramos, resumen, meta, anulados } = evolucion;
   const pesajes = tramos.filter((t) => t.punto.id !== null).length;
   const maximo = Math.max(...tramos.map((t) => t.punto.kg), 1);
 
@@ -70,12 +72,31 @@ export function EvolucionPeso({ animalId, puedeRegistrar }: { animalId: Uuid; pu
                 </p>
               )}
               {t.metodosDistintos && <p className="texto-secundario">Métodos distintos: compárese con cautela.</p>}
+              {t.vigente && <MarcaCorreccion entidad="pesaje" vigente={t.vigente} />}
+              {t.vigente && <EnlaceCorregir entidad="pesaje" registro={t.vigente.original} identidad={identidad} />}
               <div className="produccion__barra" aria-hidden="true">
                 <div className="produccion__relleno" style={{ width: `${(t.punto.kg / maximo) * 100}%` }} />
               </div>
             </li>
           ))}
         </ol>
+      )}
+
+      {/* Documento técnico 26, sección 6.4: los anulados se ven, pero no cuentan en la serie. */}
+      {anulados.length > 0 && (
+        <>
+          <h3>Pesajes anulados</h3>
+          <ul className="historial">
+            {anulados.map(({ vigente, autor }) => (
+              <li key={vigente.registro.id} className="historial__entrada historial__entrada--anulada">
+                <p>
+                  {formatearKg(vigente.registro.peso)} kg · {formatearFecha(vigente.registro.fecha)} · registrado por {autor}
+                </p>
+                <MarcaCorreccion entidad="pesaje" vigente={vigente} />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </section>
   );

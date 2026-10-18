@@ -3,6 +3,7 @@
  * Especificación: docs/tecnica/25-parto-y-control-reproductivo.md
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { animalVigente, animalesVigentes, leerVigentes, vigentes } from '../../datos/vigentes';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { buscarParentesco, type AnimalGenealogia, type Parentesco, type Reproductor } from '../../dominio/parentesco';
 import { controlReproductivo, partoCercano, validarParto, type ContextoParto, type ErroresParto, type FormularioParto } from '../../dominio/reproduccion';
@@ -67,23 +68,24 @@ export function reproductorDe(cria: FormularioCria): Reproductor | null {
 }
 
 async function contextoDe(vacaId: Uuid) {
-  const vaca = await consulta.animal.get(vacaId);
+  // Valores vigentes y sin partos anulados (documento técnico 26, sección 6.3).
+  const vaca = await animalVigente(vacaId);
   if (!vaca) return null;
   const [salidas, partos] = await Promise.all([
     consulta.salida.where('animal_id').equals(vacaId).count(),
-    consulta.parto.where('madre_id').equals(vacaId).toArray(),
+    consulta.parto.where('madre_id').equals(vacaId).toArray().then((r) => vigentes('parto', r)),
   ]);
   const contexto: ContextoParto = { esHembra: vaca.sexo === 'hembra', retirada: salidas > 0, nacimientoVaca: vaca.fecha_nacimiento };
   return { vaca, partos, contexto };
 }
 
 async function genealogia(): Promise<Map<Uuid, AnimalGenealogia>> {
-  return new Map((await consulta.animal.toArray()).map((a) => [a.id, a]));
+  return new Map((await animalesVigentes()).map((a) => [a.id, a]));
 }
 
 /** Lo que el formulario necesita mientras se escribe: contexto, parto cercano, parentesco y número sugerido. */
 export async function cargarParaParto(vacaId: Uuid, fecha: FechaPredio, reproductor: Reproductor | null) {
-  const [datos, animales] = await Promise.all([contextoDe(vacaId), consulta.animal.toArray()]);
+  const [datos, animales] = await Promise.all([contextoDe(vacaId), animalesVigentes()]);
   if (!datos) return null;
   return {
     contexto: datos.contexto,
@@ -182,8 +184,15 @@ export async function registrarParto(
 
 /** El control reproductivo de la vaca, con las crías vivas de su descendencia (CU-11, sección 8). */
 export async function cargarControlReproductivo(vacaId: Uuid) {
-  const partos = await consulta.parto.where('madre_id').equals(vacaId).toArray();
-  const control = controlReproductivo(partos);
-  const crias = (await consulta.animal.bulkGet(control.descendencia)).filter((a): a is RegistroLocal<'animal'> => a !== undefined);
-  return { ...control, crias: crias.map((c) => ({ id: c.id, codigo_chapeta: c.codigo_chapeta, sexo: c.sexo, fecha_nacimiento: c.fecha_nacimiento })) };
+  const [todos, usuarios] = await Promise.all([leerVigentes('parto', await consulta.parto.where('madre_id').equals(vacaId).toArray()), consulta.usuario.toArray()]);
+  // Los anulados no cuentan en el número de partos ni en los intervalos, pero se muestran (documento técnico 26, sección 6).
+  const control = controlReproductivo(todos.filter((v) => v.anulacion === null).map((v) => v.registro));
+  const crias = (await Promise.all(control.descendencia.map((id) => animalVigente(id)))).filter((a): a is RegistroLocal<'animal'> => a !== undefined);
+  const nombres = new Map(usuarios.map((u) => [u.id, u.nombre]));
+  return {
+    ...control,
+    vigentes: new Map(todos.map((v) => [v.registro.id, v])),
+    anulados: todos.filter((v) => v.anulacion !== null).map((v) => ({ vigente: v, autor: nombres.get(v.original.autor_id) ?? 'un usuario que ya no está en el predio' })),
+    crias: crias.map((c) => ({ id: c.id, codigo_chapeta: c.codigo_chapeta, sexo: c.sexo, fecha_nacimiento: c.fecha_nacimiento })),
+  };
 }

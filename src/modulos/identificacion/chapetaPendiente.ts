@@ -4,6 +4,7 @@
  */
 import { leerParametro } from '../../datos/parametros';
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { animalVigente, animalesVigentes } from '../../datos/vigentes';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { diasEntre } from '../../dominio/repeticion';
 import type { Animal, FechaPredio, RegistroLocal, Uuid } from '../../dominio/tipos';
@@ -70,7 +71,7 @@ export async function plazoDeChapeta(): Promise<number> {
 /** Los terneros sin chapeta puesta del teléfono, para Inicio. */
 export async function cargarTernerosSinChapeta(hoy: FechaPredio = fechaDelPredio()): Promise<TerneroSinChapeta[]> {
   const [animales, colocaciones, salidas, plazo] = await Promise.all([
-    consulta.animal.toArray(),
+    animalesVigentes(),
     consulta.colocacion_chapeta.toArray(),
     consulta.salida.toArray(),
     plazoDeChapeta(),
@@ -85,7 +86,7 @@ export type EstadoChapeta =
 
 /** El estado de la chapeta de un animal, para su ficha (sección 7.2). */
 export async function estadoDeChapeta(animalId: Uuid, hoy: FechaPredio = fechaDelPredio()): Promise<EstadoChapeta> {
-  const animal = await consulta.animal.get(animalId);
+  const animal = await animalVigente(animalId);
   if (!animal || !registradoSinChapeta(animal)) return { estado: 'no_aplica' };
   const colocacion = await consulta.colocacion_chapeta.where('animal_id').equals(animalId).first();
   if (colocacion) {
@@ -124,7 +125,7 @@ export async function confirmarChapetaPuesta(animalId: Uuid, fecha: string, usua
   if (!puedeCrear(usuario.perfil, 'colocacion_chapeta')) throw new PermisoDenegado(usuario.perfil, 'colocacion_chapeta');
   try {
     await unidadDeTrabajo(usuario.usuario_id, async (tx) => {
-      const animal = await consulta.animal.get(animalId);
+      const animal = await animalVigente(animalId);
       if (!animal) throw new Rechazo('El animal no está en este teléfono');
       if (!registradoSinChapeta(animal)) throw new Rechazo('Este animal se registró con la chapeta puesta');
       if (await consulta.colocacion_chapeta.where('animal_id').equals(animalId).count()) throw new Rechazo('Ya se registró que tiene la chapeta puesta');

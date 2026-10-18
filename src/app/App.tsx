@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router';
 import { PantallaFicha } from '../modulos/consulta/PantallaFicha';
+import { PantallaCorregir } from '../modulos/correcciones/PantallaCorregir';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
 import { TernerosSinChapeta } from '../modulos/identificacion/AvisoChapeta';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
@@ -136,6 +137,8 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
               path="/animales/:id/evento-sanitario"
               element={puedeUsar(identidad.perfil, 'CU-04') ? <PantallaRegistrarEvento identidad={identidad} /> : <Navigate to="/" replace />}
             />
+            {/* Documento técnico 26: corregir o anular; los permisos de cada registro los decide la pantalla (RD-05). */}
+            <Route path="/correccion/:entidad/:id" element={puedeUsar(identidad.perfil, 'CU-17') ? <PantallaCorregir identidad={identidad} /> : <Navigate to="/" replace />} />
             <Route
               path="/animales/:id/parto"
               element={
