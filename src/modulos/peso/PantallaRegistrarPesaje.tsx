@@ -112,7 +112,7 @@ function Formulario({ animal, identidad }: { animal: RegistroLocal<'animal'>; id
 
       {/* Sección 6: diferencia y ganancia diaria al escribir (Figura 25). */}
       {datos?.anterior && comparacion && !atipica && (
-        <p className={bajoMeta ? 'aviso aviso--atencion aviso--en-contenido' : 'texto-secundario'} role="status">
+        <p className={bajoMeta ? 'aviso aviso--atencion aviso--en-contenido' : 'comparacion'} role="status">
           {describirComparacion(comparacion, datos.anterior)}
           {bajoMeta && `. Por debajo de la meta de ${formatearKg(meta!)} kg por día`}
         </p>

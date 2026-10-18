@@ -981,3 +981,50 @@ a.boton {
   margin: 0 0 12px;
   padding-left: 20px;
 }
+
+/*
+ * Aviso de almacenamiento (RNF-15) como franja discreta: visible en todas las pantallas sin opacar los
+ * avisos de cada registro (PE-29). El detalle se despliega con «¿Por qué?».
+ */
+.aviso-discreto {
+  margin: 0 0 var(--separacion);
+  padding: 8px 12px;
+  border-left: 4px solid var(--amarillo);
+  border-radius: 4px;
+  background: var(--blanco);
+  font-size: 0.9rem;
+}
+
+.aviso-discreto summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.aviso-discreto summary::-webkit-details-marker {
+  display: none;
+}
+
+.aviso-discreto__mas {
+  font-weight: 400;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.aviso-discreto p {
+  margin: 6px 0 0;
+}
+
+/*
+ * La comparación con el valor anterior mientras se registra (pesaje frente al peso anterior, ordeño frente al
+ * promedio): es la información que el usuario necesita en ese momento y debe destacar (PE-29).
+ */
+.comparacion {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 4px solid var(--verde-oscuro);
+  border-radius: 4px;
+  background: var(--verde-claro);
+  font-weight: 600;
+  font-size: 1.05rem;
+}

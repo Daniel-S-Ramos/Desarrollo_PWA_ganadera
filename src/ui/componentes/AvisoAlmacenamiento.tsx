@@ -36,15 +36,22 @@ export function estaInstalada(): boolean {
   return iosInstalada || window.matchMedia?.('(display-mode: standalone)').matches === true;
 }
 
-/** Aviso de RNF-15. No bloquea el uso de la aplicación: advierte el riesgo e indica qué hacer. */
+/**
+ * Aviso de RNF-15. No bloquea el uso de la aplicación: advierte el riesgo e indica qué hacer.
+ *
+ * Es una franja discreta, con el detalle plegado: aparece en todas las pantallas y, como recuadro
+ * amarillo, opacaba los avisos propios de cada registro (PE-29, pedido del autor el 2026-10-17).
+ */
 export function AvisoAlmacenamiento({ persistencia }: { persistencia: EstadoPersistencia | null }) {
   const mensaje = mensajeAvisoAlmacenamiento(persistencia, estaInstalada());
   if (!mensaje) return null;
 
   return (
-    <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
-      <p>{mensaje.titulo}</p>
-      <p className="aviso__detalle">{mensaje.detalle}</p>
-    </div>
+    <details className="aviso-discreto" role="note">
+      <summary>
+        {mensaje.titulo} <span className="aviso-discreto__mas">¿Por qué?</span>
+      </summary>
+      <p>{mensaje.detalle}</p>
+    </details>
   );
 }

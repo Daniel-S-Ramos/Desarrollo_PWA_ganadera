@@ -227,7 +227,7 @@ function FormularioVaca({
 
       {/* Sección 6.3: la diferencia en litros y en palabras; muy por debajo, en aviso de atención. */}
       {comparacion && (
-        <p className={comparacion.atencion ? 'aviso aviso--atencion aviso--en-contenido' : 'texto-secundario'} role="status">
+        <p className={comparacion.atencion ? 'aviso aviso--atencion aviso--en-contenido' : 'comparacion'} role="status">
           {comparacion.atencion && '⚠ '}
           {/* Igual al promedio basta con decirlo una vez (PE-27: «Similar a su promedio: igual a su promedio»). */}
           {comparacion.diferencia === 'Igual a su promedio'

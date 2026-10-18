@@ -1,7 +1,7 @@
 # Pruebas de la Iteración 3 — Sanidad, leche y destino
 
-Historias de usuario: HU-03 (registro sanitario), HU-04 (advertencia por repetición de medicamento),
-HU-09 (producción de leche), HU-13 (destino productivo). Pasos 3.1 a 3.7 del [plan](../../PLAN.md).
+Historias de usuario: HU-03 (registro sanitario), HU-04 (producción de leche), HU-09 (advertencia por
+repetición de medicamento), HU-13 (destino productivo). Pasos 3.1 a 3.7 del [plan](../../PLAN.md).
 Rama `iteracion-3`. Incluye los criterios heredados de la Iteración 2: HU-02.4 (acceso desde la ficha
 al historial sanitario), HU-06.4 (opciones exclusivas del propietario ocultas al trabajador) y la
 comprobación en la ficha de la última vacuna, la leche y el destino (HU-02.1).
