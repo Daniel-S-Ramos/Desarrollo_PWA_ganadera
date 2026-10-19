@@ -21,6 +21,8 @@ evolución del peso y el control reproductivo.
 | PE-31 | Corrección y anulación en el navegador real | 4.3a | CU-17 (1a, 2a, 2b, 5a) · HU-17 · HU-02.4 | ✅ |
 | PU-28 | Resolución de conflictos y lista de registros en conflicto | 4.3b | Tabla 21 · CU-17 · regla del propietario | ✅ |
 | PE-32 | Resolución de conflictos con dos teléfonos | 4.3b | Tabla 21 · CU-17 | ✅ |
+| PU-29 | Consulta de las correcciones y las anulaciones | 4.4 | RF-32 · CU-18 · HU-17.5 | ✅ |
+| PE-33 | Correcciones recientes en el navegador real | 4.4 | CU-18 · RF-32 · Tabla 27 | ✅ |
 
 ---
 
@@ -286,3 +288,49 @@ caso; quedaron 9 de 9.
    además el caso pendiente desde PE-22.
 6. En la parte B los dos Z982 no eran el mismo animal (macho comprado frente a hembra nacida); la prueba
    comprueba el mecanismo, y la unión conserva los datos del animal registrado.
+
+## PU-29 · Consulta de las correcciones y las anulaciones
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar el contenido de cada entrada (animal y registro con valor vigente, cambio legible, «Anulado», motivo, nota, autor, fecha, estado), el orden y la agrupación por día del predio, la paginación de 30 en 30, el filtro por autor, el destino de cada tabla, los permisos y los mensajes sin correcciones |
+| Requerimiento | RF-27 · RF-32 · CU-18 (pasos 1 a 4, flujo 2a) · HU-17.5 · Tabla 27 |
+| Tipo | Unitaria, automática |
+| Código | [`src/modulos/correcciones/consultaCorrecciones.ts`](../../src/modulos/correcciones/consultaCorrecciones.ts) · `valorLegible` en [`camposCorregibles.ts`](../../src/dominio/camposCorregibles.ts) · prueba [`consultaCorrecciones.test.ts`](../../src/modulos/correcciones/consultaCorrecciones.test.ts) · especificación [documento técnico 27](../tecnica/27-consulta-de-correcciones.md), sección 10 |
+| Resultado obtenido | **12 de 12 aprobadas**, más el caso de la consulta en vivo agregado a PU-27.9 (13 de 13). Total del conjunto automático: **815 de 815** ([informe](resultados/2026-10-19_001144_fe36f87.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-19 |
+
+**Mutaciones.** Veintiuna, todas detectadas a la primera: orden ascendente, sin filtro de autor, sin límite de
+página, «Ver más» nunca ofrecido, agrupación por día UTC en lugar del día del predio, sin «Hoy», sin «Ayer»,
+registro original en lugar del vigente, anulación sin «Anulado», valores sin hacer legibles, sin la nota, parto
+sin su madre, ordeño hacia la ficha, historial sanitario y del destino sin abrir, medicamento hacia una ficha,
+autores con todos los usuarios, autores sin ordenar, total del predio filtrado, registro ausente con enlace y
+estado fijo.
+
+## PE-33 · Correcciones recientes en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario el acceso desde Inicio, la lista con las correcciones de PE-31, el filtro por autor y el destino de cada tipo de entrada; y como trabajador que la opción no aparece |
+| Requerimiento | CU-18 (pasos 1 a 4) · RF-32 · HU-17.5 · Tabla 27 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-4` (commit fe36f87) |
+| Resultado obtenido | Todos los pasos se comportaron como se esperaba |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-19 |
+
+| # | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|
+| 1 | Propietario | Inicio | **Correcciones recientes** entre **Producción de leche** y **Medicamentos** | [captura](evidencias/iteracion-4/PE-33-01-inicio-boton-correcciones.png) |
+| 2 | Propietario | Abrir la consulta | Agrupadas en «Ayer», de la más reciente a la más antigua: «Z971 · Datos del animal · Peso inicial en kg: antes 32, ahora 34 · Fecha equivocada · Correccion · Jose Ramos · 18 de octubre de 2026 a las 5:26 p. m.»; «Z924 · Pesaje del 18 de octubre de 2026 · antes 100, ahora 150 · Daniel Ramos»; «Z931 · Ordeño del 13 de octubre de 2026 · **Anulado**»; «Medicamento Prueba Florfenicol LA» | [captura](evidencias/iteracion-4/PE-33-02-correcciones-recientes.png) |
+| 3 | Propietario | **Quién**: Daniel Ramos y José Ramos | Con Daniel, solo su pesaje de Z924; con José, las suyas, incluidos «Tipo: antes Vacuna, ahora Antibiótico» y «Z925 · Pesaje del 17 de octubre de 2026 · Anulado» | [Daniel](evidencias/iteracion-4/PE-33-03-filtro-trabajador.png) · [José](evidencias/iteracion-4/PE-33-04-filtro-propietario.png) |
+| 4 | Propietario | Tocar una entrada de cada tipo | Dosis de Z921 → historial sanitario abierto con «2,5 mg · Corregido»; pesaje anulado → evolución abierta con **Pesajes anulados**; medicamento → catálogo, en **Antibiótico**; Z971 → su ficha con 34 kg; ordeño de Z931 → producción de Z931 | [sanitario](evidencias/iteracion-4/PE-33-05-destino-historial-sanitario.png) · [evolución](evidencias/iteracion-4/PE-33-06-destino-evolucion-peso.png) · [catálogo](evidencias/iteracion-4/PE-33-07-destino-catalogo.png) · [ficha](evidencias/iteracion-4/PE-33-08-destino-ficha-z971.png) · [producción](evidencias/iteracion-4/PE-33-09-destino-produccion-z931.png) |
+| 5 | Trabajador | Inicio | No aparece **Correcciones recientes** (Tabla 27) | [captura](evidencias/iteracion-4/PE-33-10-trabajador-sin-boton.png) |
+
+**Observaciones.** (1) La prueba se hizo pasada la medianoche: las correcciones del 18 aparecen bajo «Ayer»,
+que es lo esperado. (2) No se capturó el intento del trabajador de abrir `/correcciones` escribiendo la
+dirección; la ruta lo devuelve al inicio como las demás restringidas (`App.tsx`), y PU-29.6 comprueba que
+`puedeUsar` no le da CU-18. (3) La producción de Z931 aparece sin registros porque su único ordeño fue anulado
+en PE-31: el ordeño anulado no cuenta (documento 26, sección 6). (4) En el guion se esperaba «Tipo: antes Otro»
+para Prueba Florfenicol LA; la consulta muestra «antes Vacuna», que es el valor que tenía al corregirlo en
+PE-31 (el «Otro» del historial es el tipo del evento, no el del medicamento).
