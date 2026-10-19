@@ -73,11 +73,14 @@ gráficos, y se lee en un teléfono de 360 px.
 
 ## 7. Sin registros en la ventana (decisión F, CU-07 3a)
 
-> Sin registros de Z920 en este periodo.
+> Sin registros de Z920 entre 21 ago y 19 sep.
 > [Ver el periodo anterior] · [Ver por semanas] (o [Ver por meses])
 
 La agregación más amplia: de diaria a semanal y de semanal a mensual; en mensual solo se ofrece el
 periodo anterior.
+
+El rango de la ventana («20 sep a 19 oct») se muestra siempre debajo de **← Anterior** y **Siguiente →**,
+también cuando no hay registros: al retroceder sin datos no se sabía qué días se estaban viendo (PE-34).
 
 ## 8. Relación con los requerimientos
 

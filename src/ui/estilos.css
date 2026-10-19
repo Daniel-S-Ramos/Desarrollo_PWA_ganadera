@@ -1188,3 +1188,10 @@ a.boton {
   color: var(--rojo-oscuro);
   font-size: 0.9rem;
 }
+
+/* El rango de días de la ventana, siempre visible (PE-34). */
+.produccion__ventana {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.1rem;
+}

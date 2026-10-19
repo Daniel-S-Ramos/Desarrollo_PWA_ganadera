@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { formatearLitros } from '../../dominio/leche';
-import { agregar, etiquetaDia, periodosDeVentana, resumir, type Agregacion, type FilaPeriodo } from '../../dominio/periodos';
+import { agregar, etiquetaDia, periodosDeVentana, resumir, type Agregacion, type FilaPeriodo, type Periodo } from '../../dominio/periodos';
 import { registrosDe, vacasConsultables } from './produccion';
 
 const AGREGACIONES: [Agregacion, string][] = [
@@ -44,7 +44,8 @@ export function PantallaProduccion() {
   }
 
   const vaca = vacas.find((v) => v.id === vacaId) ?? vacas[0]!;
-  const filas = registros ? agregar(periodosDeVentana(agregacion, hoy, desplazamiento), registros, hoy) : [];
+  const periodos = periodosDeVentana(agregacion, hoy, desplazamiento);
+  const filas = registros ? agregar(periodos, registros, hoy) : [];
   const resumen = resumir(filas);
   const maximo = Math.max(0, ...filas.map((f) => valorDeBarra(f, agregacion) ?? 0));
   const amplia = MAS_AMPLIA[agregacion];
@@ -101,12 +102,19 @@ export function PantallaProduccion() {
         </button>
       </div>
 
+      {/* El rango siempre a la vista: al retroceder sin registros no se sabía qué días se veían (PE-34). */}
+      <p className="produccion__ventana" aria-live="polite">
+        {tituloVentana(periodos, agregacion)}
+      </p>
+
       {!registros ? (
         <p className="texto-secundario">Cargando…</p>
       ) : resumen.total === null ? (
         // CU-07, 3a: se informa y se sugiere ampliar el rango.
         <div className="aviso aviso--atencion aviso--en-contenido">
-          <p>Sin registros de {vaca.codigo_chapeta} en este periodo.</p>
+          <p>
+            Sin registros de {vaca.codigo_chapeta} entre {tituloVentana(periodos, agregacion).replace(' a ', ' y ')}.
+          </p>
           <div className="aviso__acciones">
             <button type="button" className="boton boton--secundario" onClick={() => setDesplazamiento((d) => d - 1)}>
               Ver el periodo anterior
@@ -122,7 +130,7 @@ export function PantallaProduccion() {
         <>
           <section className="tarjeta produccion__resumen">
             <h2>
-              {vaca.codigo_chapeta} · {tituloVentana(filas, agregacion)}
+              {vaca.codigo_chapeta} · {tituloVentana(periodos, agregacion)}
             </h2>
             <p>
               <strong>{formatearLitros(resumen.total)} litros</strong> · {formatearLitros(resumen.promedio!)} por día registrado ·{' '}
@@ -145,8 +153,8 @@ export function PantallaProduccion() {
  * El rango de la ventana: «16 sep a 15 oct», «27 jul a 18 oct», «noviembre de 2025 a octubre de 2026».
  * Por semanas se usan los días extremos: «27 jul – 2 ago a 12 – 18 oct» se leía mal (PE-28).
  */
-function tituloVentana(filas: readonly FilaPeriodo[], agregacion: Agregacion): string {
-  const [reciente, antigua] = [filas[0]!.periodo, filas.at(-1)!.periodo];
+function tituloVentana(periodos: readonly Periodo[], agregacion: Agregacion): string {
+  const [reciente, antigua] = [periodos[0]!, periodos.at(-1)!];
   return agregacion === 'mensual' ? `${antigua.etiqueta} a ${reciente.etiqueta}` : `${etiquetaDia(antigua.inicio)} a ${etiquetaDia(reciente.fin)}`;
 }
 
