@@ -109,34 +109,32 @@ export function PantallaProduccion() {
 
       {!registros ? (
         <p className="texto-secundario">Cargando…</p>
-      ) : resumen.total === null ? (
-        // CU-07, 3a: se informa y se sugiere ampliar el rango.
-        <div className="aviso aviso--atencion aviso--en-contenido">
-          <p>
-            Sin registros de {vaca.codigo_chapeta} entre {tituloVentana(periodos, agregacion).replace(' a ', ' y ')}.
-          </p>
-          <div className="aviso__acciones">
-            <button type="button" className="boton boton--secundario" onClick={() => setDesplazamiento((d) => d - 1)}>
-              Ver el periodo anterior
-            </button>
-            {amplia && (
-              <button type="button" className="boton boton--secundario" onClick={() => cambiarAgregacion(amplia[0])}>
-                {amplia[1]}
-              </button>
-            )}
-          </div>
-        </div>
       ) : (
         <>
-          <section className="tarjeta produccion__resumen">
-            <h2>
-              {vaca.codigo_chapeta} · {tituloVentana(periodos, agregacion)}
-            </h2>
-            <p>
-              <strong>{formatearLitros(resumen.total)} litros</strong> · {formatearLitros(resumen.promedio!)} por día registrado ·{' '}
-              {resumen.diasRegistrados} de {resumen.diasDelPeriodo} días registrados
-            </p>
-          </section>
+          {resumen.total === null ? (
+            // CU-07, 3a: se informa y se sugiere ampliar el rango; la lista de días sigue a la vista (PE-34).
+            <div className="aviso aviso--atencion aviso--en-contenido">
+              <p>Sin registros de {vaca.codigo_chapeta} en estos días.</p>
+              <div className="aviso__acciones">
+                <button type="button" className="boton boton--secundario" onClick={() => setDesplazamiento((d) => d - 1)}>
+                  Ver el periodo anterior
+                </button>
+                {amplia && (
+                  <button type="button" className="boton boton--secundario" onClick={() => cambiarAgregacion(amplia[0])}>
+                    {amplia[1]}
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <section className="tarjeta produccion__resumen">
+              <h2>{vaca.codigo_chapeta}</h2>
+              <p>
+                <strong>{formatearLitros(resumen.total)} litros</strong> · {formatearLitros(resumen.promedio!)} por día registrado ·{' '}
+                {resumen.diasRegistrados} de {resumen.diasDelPeriodo} días registrados
+              </p>
+            </section>
+          )}
 
           <ul className="produccion__filas">
             {filas.map((f) => (
@@ -154,8 +152,9 @@ export function PantallaProduccion() {
  * Por semanas se usan los días extremos: «27 jul – 2 ago a 12 – 18 oct» se leía mal (PE-28).
  */
 function tituloVentana(periodos: readonly Periodo[], agregacion: Agregacion): string {
+  // En el orden de la lista, de lo más reciente a lo más antiguo (PE-34): «19 oct a 20 sep».
   const [reciente, antigua] = [periodos[0]!, periodos.at(-1)!];
-  return agregacion === 'mensual' ? `${antigua.etiqueta} a ${reciente.etiqueta}` : `${etiquetaDia(antigua.inicio)} a ${etiquetaDia(reciente.fin)}`;
+  return agregacion === 'mensual' ? `${reciente.etiqueta} a ${antigua.etiqueta}` : `${etiquetaDia(reciente.fin)} a ${etiquetaDia(antigua.inicio)}`;
 }
 
 /** La barra: litros del día en la diaria, promedio por día registrado en las demás (sección 6). */

@@ -73,14 +73,16 @@ gráficos, y se lee en un teléfono de 360 px.
 
 ## 7. Sin registros en la ventana (decisión F, CU-07 3a)
 
-> Sin registros de Z920 entre 21 ago y 19 sep.
+> Sin registros de Z920 en estos días.
 > [Ver el periodo anterior] · [Ver por semanas] (o [Ver por meses])
 
 La agregación más amplia: de diaria a semanal y de semanal a mensual; en mensual solo se ofrece el
 periodo anterior.
 
-El rango de la ventana («20 sep a 19 oct») se muestra siempre debajo de **← Anterior** y **Siguiente →**,
-también cuando no hay registros: al retroceder sin datos no se sabía qué días se estaban viendo (PE-34).
+**Ajustes de PE-34.** El rango de la ventana se muestra siempre debajo de **← Anterior** y **Siguiente →**, en
+el orden de la lista, de lo más reciente a lo más antiguo («19 oct a 20 sep»): al retroceder sin datos no se
+sabía qué días se estaban viendo. Y la lista de días (o semanas, o meses) sigue a la vista aunque ninguno
+tenga registros, cada uno con «Sin registro»; el aviso va encima, como nota.
 
 ## 8. Relación con los requerimientos
 
