@@ -59,9 +59,13 @@ repite, y las siguientes tienen más pantallas. Se recalibra al cierre de cada i
 | 1 · Fundación técnica | 16 | 2026-10-06 | — | 2026-10-12 | 16 puntos / 7 días |
 | 2 · Identificación y ficha | 15 | 2026-10-12 | 2026-10-19 | 2026-10-13 | 15 puntos / 2 días |
 | 3 · Sanidad, leche y destino | 16 | 2026-10-13 | 2026-10-26 | 2026-10-15 | 16 puntos / 3 días |
-| 4 · Peso, partos y correcciones | 13 | 2026-10-27 | 2026-11-02 | | |
-| 5 · Consultas, alertas y economía | 16 | 2026-11-03 | 2026-11-09 | | |
-| Cierre · Evaluación del prototipo | — | 2026-11-10 | 2026-11-23 | | |
+| 4 · Peso, partos y correcciones | 13 | 2026-10-15 | 2026-11-02 | 2026-10-19 | 13 puntos / 5 días |
+| 5 · Consultas, alertas y economía | 16 | 2026-10-20 | 2026-10-26 | | |
+| Cierre · Evaluación del prototipo | — | 2026-10-27 | 2026-11-09 | | |
+
+Recalibrado al cierre de la Iteración 4: con 13 a 16 puntos en 3 a 5 días, la Iteración 5 se estima en una
+semana y el cierre en dos, que dependen también del tiempo que puedan dedicar el propietario y los
+trabajadores a la evaluación.
 
 ## Iteración 2 — Identificación animal y ficha (HU-01, HU-02, HU-15 · 15 puntos) · cerrada el 2026-10-13 · `v0.2`
 
@@ -94,7 +98,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 3.6 | Consulta de producción diaria, semanal y mensual | ✅ |
 | 3.7 | Pruebas y cierre de iteración | ✅ |
 
-## Iteración 4 — Peso, partos y correcciones (HU-05, HU-12, HU-17 · 13 puntos)
+## Iteración 4 — Peso, partos y correcciones (HU-05, HU-12, HU-17 · 13 puntos) · cerrada el 2026-10-19 · `v0.4`
 
 | Paso | Contenido | Estado |
 |---|---|---|
@@ -103,7 +107,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 4.3a | Corrección y anulación con valor vigente (CU-17) | ✅ |
 | 4.3b | Resolución de conflictos de chapeta y de medicamento (Tabla 21, regla del propietario) | ✅ |
 | 4.4 | Consulta de correcciones (CU-18) | ✅ |
-| 4.5 | Pruebas y cierre de iteración | ⬜ |
+| 4.5 | Pruebas y cierre de iteración | ✅ |
 
 ## Iteración 5 — Consultas, alertas y economía (HU-10, HU-11, HU-14, HU-16 · 16 puntos)
 

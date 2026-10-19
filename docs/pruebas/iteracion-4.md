@@ -6,7 +6,7 @@ la genealogía de la cría), HU-17 (corrección y anulación de registros). Paso
 evolución del peso y el control reproductivo.
 
 **Responsable:** Daniel Santiago Ramos Pintor
-**Estado:** en curso
+**Estado:** cerrada el 2026-10-19 · `v0.4`
 
 ## Resumen de resultados
 
@@ -334,3 +334,95 @@ dirección; la ruta lo devuelve al inicio como las demás restringidas (`App.tsx
 en PE-31: el ordeño anulado no cuenta (documento 26, sección 6). (4) En el guion se esperaba «Tipo: antes Otro»
 para Prueba Florfenicol LA; la consulta muestra «antes Vacuna», que es el valor que tenía al corregirlo en
 PE-31 (el «Otro» del historial es el tipo del evento, no el del medicamento).
+
+---
+
+## Acta de cierre de la Iteración 4
+
+| Campo | Contenido |
+|---|---|
+| Iteración | 4 · Peso, partos y correcciones (Tabla 13) |
+| Historias | HU-05 (5 puntos) · HU-12 (5 puntos) · HU-17 (3 puntos) · **13 puntos** |
+| Periodo | 15 al 19 de octubre de 2026 (5 días calendario; estimado: 27 de octubre al 2 de noviembre) |
+| Rama | `iteracion-4` · se fusiona con `main` y se etiqueta `v0.4` |
+| Pasos | 4.1, 4.2, 4.3a, 4.3b, 4.4 y 4.5 (el 4.3 se dividió en dos entregas al diseñarlo) |
+| Casos de prueba | 11 casos (PU-25 a PU-29, PI-01 verificación 15, PE-29 a PE-33): 11 aprobados; 5 defectos encontrados en pantalla y corregidos (PE-29, PE-31, PE-32) |
+| Pruebas automáticas | 815 de 815 aprobadas (663 al empezar la iteración); 123 mutaciones en los grupos nuevos, todas detectadas al cierre |
+| Documentación técnica | Documentos 24 a 27, nuevos; el 26 ampliado tras PE-32 (secciones 10.5 a 10.7); el 09 y el 11 actualizados |
+| Base de datos remota | Migración `20261018000100_chapeta_puesta.sql` (tabla `colocacion_chapeta`, parámetro de 90 días); PI-01 en 15 de 15 |
+| Publicación | Dirección de la rama `iteracion-4`; al fusionar, https://desarrollo-pwa-ganadera.vercel.app |
+
+### Criterios de aceptación
+
+Fuente: tarjetas del Anexo B. ✅ verificado de extremo a extremo · ⚙️ verificado a nivel técnico, con la
+verificación en pantalla en una etapa posterior.
+
+**HU-05 · Registro del peso y consulta de su evolución (Tabla B5)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | El registro exige el peso, la fecha y el método de medición | ✅ | PU-25; PE-29 (validaciones y método en pantalla) |
+| 2 | La consulta muestra la serie completa de pesajes del animal | ✅ | PU-25; PE-29 (serie desde el peso de compra o al nacer, con autor) |
+| 3 | La consulta presenta la ganancia de peso entre pesajes consecutivos | ✅ | PU-25; PE-29 («+10 kg en 10 días · 1 kg por día» en cada tramo y el promedio); PE-31 (sin el pesaje anulado) |
+| 4 | El registro se completa sin conexión | ⚙️ | PU-25 (base local y cola, el camino verificado sin señal en PE-17, PE-18 y PE-32). En pantalla sin señal se registraron animales, fotos, medicamentos, eventos y chapetas (PE-32), pero no un pesaje: queda para el paso 6.4 |
+
+**HU-12 · Registro de partos y genealogía (Tabla B12)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | El parto exige fecha, vaca y resultado, y la cría solo cuando nace viva | ✅ | PU-26; PE-30 (cría viva y aborto) |
+| 2 | La cría viva queda registrada como animal nuevo, vinculada a su madre y, si se conoce, a su padre, que puede ser externo | ✅ | PU-26; PE-30 (Z971 con madre Z920 y el reproductor externo «toro de la ganadería villa Rita», número sugerido y chapeta pendiente) |
+| 3 | La consulta muestra el número de partos de cada vaca y el intervalo entre ellos, cualquiera que haya sido el resultado | ✅ | PU-26 (la mutación «intervalos solo con crías vivas» se detecta); PE-30 (control reproductivo de Z920: «1 parto», «Con un solo parto no se puede calcular el intervalo»; el de Z926 tras el aborto lo cubre PU-26.8) |
+| 4 | El sistema advierte un cruce entre animales emparentados | ✅ | PU-26 (padre, hijo, medio hermano, abuelo, nieto, externo); PE-30 («Z971 es hijo de Z920», con confirmación) |
+
+**HU-17 · Corrección y anulación de registros con trazabilidad (Tabla B17)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | La corrección no altera el original: guarda el dato anterior, el nuevo, el motivo, el autor y la fecha | ✅ | PU-27; PE-31 (marca **Corregido** con «antes 1, ahora 2,5», motivo, autor y hora) |
+| 2 | El trabajador corrige o anula registros de trabajadores del mismo día, nunca los del propietario | ✅ | PU-27.4; PE-31 (corrige su pesaje del día; sin opción en los del propietario; «La ventana de corrección venció» en uno de otro día) |
+| 3 | El propietario corrige o anula cualquier registro sin límite de tiempo | ✅ | PU-27.4; PE-31 (registros de días anteriores y de otros usuarios) |
+| 4 | Un registro anulado queda visible y marcado, y deja de contar en promedios y cálculos | ✅ | PU-27.5 y 6; PE-31 (pesaje tachado fuera de la serie, ordeño anulado en la ronda); PE-33 (producción de Z931 sin el ordeño anulado) |
+| 5 | El propietario consulta las correcciones y las anulaciones, con su autor y su motivo | ✅ | PU-29; PE-33 (**Correcciones recientes**, filtro por autor, cada entrada abre su registro; el trabajador no la ve) |
+
+### Criterios heredados de iteraciones anteriores
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| HU-02.1 · La ficha muestra el último peso | ✅ | PE-29 (el último pesaje reemplaza al peso de compra o al nacer); PE-31 (peso al nacer corregido) |
+| HU-02.4 · Desde la ficha se accede a la evolución del peso y al control reproductivo | ✅ | PE-29 (ambos perfiles); PE-30 (control reproductivo solo del propietario) |
+| PE-28, observación 2 · El trabajador no ve la consulta de producción | ✅ | PE-30, paso 11; PE-33, paso 5 |
+
+### Decisión de cierre
+
+La Iteración 4 se cierra con **13 de 13 criterios de sus historias cumplidos**: 12 verificados de extremo
+a extremo y 1 a nivel técnico (el pesaje sin conexión, HU-05.4, que usa el mismo camino verificado sin señal
+en PE-32 y se probará en pantalla en el paso 6.4). Los tres heredados quedan cumplidos.
+
+**Pasan a etapas posteriores:** el pesaje en pantalla sin señal (paso 6.4).
+
+**Pendientes que siguen abiertos:** el catálogo real de 14 medicamentos, que registrará el propietario; la
+limpieza de los datos de prueba (Z900 a Z999, medicamentos «Prueba…», «Otro mas», «pp prueba») y de la cuenta
+de prueba antes de la evaluación; las fotos desde iPhone, fuera del alcance (el predio usa Android); los
+pendientes para el documento anotados en el PLAN, entre ellos quién resuelve los conflictos (Tabla 21) y que
+las resoluciones de conflictos no dejan constancia en `correccion` (RF-32).
+
+### Velocidad
+
+13 puntos en 5 días calendario. Acumulado: 60 de 76 puntos (79 %) en 14 días, del 6 al 19 de octubre.
+El calendario estimado ponía el cierre de esta iteración el 2 de noviembre.
+
+### Hallazgos de la iteración que cambiaron el diseño o el código
+
+| Hallazgo | Prueba | Cambio |
+|---|---|---|
+| La comparación del pesaje no decía con qué se comparaba, podía compararse con un peso posterior y el aviso del mismo día pasaba inadvertido | PE-29 | Texto «Frente al peso de compra del…», el peso anterior nunca posterior, aviso amarillo y segunda confirmación (documento 24) |
+| El aviso de almacenamiento ocupaba demasiado | Pedido del autor (PE-29) | Franja discreta con «¿Por qué?» en todas las pantallas |
+| La cría recibe su número al nacer, pero la chapeta se pone después (hasta 90 días) | Decisión del propietario (paso 4.2) | Chapeta pendiente, recordatorio en Inicio y confirmación; migración y PI-01 verificación 15 (documento 25) |
+| «Saltar los números ocupados» no hacía nada y el día 90 no estaba probado | PU-26 (mutaciones) | Código retirado y prueba agregada |
+| La hora ya termina en «a. m.» y la marca de anulación quedaba «a. m.. Ninguna» | PE-31 | Nota separada con « · » |
+| El conflicto solo existe en el teléfono donde se registró: «presentarlo al propietario» lo dejaba sin solución en el del trabajador | Al programar 4.3b | Lo resuelve quien lo registró o el propietario (documento 26, sección 10; pendiente para el documento) |
+| El iPhone salió del modo avión sin el evento `online` y el envío esperaba hasta 5 minutos | PE-32 | Revisión de la señal cada 15 segundos y al volver a la aplicación (documento 09; PU-10.9) |
+| Confirmar la chapeta o descartar un conflicto parecía no hacer nada hasta el segundo clic; la ficha y la evolución tampoco se actualizaban | PE-32 | La lectura de valores vigentes perdía el seguimiento de la consulta en vivo; reescrita y vigilada por PU-27.9 (documento 26, sección 10.7) |
+| La barra decía cuántos conflictos había, pero no cuáles ni dónde | Pedido del autor (PE-32) | Pantalla **Registros en conflicto** con un enlace a cada uno; sin «Corregir» en un registro en conflicto (documento 26, sección 10.6) |
+| En iPhone ningún navegador genera WebP y el mensaje sugería Chrome | PE-32 | Mensaje que lo explica; sigue fuera del alcance |
