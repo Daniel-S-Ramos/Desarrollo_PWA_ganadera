@@ -13,6 +13,7 @@ import {
   type Movimiento,
 } from '../../datos/resolucionConflictos';
 import { vigentes } from '../../datos/vigentes';
+import { listarConflictos } from '../../datos/sincronizacionLocal';
 import { normalizarNombre } from '../../dominio/medicamentos';
 import type { NombreTabla, RegistroLocal, Uuid } from '../../dominio/tipos';
 import { PermisoDenegado } from '../../sesion/permisos';
@@ -165,4 +166,62 @@ export function describirMovimientos(plan: readonly Movimiento[], accion: Movimi
       return `${n} ${n === 1 ? uno : varios}`;
     })
     .join(', ');
+}
+
+// ---------------------------------------------------------------------------
+// Registros en conflicto: sección 10.6
+// ---------------------------------------------------------------------------
+
+export interface ConflictoListado {
+  id: Uuid;
+  tabla: NombreTabla;
+  /** «Animal Z980», «Medicamento Prueba oxitetraciclina», «Pesaje de Z921». */
+  titulo: string;
+  causa: string;
+  /** Dónde se resuelve o se revisa; null si el registro no pertenece a un animal ni al catálogo. */
+  destino: { a: string; texto: string } | null;
+  /** Si este usuario puede resolverlo; si no, se muestra con la nota de quién lo resuelve. */
+  puedeResolver: boolean;
+}
+
+const CAMPO_ANIMAL: Partial<Record<NombreTabla, string>> = { parto: 'madre_id' };
+
+/** Los conflictos de este teléfono, con qué son, por qué y adónde ir para resolverlos (decisiones A a D). */
+export async function cargarConflictos(usuario: Identidad): Promise<ConflictoListado[]> {
+  const [lista, animales] = await Promise.all([listarConflictos(), consulta.animal.toArray()]);
+  const chapetas = new Map(animales.map((a) => [a.id, a.codigo_chapeta]));
+  const fichaDe = (animalId: unknown) => {
+    const codigo = typeof animalId === 'string' ? chapetas.get(animalId) : undefined;
+    return codigo ? { a: `/animales/${animalId as string}`, texto: `Ir a la ficha de ${codigo}`, codigo } : null;
+  };
+
+  const resultado: ConflictoListado[] = [];
+  for (const { tabla, registro } of lista) {
+    const base = {
+      id: registro.id,
+      tabla,
+      causa: registro.detalle_conflicto ?? 'Ya existe un registro igual en el servicio.',
+      puedeResolver: puedeResolver(usuario, registro.autor_id),
+    };
+    if (tabla === 'animal') {
+      resultado.push({ ...base, titulo: `Animal ${String(registro['codigo_chapeta'])}`, destino: { a: `/animales/${registro.id}`, texto: 'Ir a la ficha' } });
+      continue;
+    }
+    if (tabla === 'medicamento') {
+      resultado.push({ ...base, titulo: `Medicamento ${String(registro['nombre'])}`, destino: { a: '/medicamentos', texto: 'Ir al catálogo' } });
+      continue;
+    }
+    // Una corrección se revisa en la ficha del animal del registro que corrige.
+    let animalId = registro[CAMPO_ANIMAL[tabla] ?? 'animal_id'];
+    if (tabla === 'correccion') {
+      const entidad = registro['entidad_afectada'] as NombreTabla;
+      const afectado = (await (consulta[entidad] as unknown as { get: (id: Uuid) => Promise<Record<string, unknown> | undefined> }).get(registro['registro_id'] as Uuid)) ?? {};
+      animalId = entidad === 'animal' ? registro['registro_id'] : afectado[CAMPO_ANIMAL[entidad] ?? 'animal_id'];
+    }
+    const ficha = fichaDe(animalId);
+    const [nombre] = NOMBRE_TABLA[tabla] ?? [tabla];
+    const titulo = `${nombre.charAt(0).toUpperCase()}${nombre.slice(1)}${ficha ? ` de ${ficha.codigo}` : ''}`;
+    resultado.push({ ...base, titulo, destino: ficha ? { a: ficha.a, texto: ficha.texto } : null });
+  }
+  return resultado;
 }

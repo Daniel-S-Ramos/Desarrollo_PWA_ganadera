@@ -277,6 +277,23 @@ export async function contarConflictos(): Promise<number> {
   return total;
 }
 
+/** Un registro en conflicto con su tabla, para la pantalla de conflictos (documento 26, sección 10.6). */
+export interface RegistroEnConflicto {
+  tabla: NombreTabla;
+  registro: Record<string, unknown> & { id: Uuid; autor_id: Uuid; creado_en: string; detalle_conflicto?: string };
+}
+
+/** Los registros en conflicto de todas las tablas, en el orden de sus dependencias y de creación. */
+export async function listarConflictos(): Promise<RegistroEnConflicto[]> {
+  const lista: RegistroEnConflicto[] = [];
+  for (const tabla of TABLAS_SINCRONIZABLES) {
+    const filas = await tablaDe(tabla).where('estado_sync').equals('conflicto').toArray();
+    filas.sort((x, y) => String(x['creado_en']).localeCompare(String(y['creado_en'])));
+    for (const fila of filas) lista.push({ tabla, registro: fila as RegistroEnConflicto['registro'] });
+  }
+  return lista;
+}
+
 // ---------------------------------------------------------------------------
 // Bajada
 // ---------------------------------------------------------------------------

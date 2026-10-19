@@ -242,6 +242,35 @@ Código: [`src/datos/resolucionConflictos.ts`](../../src/datos/resolucionConflic
 [`ResolverConflicto.tsx`](../../src/modulos/correcciones/ResolverConflicto.tsx) (ficha, catálogo y aviso de la
 chapeta).
 
+### 10.6 Registros en conflicto: dónde están (pedido del autor en PE-32, decisiones A a E aprobadas el 2026-10-18)
+
+La barra inferior decía cuántos registros estaban en conflicto, pero no cuáles ni dónde se resolvían.
+
+| | Decisión |
+|---|---|
+| **A** | La línea **⚠ N registros en conflicto** de la barra lleva el enlace **Ver cuáles** a la pantalla **Registros en conflicto** (`/conflictos`). |
+| **B** | Cada conflicto dice qué es y por qué, con un botón al lugar donde se resuelve: **Animal Z980** → la ficha; **Medicamento …** → el catálogo; **Chapeta puesta de Z983** → la ficha de Z983; cualquier otro registro (por ejemplo, uno que el servicio rechazó por permisos) → «Pesaje de Z921», con la ficha del animal. Una corrección lleva a la ficha del animal del registro que corrige. Un registro sin animal se lista sin enlace. |
+| **C** | En un registro en conflicto no se ofrece **Corregir**, y el teléfono no guarda una corrección sobre él: primero se resuelve el conflicto. |
+| **D** | Cada usuario ve los conflictos de su teléfono, los únicos que existen allí. Los que no puede resolver se muestran con la nota «Lo resuelve quien lo registró o el propietario». |
+| **E** | Pruebas: PU-28, apartado 6; en PE-32 se entra por **Ver cuáles**. |
+
+Código: `listarConflictos` en [`sincronizacionLocal.ts`](../../src/datos/sincronizacionLocal.ts),
+`cargarConflictos` en [`conflictos.ts`](../../src/modulos/correcciones/conflictos.ts) y
+[`PantallaConflictos.tsx`](../../src/modulos/correcciones/PantallaConflictos.tsx).
+
+### 10.7 Las pantallas no se enteraban de los cambios (defecto hallado en PE-32)
+
+Confirmar la chapeta puesta o descartar una chapeta repetida parecía no hacer nada: el registro se guardaba,
+pero la pantalla seguía igual hasta un segundo clic, que respondía «ya se registró» o «ya no está en
+conflicto». La causa estaba en la lectura de los valores vigentes de la sección 6.3: cada pantalla lee con una
+consulta en vivo de Dexie, que vuelve a consultar cuando cambia una tabla que leyó, y para saberlo sigue las
+lecturas mientras no se pierda su contexto. `animalVigente` anidaba tres funciones `async` y el contexto se
+perdía: las tablas leídas después dejaban de vigilarse. Afectaba también a la ficha (un pesaje o una
+corrección no se veían hasta volver a entrar) y a la evolución del peso. Las funciones de
+[`vigentes.ts`](../../src/datos/vigentes.ts) pasaron a encadenar las promesas de Dexie, y la prueba
+[`consultasEnVivo.test.ts`](../../src/datos/consultasEnVivo.test.ts) (PU-27, apartado 9) observa doce lecturas
+de pantallas como lo hacen ellas; con la versión anterior fallan cuatro.
+
 ## 11. Relación con los requerimientos
 
 | Requerimiento | Cómo lo atiende |

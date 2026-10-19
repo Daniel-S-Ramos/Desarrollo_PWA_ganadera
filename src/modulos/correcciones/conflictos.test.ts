@@ -20,7 +20,9 @@ import {
   resolverColocacion,
   resolverMedicamento,
   resolverUniendo,
+  cargarConflictos,
 } from './conflictos';
+import { opcionDeCorreccion, registrarCorreccion } from './correcciones';
 
 /**
  * PU-28 · Resolución de conflictos de chapeta, de medicamento y de chapeta puesta (Tabla 21, regla del
@@ -339,5 +341,73 @@ describe('PU-28 · 5. Quién resuelve (decisión del 2026-10-18)', () => {
     await resolverCambiandoNumero(duplicado, 'Z932', PROPIETARIO);
     expect(await resolverUniendo(duplicado, correcto, PROPIETARIO)).toEqual({ ok: false, error: 'Este registro ya no está en conflicto.' });
     expect((await db.animal.get(duplicado))?.codigo_chapeta).toBe('Z932');
+  });
+});
+
+describe('PU-28 · 6. Registros en conflicto: qué son y adónde ir (sección 10.6)', () => {
+  it('sin conflictos, la lista está vacía', async () => {
+    await crear('animal', datosAnimal('Z930'), TRABAJADOR.usuario_id);
+    expect(await cargarConflictos(PROPIETARIO)).toEqual([]);
+  });
+
+  it('cada conflicto dice qué es, por qué y adónde ir, en el orden de las tablas', async () => {
+    const { duplicado } = await escenarioChapeta();
+    await db.animal.update(duplicado, { detalle_conflicto: 'El código de chapeta ya está asignado a otro animal.' });
+    const med = await crear('medicamento', { nombre: 'Prueba Oxitetraciclina', tipo: 'antibiotico', unidad: 'ml', intervalo_advertencia_dias: 30 }, TRABAJADOR.usuario_id);
+    await enConflicto('medicamento', med.id);
+    const cria = await delServicio('animal', datosAnimal('Z983', { chapeta_puesta: false }));
+    const coloc = await crear('colocacion_chapeta', { animal_id: cria, fecha: '2026-10-16' }, TRABAJADOR.usuario_id);
+    await enConflicto('colocacion_chapeta', coloc.id);
+    const vaca = await delServicio('animal', datosAnimal('Z921'));
+    const p = await pesaje(vaca);
+    await db.pesaje.update(p.id, { estado_sync: 'conflicto', detalle_conflicto: 'El servicio rechazó el registro por los permisos del perfil.' });
+    const parto = await crear('parto', { madre_id: vaca, fecha: '2026-10-10', resultado: 'aborto', cria_id: null, observacion: null }, TRABAJADOR.usuario_id);
+    await db.parto.update(parto.id, { estado_sync: 'conflicto' });
+
+    const lista = await cargarConflictos(PROPIETARIO);
+    expect(lista.map((c) => [c.titulo, c.destino])).toEqual([
+      ['Medicamento Prueba Oxitetraciclina', { a: '/medicamentos', texto: 'Ir al catálogo' }],
+      ['Animal Z930', { a: `/animales/${duplicado}`, texto: 'Ir a la ficha' }],
+      ['Chapeta puesta de Z983', { a: `/animales/${cria}`, texto: 'Ir a la ficha de Z983' }],
+      ['Pesaje de Z921', { a: `/animales/${vaca}`, texto: 'Ir a la ficha de Z921' }],
+      ['Parto de Z921', { a: `/animales/${vaca}`, texto: 'Ir a la ficha de Z921' }],
+    ]);
+    expect(lista[1]?.causa).toBe('El código de chapeta ya está asignado a otro animal.');
+    expect(lista[3]?.causa).toBe('El servicio rechazó el registro por los permisos del perfil.');
+  });
+
+  it('una corrección lleva a la ficha del animal del registro que corrige; sin animal, no hay enlace', async () => {
+    const vaca = await delServicio('animal', datosAnimal('Z921'));
+    const p = await pesaje(vaca);
+    const c = await crear('correccion', { entidad_afectada: 'pesaje', registro_id: p.id, tipo: 'correccion', campo: 'peso', valor_anterior: '300', valor_nuevo: '310', motivo: 'error_digitacion', nota: null }, TRABAJADOR.usuario_id);
+    await db.correccion.update(c.id, { estado_sync: 'conflicto' });
+    const r = await crear('recordatorio', { tipo: 'sincronizacion_pendiente', animal_id: null, pospuesto_hasta: '2026-10-20' }, PROPIETARIO.usuario_id);
+    await db.recordatorio.update(r.id, { estado_sync: 'conflicto' });
+
+    const lista = await cargarConflictos(PROPIETARIO);
+    expect(lista.find((x) => x.tabla === 'correccion')).toMatchObject({ titulo: 'Corrección de Z921', destino: { a: `/animales/${vaca}` } });
+    expect(lista.find((x) => x.tabla === 'recordatorio')).toMatchObject({ destino: null, causa: 'Ya existe un registro igual en el servicio.' });
+  });
+
+  it('el trabajador ve también los que no puede resolver, marcados', async () => {
+    await delServicio('animal', datosAnimal('Z930'));
+    const ajeno = await crear('animal', datosAnimal('Z930'), OTRO.usuario_id);
+    await enConflicto('animal', ajeno.id);
+    const { duplicado: propio } = await escenarioChapetaCon('Z931');
+    const lista = await cargarConflictos(TRABAJADOR);
+    expect(lista.map((c) => [c.id, c.puedeResolver])).toEqual([
+      [ajeno.id, false],
+      [propio, true],
+    ]);
+  });
+
+  it('en un registro en conflicto no se ofrece «Corregir» ni se guarda una corrección (decisión C)', async () => {
+    const { duplicado } = await escenarioChapeta();
+    const animal = (await db.animal.get(duplicado))!;
+    expect(opcionDeCorreccion(PROPIETARIO, animal, 'trabajador')).toBe('oculta');
+    expect(opcionDeCorreccion(PROPIETARIO, { ...animal, estado_sync: 'pendiente' }, 'trabajador')).toBe('mostrar');
+    await expect(
+      registrarCorreccion('animal', duplicado, { operacion: 'corregir', campo: 'peso_inicial', valor: '34', motivo: 'error_digitacion', nota: '' }, PROPIETARIO),
+    ).rejects.toThrow(PermisoDenegado);
   });
 });

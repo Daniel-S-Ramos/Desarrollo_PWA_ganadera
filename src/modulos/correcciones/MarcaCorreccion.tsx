@@ -104,7 +104,7 @@ export function EnlaceCorregir({
   texto = 'Corregir o anular',
 }: {
   entidad: EntidadConCorreccion;
-  registro: Pick<RegistroLocal<EntidadCorregible>, 'id' | 'autor_id' | 'creado_en'>;
+  registro: Pick<RegistroLocal<EntidadCorregible>, 'id' | 'autor_id' | 'creado_en'> & { estado_sync?: string };
   identidad: Identidad;
   texto?: string;
 }) {

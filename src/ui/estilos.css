@@ -1127,3 +1127,25 @@ a.boton {
   display: grid;
   gap: 0.5rem;
 }
+
+/* «Ver cuáles» en la barra y la lista de conflictos (documento técnico 26, sección 10.6). */
+.barra-inferior__enlace {
+  display: inline-block;
+  margin-top: 0.15rem;
+  font-size: 0.9rem;
+  /* Área táctil cómoda dentro de la barra. */
+  padding: 0.35rem 0;
+}
+.conflictos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.conflictos__item h2 {
+  margin: 0 0 0.25rem;
+}
+.conflictos__item p {
+  margin: 0 0 0.5rem;
+}

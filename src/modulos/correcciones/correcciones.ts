@@ -32,9 +32,16 @@ export function esEntidadConCorreccion(valor: string): valor is EntidadConCorrec
 
 /**
  * Qué ve el usuario sobre un registro (sección 4): la opción, el aviso de ventana vencida (CU-17, 2b) o nada
- * (2a). El propietario siempre la ve.
+ * (2a). El propietario siempre la ve, salvo en un registro en conflicto: nunca llegó al servicio, así que
+ * primero se resuelve el conflicto (sección 10.6, decisión C).
  */
-export function opcionDeCorreccion(usuario: Identidad, registro: Pick<RegistroLocal<EntidadCorregible>, 'creado_en'>, perfilAutor: Perfil | undefined, ahora: Date = new Date()): 'mostrar' | 'vencida' | 'oculta' {
+export function opcionDeCorreccion(
+  usuario: Identidad,
+  registro: Pick<RegistroLocal<EntidadCorregible>, 'creado_en'> & { estado_sync?: string },
+  perfilAutor: Perfil | undefined,
+  ahora: Date = new Date(),
+): 'mostrar' | 'vencida' | 'oculta' {
+  if (registro.estado_sync === 'conflicto') return 'oculta';
   if (puedeCorregir(usuario, registro, perfilAutor, ahora)) return 'mostrar';
   return perfilAutor === 'trabajador' ? 'vencida' : 'oculta';
 }

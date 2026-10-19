@@ -14,6 +14,8 @@ export interface Linea {
   texto: string;
   detalle: string | null;
   tono: Tono;
+  /** Adónde llevar a la persona, por ejemplo a la lista de conflictos (documento 26, sección 10.6). */
+  enlace?: { texto: string; a: string };
 }
 
 export interface SituacionSincronizacion {
@@ -95,6 +97,7 @@ export function describirBarra(s: SituacionSincronizacion): Linea[] {
       texto: plural(s.conflictos, 'registro en conflicto', 'registros en conflicto'),
       detalle: 'Los resuelve quien los registró o el propietario',
       tono: 'advertencia',
+      enlace: { texto: 'Ver cuáles', a: '/conflictos' },
     });
   }
   return lineas;
