@@ -11,7 +11,8 @@ import type { FechaPredio, RegistroLocal, Uuid } from '../../dominio/tipos';
 import { soloVigentes } from '../../dominio/vigente';
 import { compararChapetas } from '../consulta/listado';
 
-export type TipoPeriodo = 'semanal' | 'mensual';
+/** Día, semana o mes; el día es el de uso diario del propietario y el que abre (PE-34). */
+export type TipoPeriodo = 'diaria' | 'semanal' | 'mensual';
 
 /**
  * El periodo comparado: 0 es el que contiene hoy; −1, el anterior; y así (sección 3). Se apoya en las

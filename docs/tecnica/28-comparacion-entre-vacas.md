@@ -27,20 +27,25 @@ productivo y el descarte de animales de bajo rendimiento.
 
 Si un trabajador llega a la ruta, se le devuelve al inicio, como en las demás rutas restringidas.
 
-## 3. El periodo (decisión B, HU-10.1)
+## 3. El periodo (decisión B, HU-10.1; ajustada en PE-34)
 
 | Periodo | Unidad | Al abrir |
 |---|---|---|
+| **Día** | Un día del calendario del predio | **Hoy** |
 | **Semana** | Lunes a domingo (documento 23, sección 4) | — |
-| **Mes** | Mes calendario | **El mes en curso** |
+| **Mes** | Mes calendario | — |
 
-Se elige con dos botones, **Semana** y **Mes**. **← Anterior** y **Siguiente →** mueven un periodo;
-**Siguiente** se inhabilita en el periodo que contiene hoy. El periodo en curso lleva **(en curso)** y sus
-días cuentan solo hasta hoy, como en el documento 23. El título dice el periodo: «Octubre de 2026 (en
-curso)», «13 – 19 oct.».
+Se elige con tres botones, **Día**, **Semana** y **Mes**. **← Anterior** y **Siguiente →** mueven un
+periodo; **Siguiente** se inhabilita en el periodo que contiene hoy. El periodo en curso lleva **(en curso)**
+y sus días cuentan solo hasta hoy, como en el documento 23. El título dice el periodo: «19 de octubre de 2026
+(hoy)», «13 – 19 oct.», «Octubre de 2026 (en curso)».
 
-No se ofrece un solo día: la ronda de ordeño ya presenta las vacas de un día con su comparación frente a su
-propio promedio, y con un solo dato el orden depende del azar de esa jornada.
+**Ajuste del autor en PE-34 (2026-10-19).** El diseño aprobado proponía semana o mes, abriendo en el mes en
+curso, y descartaba el día porque la ronda de ordeño ya muestra un día y un solo dato depende del azar de la
+jornada. Al probarlo, el autor indicó que **el propietario compara la producción a diario**, por lo que la
+comparación abre en el día de hoy y el día se agrega como periodo. Si hoy todavía no hay ordeños, el aviso
+de la sección 7 ofrece **Ver el día anterior**. En el día, cada vaca muestra sus litros (el promedio de un día
+es ese día) y no se marca «Pocos registros».
 
 ## 4. Qué vacas entran (decisión C, HU-10.2)
 
@@ -95,7 +100,7 @@ quedan siempre al final.
 
 ## 8. Al tocar una vaca (decisión G, CU-07 paso 4)
 
-Abre su producción (`/produccion?vaca=<id>`) con la agregación del periodo comparado: semanal o mensual.
+Abre su producción **diaria** (`/produccion?vaca=<id>`), cualquiera que sea el periodo comparado: es la vista que el propietario consulta con más frecuencia (ajuste del autor en PE-34; el diseño aprobado abría la agregación del periodo).
 
 ## 9. Datos (decisión H)
 
@@ -108,7 +113,7 @@ resultado en memoria, para que la pantalla se entere de los cambios (documento 2
 | Requerimiento | Cómo lo atiende |
 |---|---|
 | **RF-12 · HU-10 · CU-07 pasos 5 y 6** | Las vacas en producción del mismo periodo, ordenadas por su promedio |
-| **HU-10.1** | Semana o mes elegidos por el usuario, con navegación |
+| **HU-10.1** | Día, semana o mes elegidos por el usuario, con navegación; abre en el día de hoy |
 | **HU-10.2** | Vacas en producción de leche durante el periodo, según su historial |
 | **HU-10.3** | Orden por promedio, de mayor a menor o de menor a mayor |
 | **HU-10.4 · CU-07 5a** | Pocos registros marcados; sin comparación posible con menos de dos vacas |
@@ -121,7 +126,7 @@ resultado en memoria, para que la pantalla se entere de los cambios (documento 2
 
 | # | Qué verifica | Criterio de aprobación |
 |---|---|---|
-| 1 | Periodo | Semana de lunes a domingo y mes calendario; en curso, días hasta hoy; navegación |
+| 1 | Periodo | Día, semana de lunes a domingo y mes calendario; en curso, días hasta hoy; navegación; por día, los litros del día sin «pocos registros» |
 | 2 | Vacas incluidas | En leche al empezar, pasada a leche dentro del periodo, sacada de leche dentro del periodo, con ordeños sin destino de leche; fuera las que nunca estuvieron; retiradas marcadas |
 | 3 | Promedio y orden | Promedio por día registrado; el cero cuenta; los días sin registro no; desempates; promedio del hato como promedio de promedios |
 | 4 | Orden inverso | Invierte las vacas con registros; las sin registros siguen al final |

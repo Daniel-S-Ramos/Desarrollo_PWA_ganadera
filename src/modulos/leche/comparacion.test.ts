@@ -58,6 +58,27 @@ describe('PU-30 · 1. El periodo (sección 3)', () => {
     expect(periodoComparado('mensual', HOY, -2)).toMatchObject({ inicio: '2026-08-01', fin: '2026-08-31' });
   });
 
+  it('el día es el de hoy, el anterior y así, también más allá de los 30 días de la ventana (PE-34)', () => {
+    expect(periodoComparado('diaria', HOY, 0)).toMatchObject({ inicio: HOY, fin: HOY, enCurso: true });
+    expect(periodoComparado('diaria', HOY, -1)).toMatchObject({ inicio: '2026-10-17', fin: '2026-10-17', enCurso: false });
+    expect(periodoComparado('diaria', HOY, -31)).toMatchObject({ inicio: '2026-09-17' });
+  });
+
+  it('por día: cada vaca con los litros de ese día, sin «pocos registros»', async () => {
+    const a = await vaca('Z1');
+    await ordeno(a.id, HOY, 12);
+    await ordeno(a.id, '2026-10-17', 30);
+    const b = await vaca('Z2');
+    await ordeno(b.id, HOY, 15);
+    const c = await cargarComparacion('diaria', 0, HOY);
+    expect(c.conRegistros.map((v) => [v.codigo_chapeta, v.promedio, v.diasRegistrados, v.diasDelPeriodo, v.pocosRegistros])).toEqual([
+      ['Z2', 15, 1, 1, false],
+      ['Z1', 12, 1, 1, false],
+    ]);
+    expect(c.promedioDelHato).toBe(13.5);
+    expect((await cargarComparacion('diaria', -1, HOY)).posible).toBe(false);
+  });
+
   it('se mueve más allá de una ventana del documento 23 (12 semanas, 12 meses)', () => {
     expect(periodoComparado('semanal', HOY, -12)).toMatchObject({ inicio: '2026-07-20', fin: '2026-07-26' });
     expect(periodoComparado('mensual', HOY, -13)).toMatchObject({ inicio: '2025-09-01', fin: '2025-09-30' });

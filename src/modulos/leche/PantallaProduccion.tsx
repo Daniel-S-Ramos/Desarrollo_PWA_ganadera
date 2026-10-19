@@ -24,11 +24,7 @@ const MAS_AMPLIA: Partial<Record<Agregacion, [Agregacion, string]>> = {
 export function PantallaProduccion() {
   const [parametros, setParametros] = useSearchParams();
   const [hoy] = useState(() => fechaDelPredio());
-  // Desde la comparación entre vacas llega la agregación del periodo comparado (documento técnico 28, sección 8).
-  const [agregacion, setAgregacion] = useState<Agregacion>(() => {
-    const pedida = parametros.get('agregacion');
-    return AGREGACIONES.some(([clave]) => clave === pedida) ? (pedida as Agregacion) : 'diaria';
-  });
+  const [agregacion, setAgregacion] = useState<Agregacion>('diaria');
   const [desplazamiento, setDesplazamiento] = useState(0);
   const vacas = useLiveQuery(() => vacasConsultables(), []);
   const vacaId = parametros.get('vaca') ?? vacas?.[0]?.id ?? null;
