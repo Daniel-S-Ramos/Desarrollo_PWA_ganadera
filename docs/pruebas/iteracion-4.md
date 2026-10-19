@@ -17,6 +17,8 @@ evolución del peso y el control reproductivo.
 | PU-26 | Parto, control reproductivo y chapeta pendiente | 4.2 | RF-16 · RF-17 · CU-10 · CU-11 · HU-12 | ✅ |
 | PI-01 | Esquema remoto: chapeta puesta (verificación 15) | 4.2 | Tabla 24 · pedido del propietario | ✅ |
 | PE-30 | Parto y chapeta en el navegador real | 4.2 | CU-10 · CU-11 · HU-12 · HU-02.4 | ✅ |
+| PU-27 | Corrección, anulación y valor vigente | 4.3a | RF-31 · CU-17 · HU-17 · RD-05 | ✅ |
+| PE-31 | Corrección y anulación en el navegador real | 4.3a | CU-17 (1a, 2a, 2b, 5a) · HU-17 · HU-02.4 | ✅ |
 
 ---
 
@@ -155,3 +157,56 @@ capturas del control reproductivo de Z926 tras el aborto ni de la marca «Sin ch
 los cubren PU-26.8 y PU-26.7. (3) El número sugerido fue Z971 porque la chapeta mayor del teléfono es la de
 prueba Z970; con los datos reales, seguirá la numeración del predio. (4) La franja discreta del aviso de
 almacenamiento se ve en el iPhone (pasos 9 a 12).
+
+## PU-27 · Corrección, anulación y valor vigente
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar el orden de aplicación de las correcciones (las recibidas por orden de llegada, las pendientes después) y que la anulación siempre prevalece; los campos corregibles por tabla y sus validaciones; el motivo y la nota; los permisos; que un registro anulado no admite más correcciones; que los cálculos (repetición sanitaria, ronda y promedio de leche, evolución del peso, control reproductivo, destino) usen el valor vigente y descarten lo anulado; la ficha y el listado; y la verificación al guardar |
+| Requerimiento | RF-31 · CU-17 (1a, 2a, 2b, 5a) · HU-17.1 a 17.4 · RD-05 · Tabla 21 |
+| Tipo | Unitaria, automática |
+| Código | [`src/dominio/vigente.ts`](../../src/dominio/vigente.ts) · [`src/dominio/camposCorregibles.ts`](../../src/dominio/camposCorregibles.ts) · [`src/datos/vigentes.ts`](../../src/datos/vigentes.ts) · [`src/modulos/correcciones/correcciones.ts`](../../src/modulos/correcciones/correcciones.ts) · prueba [`correcciones.test.ts`](../../src/modulos/correcciones/correcciones.test.ts) · especificación [documento técnico 26](../tecnica/26-correccion-y-anulacion.md), sección 9 |
+| Resultado obtenido | **17 de 17 aprobadas**. Total del conjunto automático: **759 de 759** ([informe](resultados/2026-10-18_172852_1802e83.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-18 |
+
+**Mutaciones.** Diecinueve, todas detectadas: pendientes antes que las recibidas, recibidas en orden inverso,
+la anulación sin prevalecer, anulados incluidos en los cálculos, un campo desconocido que altera el registro,
+dosis de 0, fecha sin límite inferior, fecha futura, sexo del progenitor sin validar, medicamento fuera del
+catálogo, animal anulable, costo corregible por el trabajador, el mismo valor admitido, nota opcional con el
+motivo «otro», correcciones sobre un registro anulado, sin la regla de madre o padre del predio o externo,
+sin la regla entre nacimiento e ingreso, sin verificar el permiso al guardar y la ventana vencida tratada
+como opción oculta.
+
+**Observación.** El valor vigente de los litros que se adelantó en el paso 3.5 (`litrosVigentes`) se retiró:
+la ronda, el promedio y la consulta de producción usan ahora la regla general, y su prueba de la Iteración 3
+pasó a comprobar la regla general con los mismos datos.
+
+## PE-31 · Corrección y anulación en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario la corrección de un evento sanitario, de un medicamento y de los datos del animal, la anulación de un pesaje y de un ordeño, y la nota obligatoria con el motivo «otro»; y como trabajador la corrección de su propio registro del día, la opción oculta en los registros del propietario y la ventana vencida |
+| Requerimiento | CU-17 (1a, 2a, 2b, 5a) · HU-17.1 a 17.4 · RD-05 · HU-02.4 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-4` (commits ca23beb y 1802e83) |
+| Resultado obtenido | Todos los pasos se comportaron como se esperaba. Un defecto de presentación se corrigió durante la prueba (observación 1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-18 |
+
+| # | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|
+| 1 | Propietario | Corregir la dosis de la vacuna Prueba Aftosa de Z921 | «Valor vigente: 1»; la confirmación dice «Dosis pasará de 1 a 2,5»; el historial muestra **2,5 mg** con la marca **Corregido** | [formulario](evidencias/iteracion-4/PE-31-01-corregir-dosis-formulario.png) · [confirmación](evidencias/iteracion-4/PE-31-02-corregir-dosis-confirmacion.png) · [historial](evidencias/iteracion-4/PE-31-12-historial-dosis-corregida.png) |
+| 2 | Propietario | Anular el pesaje de 1.016 kg por registro duplicado | Sale de la serie («+15 kg en 16 días») y aparece tachado en **Pesajes anulados** con su motivo y su autor | [formulario](evidencias/iteracion-4/PE-31-03-anular-pesaje-formulario.png) · [confirmación](evidencias/iteracion-4/PE-31-04-anular-pesaje-confirmacion.png) · [evolución](evidencias/iteracion-4/PE-31-05-evolucion-con-pesaje-anulado.png) |
+| 3 | Propietario | Corregir el tipo de Prueba Florfenicol LA a antibiótico | El medicamento pasa a la sección **Antibiótico** del catálogo | [formulario](evidencias/iteracion-4/PE-31-06-corregir-tipo-medicamento.png) · [catálogo](evidencias/iteracion-4/PE-31-07-medicamento-en-antibioticos.png) |
+| 4 | Propietario | Corregir el peso inicial de Z971 de 32 a 34 kg | La ficha y la evolución muestran «34 kg · peso al nacer»; la marca **Corregido** se despliega con «antes 32, ahora 34», el motivo, el autor, la fecha y la nota | [formulario](evidencias/iteracion-4/PE-31-21-corregir-peso-inicial-34.png) · [ficha](evidencias/iteracion-4/PE-31-22-ficha-z971-34-kg.png) · [detalle](evidencias/iteracion-4/PE-31-23-ficha-z971-detalle-corregido.png) |
+| 5 | Propietario | Motivo «otro» sin nota y con nota | Sin nota: «Con el motivo «otro», escriba una nota» (CU-17, 5a); con nota se habilita | [sin nota](evidencias/iteracion-4/PE-31-10-motivo-otro-sin-nota.png) · [con nota](evidencias/iteracion-4/PE-31-09-motivo-otro-con-nota.png) |
+| 6 | Propietario | Anular el ordeño de Z931 del 13 de octubre desde la ronda | El aviso del registro existente ofrece **Corregir o anular este ordeño**; tras anularlo, Z931 aparece **Anulado** y al tocarla: «…fue anulado: no admite otro registro ese día» | [opción](evidencias/iteracion-4/PE-31-11-ronda-corregir-ordeno.png) · [ronda](evidencias/iteracion-4/PE-31-15-ronda-ordeno-anulado.png) · [aviso](evidencias/iteracion-4/PE-31-16-ordeno-anulado-sin-registro.png) |
+| 7 | Trabajador | Registrar un pesaje de Z924 y corregirlo el mismo día | Se guarda de 100 a 150 kg; la marca **Corregido** muestra «antes 100, ahora 150 · error de digitación · Daniel Ramos…» | [evolución](evidencias/iteracion-4/PE-31-17-trabajador-pesaje-corregido.png) · [detalle](evidencias/iteracion-4/PE-31-20-trabajador-detalle-correccion.png) |
+| 8 | Trabajador | Evolución del peso con pesajes del propietario | Los pesajes registrados por Jose Ramos no tienen la opción (CU-17, 2a) | [captura](evidencias/iteracion-4/PE-31-19-trabajador-sin-opcion-pesajes-propietario.webp) |
+| 9 | Trabajador | Corregir o anular su vacuna del 14 de octubre en Z925 | «La ventana de corrección venció: solo el propietario puede enmendarlo» (CU-17, 2b) | [captura](evidencias/iteracion-4/PE-31-18-trabajador-ventana-vencida.png) |
+
+**Observaciones.** (1) La marca de anulación del paso 2 decía «…a las 12:51 a. m.. Ninguna»: la hora ya
+termina en punto. La nota pasó a separarse con « · », como en la marca de corrección (commit 1802e83); es el
+mismo caso que PE-20 en la ficha. (2) El primer intento del paso 4 quedó sin confirmar y la ficha siguió en
+32 kg sin marca ([captura](evidencias/iteracion-4/PE-31-13-ficha-z971-sin-correccion.png) ·
+[datos](evidencias/iteracion-4/PE-31-14-ficha-z971-datos.png)); al repetirlo y guardar quedó registrada.
