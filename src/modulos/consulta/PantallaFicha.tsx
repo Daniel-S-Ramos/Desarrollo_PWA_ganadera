@@ -22,6 +22,7 @@ import { HistorialDestino } from '../destino/HistorialDestino';
 import { AvisoChapeta } from '../identificacion/AvisoChapeta';
 import { cargarVigente } from '../correcciones/correcciones';
 import { EnlaceCorregir, MarcaCorreccion } from '../correcciones/MarcaCorreccion';
+import { ResolverConflictoChapeta } from '../correcciones/ResolverConflicto';
 import { EvolucionPeso } from '../peso/EvolucionPeso';
 import { ControlReproductivo } from '../reproduccion/ControlReproductivo';
 import { puedeVerCosto } from '../sanidad/eventos';
@@ -70,6 +71,9 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
       <Encabezado ficha={ficha} hoy={hoy} verFotos={verFotos} alAlternarFotos={() => setVerFotos((v) => !v)} />
 
       {/* Documento técnico 25, sección 7.2: la chapeta pendiente de poner, para ambos perfiles. */}
+      {/* Documento técnico 26, sección 10.1: la chapeta repetida, para el propietario o quien la registró. */}
+      {ficha.estado_sync === 'conflicto' && <ResolverConflictoChapeta animalId={ficha.id} numero={ficha.codigo_chapeta} identidad={identidad} />}
+
       <AvisoChapeta animalId={ficha.id} numero={ficha.codigo_chapeta} nacimiento={ficha.fecha_nacimiento} identidad={identidad} />
 
       {verFotos && <VistasFotos ficha={ficha} identidad={identidad} />}

@@ -8,6 +8,7 @@ import { listarCatalogo } from './catalogo';
 import { NOMBRE_TIPO } from '../../dominio/medicamentos';
 import { FormularioMedicamento } from './FormularioMedicamento';
 import { EnlaceCorregir } from '../correcciones/MarcaCorreccion';
+import { ResolverConflictoMedicamento } from '../correcciones/ResolverConflicto';
 
 /**
  * Catálogo de medicamentos del predio (docs/tecnica/18-catalogo-de-medicamentos.md, sección 6).
@@ -68,6 +69,8 @@ export function PantallaMedicamentos({ identidad, puedeAgregar }: { identidad: I
                     Dosis en {m.unidad} · advierte si se repite antes de {m.intervalo_advertencia_dias === 1 ? '1 día' : `${m.intervalo_advertencia_dias} días`}
                   </span>
                   <DistintivoSync estado={m.estado_sync} {...(m.detalle_conflicto ? { detalle: m.detalle_conflicto } : {})} />
+                  {/* Documento técnico 26, sección 10.2. */}
+                  <ResolverConflictoMedicamento medicamento={m} identidad={identidad} />
                   {/* Documento técnico 26, sección 3: tipo, unidad e intervalo se corrigen. */}
                   <EnlaceCorregir entidad="medicamento" registro={m} identidad={identidad} texto="Corregir" />
                 </li>

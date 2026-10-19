@@ -1101,3 +1101,29 @@ a.boton {
   gap: 4px 16px;
   margin-bottom: var(--separacion);
 }
+
+/* Resolver un conflicto de chapeta (documento técnico 26, sección 10.1). */
+.conflicto {
+  display: grid;
+  gap: 0.75rem;
+  border-color: var(--amarillo);
+}
+.conflicto__existente {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.conflicto__existente p {
+  margin: 0;
+}
+.conflicto__foto {
+  flex: none;
+  width: 96px;
+  height: 72px;
+  border-radius: var(--radio);
+  object-fit: cover;
+}
+.conflicto__opciones {
+  display: grid;
+  gap: 0.5rem;
+}

@@ -176,12 +176,20 @@ opción en un registro del propietario y el aviso de ventana vencida en uno suyo
 
 Un registro en conflicto por unicidad **nunca llegó al servicio**: el servicio lo rechazó. Por eso puede
 arreglarse en el teléfono sin romper la regla de inmutabilidad, igual que el ordeño duplicado (documento 09,
-sección 5.2): lo que no se borra nunca es un registro que el servicio ya aceptó. Solo el **propietario**
-resuelve (Tabla 21: «se presenta al propietario para que lo resuelva»).
+sección 5.2): lo que no se borra nunca es un registro que el servicio ya aceptó.
+
+**Quién resuelve (decisión del autor del 2026-10-18, al programar la entrega 4.3b).** El **propietario** resuelve
+cualquier conflicto; el **trabajador**, los de los registros que él creó. La Tabla 21 dice «se presenta al
+propietario para que lo resuelva», pero el registro rechazado solo existe en el teléfono donde se creó: el
+propietario no lo ve en el suyo, y si entrara con su cuenta en el teléfono del trabajador, el cierre de sesión
+descartaría los registros pendientes que esperan por el rechazado (documento 12), entre ellos sus fotos y
+eventos. Con la regla original, un conflicto en el teléfono del trabajador quedaría sin solución. Quien
+registró el animal es, además, quien sabe si es otro animal o el mismo. Las dos opciones son las mismas para
+ambos perfiles.
 
 ### 10.1 Chapeta repetida (regla del propietario, 2026-10-13)
 
-En la ficha del animal en conflicto aparece, para el propietario, **Resolver el conflicto**, con el animal que
+En la ficha del animal en conflicto aparece, para quien puede resolverlo, **Resolver el conflicto**, con el animal que
 ya tiene el número (foto, sexo, edad y autor) y dos opciones:
 
 | Opción | Qué hace |
@@ -194,7 +202,7 @@ no se toca, y la unión se detiene con la causa.
 
 ### 10.2 Medicamento repetido
 
-En el catálogo, el medicamento en conflicto muestra, para el propietario, **Usar el que ya existe (Prueba
+En el catálogo, el medicamento en conflicto muestra, para quien puede resolverlo, **Usar el que ya existe (Prueba
 Ivermectina)**: los eventos sanitarios que lo usan y no llegaron al servicio pasan al medicamento registrado,
 y el duplicado se retira.
 
@@ -207,8 +215,32 @@ porque el dato ya está registrado (la fecha que prevalece es la recibida primer
 
 | Prueba | Qué verifica |
 |---|---|
-| **PU-28** | Cambiar el número: valida, reenvía y libera las dependencias. Unir: reescribe los dependientes no enviados, retira el duplicado y no toca nada enviado. Medicamento y colocación. Solo el propietario |
+| **PU-28** | Cambiar el número: valida, reenvía y libera las dependencias. Unir: reescribe los dependientes no enviados, retira el duplicado y no toca nada enviado. Medicamento y colocación. El propietario resuelve cualquiera; el trabajador, solo lo que él creó |
 | **PE-32** | Provocar un conflicto de chapeta con dos teléfonos sin conexión y resolverlo de las dos formas; repetir un medicamento y usar el existente |
+
+### 10.5 Precisiones de la implementación
+
+Surgieron al programar la entrega 4.3b y no cambian las decisiones:
+
+- **Orden de la cola.** Al cambiar el número, las operaciones de los registros que dependen del animal (también
+  las de sus crías y las correcciones de ellos) pasan detrás de la suya, en el mismo orden: así salen con él en
+  la misma subida y no esperan a la siguiente.
+- **Correcciones del duplicado.** Al unir, las que corrigen al duplicado se descartan, porque describen un
+  registro que desaparece; las que lo ponen como valor nuevo (madre, padre o medicamento) pasan al correcto.
+  La pantalla lo dice antes de confirmar.
+- **Chapeta puesta del duplicado.** Si el animal correcto ya tiene la suya, la del duplicado se descarta (es
+  una por animal); si no, pasa.
+- **El existente todavía no llegó.** Si el animal o el medicamento que ya tiene el número o el nombre no está
+  en el teléfono, solo se ofrece cambiar el número; la unión aparece cuando llegue. Solo se une con un
+  registro que el servicio ya aceptó.
+- **La foto del existente** se toma de su ficha; si no está en el teléfono, se muestra «Sin foto» con el
+  enlace a su ficha.
+- **Ya resuelto.** Si otra pantalla ya resolvió el conflicto, la segunda no hace nada y lo dice.
+
+Código: [`src/datos/resolucionConflictos.ts`](../../src/datos/resolucionConflictos.ts) (lo que toca la cola),
+[`src/modulos/correcciones/conflictos.ts`](../../src/modulos/correcciones/conflictos.ts) (permiso y validación) y
+[`ResolverConflicto.tsx`](../../src/modulos/correcciones/ResolverConflicto.tsx) (ficha, catálogo y aviso de la
+chapeta).
 
 ## 11. Relación con los requerimientos
 
@@ -218,7 +250,7 @@ porque el dato ya está registrado (la fecha que prevalece es la recibida primer
 | **HU-17.2 y 3 · RD-05 · CU-17 2a, 2b** | Permisos del trabajador y del propietario, en pantalla y al guardar |
 | **HU-17.4** | Anulados visibles y marcados, fuera de los cálculos |
 | **CU-17 1a, 3a, 5a** | Anulado sin correcciones; anular sin campo; nota obligatoria con «otro» |
-| **Tabla 21** | Orden por recepción; la anulación prevalece; conflictos de chapeta resueltos por el propietario |
+| **Tabla 21** | Orden por recepción; la anulación prevalece; conflictos de chapeta resueltos en el teléfono donde ocurrieron, por el propietario o por quien registró (sección 10) |
 | **Regla del propietario (2026-10-13)** | Distintos: otro número; el mismo: unir los eventos con el correcto |
 
 HU-17.5 (consultar las correcciones) es el paso 4.4 (CU-18).

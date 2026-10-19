@@ -82,16 +82,19 @@ export async function cargarTernerosSinChapeta(hoy: FechaPredio = fechaDelPredio
 export type EstadoChapeta =
   | { estado: 'no_aplica' }
   | { estado: 'pendiente'; dias: number | null; quedan: number | null; vencido: boolean }
-  | { estado: 'puesta'; colocacion: RegistroLocal<'colocacion_chapeta'>; autor: string };
+  | { estado: 'puesta'; colocacion: RegistroLocal<'colocacion_chapeta'>; autor: string; repetida?: RegistroLocal<'colocacion_chapeta'> };
 
 /** El estado de la chapeta de un animal, para su ficha (sección 7.2). */
 export async function estadoDeChapeta(animalId: Uuid, hoy: FechaPredio = fechaDelPredio()): Promise<EstadoChapeta> {
   const animal = await animalVigente(animalId);
   if (!animal || !registradoSinChapeta(animal)) return { estado: 'no_aplica' };
-  const colocacion = await consulta.colocacion_chapeta.where('animal_id').equals(animalId).first();
+  const colocaciones = await consulta.colocacion_chapeta.where('animal_id').equals(animalId).toArray();
+  // La que vale es la que aceptó el servicio; la rechazada por repetida se ofrece para descartar (documento 26, sección 10.3).
+  const repetida = colocaciones.find((c) => c.estado_sync === 'conflicto');
+  const colocacion = colocaciones.find((c) => c.estado_sync !== 'conflicto') ?? repetida;
   if (colocacion) {
     const autor = await consulta.usuario.get(colocacion.autor_id);
-    return { estado: 'puesta', colocacion, autor: autor?.nombre ?? 'un usuario que ya no está en el predio' };
+    return { estado: 'puesta', colocacion, autor: autor?.nombre ?? 'un usuario que ya no está en el predio', ...(repetida ? { repetida } : {}) };
   }
   const [ternero] = ternerosSinChapeta([animal], [], new Set(), hoy, await plazoDeChapeta());
   return { estado: 'pendiente', dias: ternero?.dias ?? null, quedan: ternero?.quedan ?? null, vencido: ternero?.vencido ?? false };

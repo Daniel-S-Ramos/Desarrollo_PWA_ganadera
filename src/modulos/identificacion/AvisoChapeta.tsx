@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { fechaDelPredio, formatearFecha, formatearInstante } from '../../dominio/fechas';
 import type { Uuid } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
+import { ResolverConflictoColocacion } from '../correcciones/ResolverConflicto';
 import { cargarTernerosSinChapeta, confirmarChapetaPuesta, errorDeFechaColocacion, estadoDeChapeta, type TerneroSinChapeta } from './chapetaPendiente';
 
 function describirPlazo(t: Pick<TerneroSinChapeta, 'dias' | 'quedan' | 'vencido'>): string {
@@ -28,9 +29,21 @@ export function AvisoChapeta({ animalId, numero, nacimiento, identidad }: { anim
   if (!estado || estado.estado === 'no_aplica') return null;
   if (estado.estado === 'puesta') {
     return (
-      <p className="texto-secundario">
-        Chapeta puesta el {formatearFecha(estado.colocacion.fecha)} por {estado.autor} · registrado el {formatearInstante(estado.colocacion.creado_en)}
-      </p>
+      <>
+        <p className="texto-secundario">
+          Chapeta puesta el {formatearFecha(estado.colocacion.fecha)} por {estado.autor} · registrado el {formatearInstante(estado.colocacion.creado_en)}
+        </p>
+        {estado.repetida && (
+          <div className="aviso aviso--atencion aviso--en-contenido" role="status">
+            <p>
+              {estado.repetida.id === estado.colocacion.id
+                ? 'Otro teléfono ya registró que este animal tiene la chapeta puesta; su fecha llegará en la próxima sincronización.'
+                : `Este teléfono también registró la chapeta puesta, el ${formatearFecha(estado.repetida.fecha)}, pero el servicio ya tenía la de arriba.`}
+            </p>
+            <ResolverConflictoColocacion colocacion={estado.repetida} identidad={identidad} />
+          </div>
+        )}
+      </>
     );
   }
 
