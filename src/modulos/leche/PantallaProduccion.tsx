@@ -1,10 +1,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { fechaDelPredio } from '../../dominio/fechas';
-import { formatearLitros } from '../../dominio/leche';
-import { agregar, etiquetaDia, periodosDeVentana, resumir, type Agregacion, type FilaPeriodo, type Periodo } from '../../dominio/periodos';
-import { registrosDe, vacasConsultables } from './produccion';
+import { leerParametro } from '../../datos/parametros';
+import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
+import { DIAS_PROMEDIO_POR_DEFECTO, formatearLitros } from '../../dominio/leche';
+import { agregar, diasEntreInclusive, etiquetaDia, periodosDeVentana, resumir, sumarDias, type Agregacion, type FilaPeriodo, type Periodo } from '../../dominio/periodos';
+import { diaDeVaca, registrosDe, vacasConsultables, type DiaDeVaca } from './produccion';
 
 const AGREGACIONES: [Agregacion, string][] = [
   ['diaria', 'Diaria'],
@@ -13,7 +14,6 @@ const AGREGACIONES: [Agregacion, string][] = [
 ];
 
 const MAS_AMPLIA: Partial<Record<Agregacion, [Agregacion, string]>> = {
-  diaria: ['semanal', 'Ver por semanas'],
   semanal: ['mensual', 'Ver por meses'],
 };
 
@@ -29,6 +29,7 @@ export function PantallaProduccion() {
   const vacas = useLiveQuery(() => vacasConsultables(), []);
   const vacaId = parametros.get('vaca') ?? vacas?.[0]?.id ?? null;
   const registros = useLiveQuery(() => (vacaId ? registrosDe(vacaId) : Promise.resolve([])), [vacaId]);
+  const diasPromedio = useLiveQuery(() => leerParametro('dias_promedio_produccion'), []) ?? DIAS_PROMEDIO_POR_DEFECTO;
 
   if (!vacas) return <p className="texto-secundario">Cargando…</p>;
   if (vacas.length === 0) {
@@ -102,19 +103,32 @@ export function PantallaProduccion() {
         </button>
       </div>
 
-      {/* El rango siempre a la vista: al retroceder sin registros no se sabía qué días se veían (PE-34). */}
-      <p className="produccion__ventana" aria-live="polite">
-        {tituloVentana(periodos, agregacion)}
-      </p>
-
-      {!registros ? (
+      {agregacion === 'diaria' ? (
+        // PE-34: la vista diaria es un día a la vez; Anterior y Siguiente se mueven de a un día.
+        registros ? (
+          <DiaVaca
+            chapeta={vaca.codigo_chapeta}
+            dia={diaDeVaca(registros, sumarDias(hoy, desplazamiento), diasPromedio)}
+            hoy={hoy}
+            diasPromedio={diasPromedio}
+            irA={(fecha) => setDesplazamiento(1 - diasEntreInclusive(fecha, hoy))}
+          />
+        ) : (
+          <p className="texto-secundario">Cargando…</p>
+        )
+      ) : !registros ? (
         <p className="texto-secundario">Cargando…</p>
       ) : (
         <>
+          {/* El rango siempre a la vista: al retroceder sin registros no se sabía qué semanas o meses se veían (PE-34). */}
+          <p className="produccion__ventana" aria-live="polite">
+            {tituloVentana(periodos, agregacion)}
+          </p>
+
           {resumen.total === null ? (
             // CU-07, 3a: se informa y se sugiere ampliar el rango; la lista de días sigue a la vista (PE-34).
             <div className="aviso aviso--atencion aviso--en-contenido">
-              <p>Sin registros de {vaca.codigo_chapeta} en estos días.</p>
+              <p>Sin registros de {vaca.codigo_chapeta} en este periodo.</p>
               <div className="aviso__acciones">
                 <button type="button" className="boton boton--secundario" onClick={() => setDesplazamiento((d) => d - 1)}>
                   Ver el periodo anterior
@@ -144,6 +158,55 @@ export function PantallaProduccion() {
         </>
       )}
     </div>
+  );
+}
+
+/** Un día de la vaca: sus litros y la comparación con su promedio, o el aviso con los ordeños cercanos (PE-34). */
+function DiaVaca({ chapeta, dia, hoy, diasPromedio, irA }: { chapeta: string; dia: DiaDeVaca; hoy: string; diasPromedio: number; irA: (fecha: string) => void }) {
+  const c = dia.comparacion;
+  return (
+    <>
+      <p className="produccion__ventana" aria-live="polite">
+        {formatearFecha(dia.fecha)}
+        {dia.fecha === hoy ? ' (hoy)' : ''}
+      </p>
+      {dia.litros !== null ? (
+        <section className="tarjeta produccion__resumen">
+          <h2>
+            {chapeta} · {formatearLitros(dia.litros)} litros
+          </h2>
+          <p className="texto-secundario">
+            {dia.promedio
+              ? `Promedio de los ${diasPromedio} días anteriores: ${formatearLitros(dia.promedio.promedio)} litros (${dia.promedio.registros} ${dia.promedio.registros === 1 ? 'registro' : 'registros'})`
+              : `Sin registros en los ${diasPromedio} días anteriores para comparar`}
+          </p>
+          {c && (
+            <p className={c.atencion ? 'aviso aviso--atencion aviso--en-contenido' : 'comparacion'}>
+              {c.atencion && '⚠ '}
+              {c.diferencia === 'Igual a su promedio' ? 'Igual a su promedio.' : `${c.palabras}: ${c.diferencia.charAt(0).toLowerCase() + c.diferencia.slice(1)}.`}
+            </p>
+          )}
+        </section>
+      ) : (
+        <div className="aviso aviso--atencion aviso--en-contenido">
+          <p>Sin registro de {chapeta} este día.</p>
+          {(dia.anterior || dia.siguiente) && (
+            <div className="aviso__acciones">
+              {dia.anterior && (
+                <button type="button" className="boton boton--secundario" onClick={() => irA(dia.anterior!.fecha)}>
+                  Ir al ordeño anterior: {etiquetaDia(dia.anterior.fecha)}
+                </button>
+              )}
+              {dia.siguiente && (
+                <button type="button" className="boton boton--secundario" onClick={() => irA(dia.siguiente!.fecha)}>
+                  Ir al siguiente: {etiquetaDia(dia.siguiente.fecha)}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 

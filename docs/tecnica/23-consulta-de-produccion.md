@@ -79,10 +79,18 @@ gráficos, y se lee en un teléfono de 360 px.
 La agregación más amplia: de diaria a semanal y de semanal a mensual; en mensual solo se ofrece el
 periodo anterior.
 
-**Ajustes de PE-34.** El rango de la ventana se muestra siempre debajo de **← Anterior** y **Siguiente →**, en
-el orden de la lista, de lo más reciente a lo más antiguo («19 oct a 20 sep»): al retroceder sin datos no se
-sabía qué días se estaban viendo. Y la lista de días (o semanas, o meses) sigue a la vista aunque ninguno
-tenga registros, cada uno con «Sin registro»; el aviso va encima, como nota.
+**Ajustes del autor en PE-34 (2026-10-19).**
+
+- **La vista diaria es un día a la vez**, no una ventana de 30 días. Abre en hoy («19 de octubre de 2026
+  (hoy)»); **← Anterior** pasa al día anterior y **Siguiente →** al siguiente. El ordeño se hace en un día
+  concreto, y un rango de días confundía al ganadero. El día muestra sus litros y la comparación con su
+  promedio de los días anteriores, con las mismas palabras de la ronda (documento 22, sección 6). Sin registro,
+  dice «Sin registro de Z921 este día» y ofrece **Ir al ordeño anterior** y **Ir al siguiente**, con su fecha,
+  para no tener que retroceder día por día a ciegas. Así la vista diaria deja de tener la sugerencia «Ver por
+  semanas»: la semanal está a un botón.
+- **Semanal y mensual conservan la ventana** (12 semanas, 12 meses), útil para ver la tendencia. Su rango se
+  muestra siempre debajo de los botones, en el orden de la lista («19 oct a 20 sep»), y la lista sigue a la
+  vista aunque no haya registros; el aviso va encima, como nota.
 
 ## 8. Relación con los requerimientos
 

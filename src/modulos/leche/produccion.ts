@@ -5,6 +5,7 @@
 import { consulta } from '../../datos/repositorio';
 import { animalesVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
+import { compararConPromedio, promedioReciente, type Comparacion } from '../../dominio/leche';
 import type { FechaPredio, Uuid } from '../../dominio/tipos';
 import { compararChapetas } from '../consulta/listado';
 
@@ -34,4 +35,37 @@ export async function vacasConsultables(): Promise<VacaConsultable[]> {
 export async function registrosDe(animalId: Uuid): Promise<{ fecha: FechaPredio; litros: number }[]> {
   const registros = await vigentes('produccion_leche', await consulta.produccion_leche.where('animal_id').equals(animalId).toArray());
   return registros.map((r) => ({ fecha: r.fecha, litros: r.litros }));
+}
+
+export interface DiaDeVaca {
+  fecha: FechaPredio;
+  /** Litros vigentes del día; null si no hay registro (un cero registrado es 0, apartado 3.8.6). */
+  litros: number | null;
+  /** Frente a su promedio de los días anteriores, como en la ronda (documento 22, sección 6). */
+  comparacion: Comparacion | null;
+  promedio: { promedio: number; registros: number } | null;
+  /** El ordeño más reciente antes de este día, para ir a él cuando el día no tiene registro. */
+  anterior: { fecha: FechaPredio; litros: number } | null;
+  /** El primero después de este día, para avanzar hasta él. */
+  siguiente: { fecha: FechaPredio; litros: number } | null;
+}
+
+/**
+ * La producción de un día de la vaca (vista diaria, ajustada en PE-34): un día a la vez, con su comparación
+ * frente al promedio y los ordeños más cercanos antes y después.
+ */
+export function diaDeVaca(registros: readonly { fecha: FechaPredio; litros: number }[], fecha: FechaPredio, diasPromedio: number): DiaDeVaca {
+  const delDia = registros.find((r) => r.fecha === fecha);
+  const promedio = promedioReciente(registros, fecha, diasPromedio);
+  const ordenados = [...registros].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const anterior = [...ordenados].reverse().find((r) => r.fecha < fecha) ?? null;
+  const siguiente = ordenados.find((r) => r.fecha > fecha) ?? null;
+  return {
+    fecha,
+    litros: delDia ? delDia.litros : null,
+    promedio,
+    comparacion: delDia && promedio ? compararConPromedio(delDia.litros, promedio.promedio) : null,
+    anterior: anterior && { fecha: anterior.fecha, litros: anterior.litros },
+    siguiente: siguiente && { fecha: siguiente.fecha, litros: siguiente.litros },
+  };
 }
