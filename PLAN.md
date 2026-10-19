@@ -59,9 +59,13 @@ repite, y las siguientes tienen más pantallas. Se recalibra al cierre de cada i
 | 1 · Fundación técnica | 16 | 2026-10-06 | — | 2026-10-12 | 16 puntos / 7 días |
 | 2 · Identificación y ficha | 15 | 2026-10-12 | 2026-10-19 | 2026-10-13 | 15 puntos / 2 días |
 | 3 · Sanidad, leche y destino | 16 | 2026-10-13 | 2026-10-26 | 2026-10-15 | 16 puntos / 3 días |
-| 4 · Peso, partos y correcciones | 13 | 2026-10-27 | 2026-11-02 | | |
-| 5 · Consultas, alertas y economía | 16 | 2026-11-03 | 2026-11-09 | | |
-| Cierre · Evaluación del prototipo | — | 2026-11-10 | 2026-11-23 | | |
+| 4 · Peso, partos y correcciones | 13 | 2026-10-15 | 2026-11-02 | 2026-10-19 | 13 puntos / 5 días |
+| 5 · Consultas, alertas y economía | 16 | 2026-10-20 | 2026-10-26 | | |
+| Cierre · Evaluación del prototipo | — | 2026-10-27 | 2026-11-09 | | |
+
+Recalibrado al cierre de la Iteración 4: con 13 a 16 puntos en 3 a 5 días, la Iteración 5 se estima en una
+semana y el cierre en dos, que dependen también del tiempo que puedan dedicar el propietario y los
+trabajadores a la evaluación.
 
 ## Iteración 2 — Identificación animal y ficha (HU-01, HU-02, HU-15 · 15 puntos) · cerrada el 2026-10-13 · `v0.2`
 
@@ -94,15 +98,16 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 3.6 | Consulta de producción diaria, semanal y mensual | ✅ |
 | 3.7 | Pruebas y cierre de iteración | ✅ |
 
-## Iteración 4 — Peso, partos y correcciones (HU-05, HU-12, HU-17 · 13 puntos)
+## Iteración 4 — Peso, partos y correcciones (HU-05, HU-12, HU-17 · 13 puntos) · cerrada el 2026-10-19 · `v0.4`
 
 | Paso | Contenido | Estado |
 |---|---|---|
-| 4.1 | Registro de pesaje y evolución con ganancia diaria (CU-08, CU-09) | ⬜ |
-| 4.2 | Registro de parto con resultado, cría y genealogía (CU-10, CU-11) | ⬜ |
-| 4.3 | Corrección y anulación con valor vigente (CU-17) | ⬜ |
-| 4.4 | Consulta de correcciones (CU-18) | ⬜ |
-| 4.5 | Pruebas y cierre de iteración | ⬜ |
+| 4.1 | Registro de pesaje y evolución con ganancia diaria (CU-08, CU-09) | ✅ |
+| 4.2 | Registro de parto con resultado, cría y genealogía (CU-10, CU-11) | ✅ |
+| 4.3a | Corrección y anulación con valor vigente (CU-17) | ✅ |
+| 4.3b | Resolución de conflictos de chapeta y de medicamento (Tabla 21, regla del propietario) | ✅ |
+| 4.4 | Consulta de correcciones (CU-18) | ✅ |
+| 4.5 | Pruebas y cierre de iteración | ✅ |
 
 ## Iteración 5 — Consultas, alertas y economía (HU-10, HU-11, HU-14, HU-16 · 16 puntos)
 
@@ -192,6 +197,12 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-12 | Los dispositivos del predio son Android; iPhone queda fuera del alcance de la evaluación | El propietario y los trabajadores usan Android. Las fotos dependen de que el navegador genere WebP, que Chrome para Android sí hace (PE-18) |
 | 2026-10-13 | El peso inicial se nombra según el origen: «peso de compra» (comprado) o «peso al nacer» (nacido en el predio), en la ficha y en el formulario | A pedido del autor: «peso inicial» no le dice al propietario qué peso es; el campo sigue siendo uno solo (documento técnico 16, sección 3.1) |
 | 2026-10-13 | La ficha se construye con su lógica completa (último peso, vacuna, leche, destino) aunque esos registros lleguen en las Iteraciones 3 y 4 | Cuando se guarden, la ficha los mostrará sin cambios; mientras tanto dice que no hay datos (CU-03, 4a) |
+| 2026-10-18 | Consulta de correcciones (CU-18): botón en Inicio solo para el propietario; cada entrada con animal y registro (valor vigente), cambio legible o «Anulado», motivo, nota, autor, fecha y estado; de la más reciente a la más antigua, por día, de 30 en 30; filtro por autor; abre la sección del registro; las resoluciones de conflictos no aparecen | Decisiones A–I aprobadas por el autor (documento técnico 27) |
+| 2026-10-18 | Conflictos por unicidad: el propietario resuelve cualquiera y el trabajador los de los registros que él creó, en su teléfono, con las mismas opciones (cambiar el número, unir, usar el medicamento existente, descartar la chapeta puesta) | El registro rechazado solo existe en el teléfono donde se creó; el propietario no lo ve, y entrar con su cuenta en el teléfono del trabajador descartaría los pendientes que esperan por él. Opción 1 aprobada por el autor (documento técnico 26, sección 10) |
+| 2026-10-18 | Corrección y anulación: qué campos se corrigen por tabla (la chapeta no; un resultado de parto o un destino se anulan); valor vigente por orden de recepción con la anulación siempre prevaleciente, aplicado en todas las pantallas y cálculos; un ordeño anulado impide otro de esa vaca ese día (limitación); conflictos de chapeta y de medicamento resueltos en el teléfono por el propietario porque nunca llegaron al servicio. El paso se divide en 4.3a y 4.3b | Decisiones A–I aprobadas por el autor (documento técnico 26) |
+| 2026-10-18 | Parto: un formulario con la cría dentro, en una transacción; el reproductor se guarda en la cría; advertencia de parentesco (padre, hijo, hermanos, abuelo, nieto, externo con el mismo nombre); otro parto a menos de 240 días pide confirmación; el control reproductivo es solo del propietario | Decisiones A–H aprobadas por el autor (documento técnico 25) |
+| 2026-10-18 | **La cría recibe su número al nacer, pero la chapeta física se pone después (plazo máximo: 90 días).** Se registra la colocación (tabla `colocacion_chapeta` y `animal.chapeta_puesta`), con aviso en la ficha, sección en Inicio y marca en el listado; será un sexto tipo de recordatorio en el paso 5.3 | Pedido del propietario; decisiones I–L (documento técnico 25, sección 7) |
+| 2026-10-15 | Pesaje: método obligatorio sin preselección; fecha no anterior a la llegada; dos pesajes el mismo día se admiten con una segunda confirmación (pedida en PE-29); **confirmación si la ganancia diaria es mayor que 2,0 o menor que −2,0 kg/día** (o más de 10 % el mismo día); la evolución empieza en el peso de compra o al nacer; la meta de ganancia diaria queda sin valor hasta que la dé el propietario | Decisiones A–F aprobadas; los umbrales de la D los fijó el autor (documento técnico 24) |
 | 2026-10-15 | Consulta de producción: solo el propietario (CU-07); ventanas de 30 días, 12 semanas de lunes a domingo y 12 meses, con anterior y siguiente; total, promedio por día registrado y días registrados; barras horizontales sin librerías | Decisiones A–F aprobadas por el autor (documento técnico 23) |
 | 2026-10-14 | Ronda de ordeño: desde Inicio, en espera durante la carga inicial; vacas con destino leche; promedio de los 7 días anteriores solo con días registrados; palabras con umbrales de 10 % y 25 % (de presentación); el reemplazo es una corrección de litros con motivo «registro duplicado»; el valor vigente de los litros se adelanta del paso 4.3 | Decisiones A–G aprobadas por el autor (documento técnico 22) |
 | 2026-10-14 | Advertencia por repetición: se compara con la aplicación del mismo medicamento al animal más cercana a la fecha elegida, antes o después; advierte si la distancia es menor que el intervalo; la confirmación se pierde al cambiar medicamento o fecha, se verifica otra vez al guardar y **no se almacena** | Decisiones A–G aprobadas por el autor (documento técnico 21) |
@@ -214,13 +225,13 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 |---|---|---|
 | ~~6.4~~ | ~~Verificar en un teléfono Android si instalar la aplicación concede el almacenamiento persistente~~ **Resuelto el 2026-10-12 (PE-18, parte 2): en Android sí lo concede** | Documento técnico 04, sección 3 |
 | ~~2.6~~ | **Hecho:** capturas del teléfono en PE-20 (listado, fichas, fotos sin señal) y PE-22. Tomar capturas de la aplicación en el teléfono (registro con fotos, barra sin señal, ficha) para la sustentación; PE-18 parte 2 se evidenció con datos del servicio | PE-18, observación 1 |
-| ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** En PE-22 el registro de datos sin conexión funcionó en Chrome para iOS; falta probar la foto. Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
+| ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** En PE-22 el registro de datos sin conexión funcionó en Chrome para iOS. **Confirmado en PE-32 (2026-10-18): en iPhone la foto no se guarda en ningún navegador**, porque todos usan el motor de Safari, que no genera WebP; el mensaje ahora lo dice en lugar de sugerir Chrome. Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
 | 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros (fotos, destinos, eventos sanitarios), y los medicamentos de prueba: los que empiezan por «Prueba» y además «Otro mas» (PE-25) y «pp prueba» (PE-26) | Documento técnico 13, sección 2.4 · PE-25, observación 4 |
 | 6.x | Opcional: dividir el código por pantallas (el paquete pesa 633 kB, 188 kB comprimido) para aligerar la primera carga | Aviso de Vite en la compilación del paso 2.1 |
 | ~~2.3~~ | **Hecho en los pasos 2.3 y 2.4:** distintivo junto a cada animal en el listado y la ficha. Falta observarlo a mano con pendientes y conflictos (paso 2.6). Mostrar el distintivo de sincronización junto a cada registro en el listado y la ficha, y observar a mano los estados con pendientes y conflictos | PE-15, observación 1 |
-| 4.3 | **Resolver un conflicto de chapeta** con la regla que dio el propietario el 2026-10-13: dos animales distintos → corregir la chapeta del que llegó segundo; el mismo animal dos veces → anular el duplicado y pasar sus eventos (y fotos) al animal correcto. Implica: (1) el animal en conflicto nunca llegó al servicio, así que la corrección debe crear un animal nuevo con la chapeta corregida o reenviarlo, no corregir una fila del servicio; (2) «pasar los eventos» encaja con la corrección del campo `animal_id` con el motivo «animal equivocado» (3.9.5); (3) la foto del animal rechazado, que hoy queda pendiente para siempre (PE-22), debe seguir al animal. Diseñarlo en el documento técnico de las correcciones | 3.7.3, tercera regla · PE-22 · decisión del propietario del 2026-10-13 |
+| ~~4.3~~ | **Diseñado el 2026-10-18 en el documento técnico 26, sección 10 (entrega 4.3b):** como el animal en conflicto y sus dependientes nunca llegaron al servicio, se arreglan en el teléfono (otro número, o unir con el animal correcto reescribiendo los registros no enviados, fotos incluidas); no hace falta corregir `animal_id`. Texto original: **Resolver un conflicto de chapeta** con la regla que dio el propietario el 2026-10-13: dos animales distintos → corregir la chapeta del que llegó segundo; el mismo animal dos veces → anular el duplicado y pasar sus eventos (y fotos) al animal correcto. Implica: (1) el animal en conflicto nunca llegó al servicio, así que la corrección debe crear un animal nuevo con la chapeta corregida o reenviarlo, no corregir una fila del servicio; (2) «pasar los eventos» encaja con la corrección del campo `animal_id` con el motivo «animal equivocado» (3.9.5); (3) la foto del animal rechazado, que hoy queda pendiente para siempre (PE-22), debe seguir al animal. Diseñarlo en el documento técnico de las correcciones | 3.7.3, tercera regla · PE-22 · decisión del propietario del 2026-10-13 |
 
 ## Pendientes para el documento
 
@@ -237,6 +248,9 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 - Tabla 28: agregar la pantalla «Medicamentos» (catálogo, ambos perfiles), que permite cargar el catálogo antes de usarlo en el registro sanitario (documento técnico 18, sección 6).
 - RF-09 y apartado 3.8.9: precisar que el intervalo de advertencia es el mínimo de días entre dos aplicaciones del mismo medicamento al mismo animal, que se cuenta en días porque el evento registra la fecha, y que la última aplicación se muestra siempre (documento técnico 18, sección 2).
 - Apartado 3.8.9: el nombre del medicamento es único sin distinguir mayúsculas, tildes ni espacios repetidos (documento técnico 18, sección 3).
+- Tabla 24 y apartado 3.8.11: el animal registra si ya tiene la chapeta puesta y la tabla `colocacion_chapeta` la fecha en que se puso; los recordatorios pasan de cinco a seis tipos con el de chapeta pendiente (plazo de 90 días, parámetro `dias_recordar_chapeta`). Decisión del propietario del 2026-10-18 (documento técnico 25, sección 7).
+- Tabla 21 (y apartado 3.7.3, tercera regla): un conflicto por unicidad no se «presenta al propietario», porque el registro rechazado solo existe en el teléfono donde se creó; lo resuelve allí el propietario o quien lo registró (documento técnico 26, sección 10, decisión del 2026-10-18). Es un hallazgo del desarrollo que conviene explicar en el documento.
+- RF-32 y apartado 3.9.5: las resoluciones de conflictos (cambiar el número, unir un animal o un medicamento, descartar una chapeta puesta) no dejan constancia en `correccion`, porque el registro rechazado nunca llegó al servicio; la consulta de correcciones no las muestra (documento técnico 27, sección 8). Declararlo como límite de la trazabilidad.
 - Unificar qué casos de uso extiende CU-15 (2.8.6.3 dice CU-04 y CU-08; 2.8.6.5 dice CU-06 y CU-08).
 
 ## Temas de estudio para la sustentación

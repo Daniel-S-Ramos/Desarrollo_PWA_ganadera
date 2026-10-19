@@ -7,9 +7,11 @@
  * animales, filtrar en memoria mientras se escribe es instantáneo y no exige índices adicionales.
  */
 import { consulta, reducidasLocales } from '../../datos/repositorio';
+import { animalesVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
 import { vistaPrincipal } from '../../dominio/fotografias';
 import type { Destino, EstadoSync, FechaPredio, Sexo, Uuid } from '../../dominio/tipos';
+import { idsConChapetaPendiente } from '../identificacion/chapetaPendiente';
 import { errorDeChapeta, normalizarChapeta } from '../identificacion/registroAnimal';
 
 /** Lo que muestra una fila del listado (sección 4). */
@@ -20,6 +22,8 @@ export interface AnimalListado {
   fecha_nacimiento: FechaPredio | null;
   fecha_nacimiento_exacta: boolean;
   retirado: boolean;
+  /** Registrado sin la chapeta física y aún sin colocación (documento técnico 25, sección 7.3). */
+  chapetaPendiente: boolean;
   /** Destino vigente, o null si no tiene (documento 19, sección 6). */
   destino: Destino | null;
   estado_sync: EstadoSync;
@@ -90,14 +94,16 @@ export function elegirFoto(
 
 /** Todos los animales del teléfono con lo que necesita cada fila. */
 export async function cargarListado(): Promise<AnimalListado[]> {
-  const [animales, salidas, destinos, fotografias, reducidas] = await Promise.all([
-    consulta.animal.toArray(),
+  const [animales, salidas, destinos, fotografias, reducidas, colocaciones] = await Promise.all([
+    animalesVigentes(),
     consulta.salida.toArray(),
-    consulta.destino_productivo.toArray(),
+    consulta.destino_productivo.toArray().then((r) => vigentes('destino_productivo', r)),
     consulta.fotografia.toArray(),
     reducidasLocales(),
+    consulta.colocacion_chapeta.toArray(),
   ]);
   const retirados = new Set(salidas.map((s) => s.animal_id));
+  const pendientes = idsConChapetaPendiente(animales, colocaciones, retirados);
   const fotosPorAnimal = new Map<Uuid, typeof fotografias>();
   const destinosPorAnimal = new Map<Uuid, typeof destinos>();
   for (const d of destinos) destinosPorAnimal.set(d.animal_id, [...(destinosPorAnimal.get(d.animal_id) ?? []), d]);
@@ -110,6 +116,7 @@ export async function cargarListado(): Promise<AnimalListado[]> {
     fecha_nacimiento: a.fecha_nacimiento,
     fecha_nacimiento_exacta: a.fecha_nacimiento_exacta,
     retirado: retirados.has(a.id),
+    chapetaPendiente: pendientes.has(a.id),
     destino: destinoVigente(destinosPorAnimal.get(a.id) ?? [])?.destino ?? null,
     estado_sync: a.estado_sync,
     ...(a.detalle_conflicto ? { detalle_conflicto: a.detalle_conflicto } : {}),

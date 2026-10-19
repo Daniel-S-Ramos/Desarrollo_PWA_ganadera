@@ -138,6 +138,18 @@ export interface Animal extends Auditable {
   /** El padre es un animal del predio o un reproductor externo, nunca las dos cosas a la vez. */
   padre_id: Uuid | null;
   padre_externo: string | null;
+  /**
+   * ¿Tiene ya la chapeta física? Se fija al registrar: false para las crías, que reciben su número al
+   * nacer y la chapeta después (plazo de 90 días). Ausente equivale a true: los animales registrados
+   * antes de este campo (documento técnico 25, sección 7.1).
+   */
+  chapeta_puesta?: boolean;
+}
+
+/** Cuándo se le puso la chapeta física a un animal registrado sin ella. Uno por animal (documento técnico 25, sección 7). */
+export interface ColocacionChapeta extends Auditable {
+  animal_id: Uuid;
+  fecha: FechaPredio;
 }
 
 /**
@@ -257,6 +269,7 @@ export interface Tablas {
   recordatorio: RecordatorioPospuesto;
   correccion: Correccion;
   medicamento: Medicamento;
+  colocacion_chapeta: ColocacionChapeta;
 }
 
 export type NombreTabla = keyof Tablas;
@@ -268,7 +281,7 @@ export type TablaSincronizable = NombreTabla;
  * Tablas cuyos registros pueden corregirse o anularse (apartado 3.9.5). Las correcciones y
  * los recordatorios pospuestos no se corrigen a su vez.
  */
-export type EntidadCorregible = Exclude<NombreTabla, 'correccion' | 'recordatorio'>;
+export type EntidadCorregible = Exclude<NombreTabla, 'correccion' | 'recordatorio' | 'colocacion_chapeta'>;
 
 /** Un registro tal como vive en el dispositivo: la entidad más sus atributos locales. */
 export type RegistroLocal<T extends NombreTabla> = Tablas[T] & AtributosLocales;

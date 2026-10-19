@@ -54,6 +54,8 @@ información pasa solo en el teléfono:
 | Cuando el navegador avisa que volvió la conexión (evento `online`) | 3.7.7 |
 | Pocos segundos después de guardar un registro, si hay señal | Agregado: el registro sale cuanto antes |
 | Cada 5 minutos mientras la aplicación esté abierta y con señal | Agregado: red de seguridad si un aviso no llegó |
+| Cuando la señal vuelve sin aviso: cada 15 segundos se compara el estado de la red con el anterior | Agregado tras PE-32: el iPhone salió del modo avión sin el evento `online` |
+| Al volver a la aplicación (evento `visibilitychange`) | Agregado tras PE-32 |
 
 Después de cada subida se ejecuta la bajada (documento 10): primero se envía lo pendiente y después
 se pregunta qué hay de nuevo, de modo que una sola conversación deja los dos lados al día (3.7.7).

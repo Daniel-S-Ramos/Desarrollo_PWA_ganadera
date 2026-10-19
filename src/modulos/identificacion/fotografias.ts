@@ -22,10 +22,23 @@ export class ImagenIlegible extends Error {
   }
 }
 
+/**
+ * ¿Es un iPhone o un iPad? Allí todos los navegadores, Chrome incluido, usan el motor de Safari, que no
+ * genera WebP: cambiar de navegador no sirve (PE-32). El iPad moderno se presenta como Mac con pantalla táctil.
+ */
+function esDispositivoApple(): boolean {
+  const { userAgent, maxTouchPoints } = navigator;
+  return /iPhone|iPad|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && maxTouchPoints > 1);
+}
+
 /** El navegador no genera WebP: se rechaza en lugar de guardar otro formato. */
 export class FormatoNoSoportado extends Error {
   constructor() {
-    super('Este navegador no puede comprimir la fotografía. Use Chrome en el teléfono.');
+    super(
+      esDispositivoApple()
+        ? 'En iPhone no se pueden guardar fotos: el iPhone no genera el formato que usa la aplicación, en ningún navegador. Tome las fotos desde un teléfono Android.'
+        : 'Este navegador no puede comprimir la fotografía. Use Chrome en el teléfono.',
+    );
     this.name = 'FormatoNoSoportado';
   }
 }

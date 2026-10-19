@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { formatearBytes, type Espacio } from '../../datos/almacenamiento';
 import { contarImagenesPendientes, contarRegistrosPendientes } from '../../datos/repositorio';
 import { contarConflictos } from '../../datos/sincronizacionLocal';
@@ -30,6 +31,11 @@ export function BarraEstado({ espacio, conSesion }: { espacio: Espacio | null; c
           <span aria-hidden="true">{linea.icono} </span>
           {linea.texto}
           {linea.detalle && <span className="barra-inferior__detalle">{linea.detalle}</span>}
+          {linea.enlace && (
+            <Link className="enlace barra-inferior__enlace" to={linea.enlace.a}>
+              {linea.enlace.texto}
+            </Link>
+          )}
         </div>
       ))}
       {espacio && (

@@ -29,12 +29,13 @@ declare
   med       uuid := gen_random_uuid();
   vaca      uuid := gen_random_uuid();
   ternero   uuid := gen_random_uuid();
+  becerro   uuid := gen_random_uuid();
   codigos   text[];
   ok        boolean;
   valor     text;
   cuenta    int;
   tablas_predio text[] := array['medicamento','animal','fotografia','destino_productivo','evento_sanitario',
-    'produccion_leche','pesaje','parto','movimiento_economico','salida','recordatorio','correccion'];
+    'produccion_leche','pesaje','parto','movimiento_economico','salida','recordatorio','correccion','colocacion_chapeta'];
   tablas_ref    text[] := array['usuario','parametro'];
   t text;
   ahora constant text := quote_literal(now()::text);
@@ -44,8 +45,8 @@ begin
     select count(*) into cuenta from pg_class c join pg_namespace s on s.oid = c.relnamespace
      where s.nspname = 'public' and c.relkind = 'r' and c.relrowsecurity
        and c.relname = any (tablas_predio || tablas_ref);
-    r := r || jsonb_build_object('n',1,'v','Existen las 14 tablas con RLS activada',
-           'ok', cuenta = 14, 'd', cuenta || ' de 14 tablas con RLS');
+    r := r || jsonb_build_object('n',1,'v','Existen las 15 tablas con RLS activada',
+           'ok', cuenta = 15, 'd', cuenta || ' de 15 tablas con RLS');
 
     -- -------------------------------------------------------------- 2. Privilegios
     ok := true;
@@ -66,7 +67,7 @@ begin
       ok := ok and not has_table_privilege('anon', 'public.'||t, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE');
     end loop;
     r := r || jsonb_build_object('n',2,'v','authenticated: solo SELECT e INSERT (predio) o SELECT (referencia); anon: ninguno; nadie UPDATE ni DELETE',
-           'ok', ok, 'd', case when ok then '14 tablas verificadas' else 'algún privilegio no coincide' end);
+           'ok', ok, 'd', case when ok then '15 tablas verificadas' else 'algún privilegio no coincide' end);
 
     -- Datos de apoyo: un usuario de autenticación, su fila en usuario y un medicamento.
     insert into auth.users (id, email) values (usuario, 'pi01-' || usuario || '@prueba.local');
@@ -74,7 +75,8 @@ begin
 
     -- -------------------------------------------------------------- 3. recibido_en
     insert into public.medicamento (id, autor_id, creado_en, recibido_en, nombre, tipo, unidad, intervalo_advertencia_dias)
-    values (med, usuario, now(), '2000-01-01T00:00:00Z', 'Prueba Ivermectina', 'purga', 'ml', 30);
+    -- Nombre propio de la prueba: «Prueba Ivermectina» chocó con el que registró el trabajador en PE-25 (2026-10-18).
+    values (med, usuario, now(), '2000-01-01T00:00:00Z', 'PI01 Ivermectina', 'purga', 'ml', 30);
     select recibido_en::text into valor from public.medicamento where id = med;
     r := r || jsonb_build_object('n',3,'v','recibido_en la fija el servicio aunque el dispositivo envíe otra',
            'ok', (select recibido_en > now() - interval '5 minutes' from public.medicamento where id = med),
@@ -122,8 +124,8 @@ begin
            'ok', codigos = array_fill('23514'::text, array[8]), 'd', 'códigos: ' || array_to_string(codigos, ', '));
 
     -- -------------------------------------------------------------- 8. Medicamento sin distinguir mayúsculas
-    valor := pg_temp.intentar(format('insert into public.medicamento (id, autor_id, creado_en, nombre, tipo, unidad, intervalo_advertencia_dias) values (%L,%L,%s,%L,%L,%L,30)', gen_random_uuid(), usuario, ahora, ' prueba ivermectina ', 'purga', 'ml'));
-    r := r || jsonb_build_object('n',8,'v','«prueba ivermectina» se rechaza si ya existe «Prueba Ivermectina» (3.8.9)','ok', valor = '23505','d','código: ' || valor);
+    valor := pg_temp.intentar(format('insert into public.medicamento (id, autor_id, creado_en, nombre, tipo, unidad, intervalo_advertencia_dias) values (%L,%L,%s,%L,%L,%L,30)', gen_random_uuid(), usuario, ahora, ' pi01 ivermectina ', 'purga', 'ml'));
+    r := r || jsonb_build_object('n',8,'v','«pi01 ivermectina» se rechaza si ya existe «PI01 Ivermectina» (3.8.9)','ok', valor = '23505','d','código: ' || valor);
 
     -- -------------------------------------------------------------- 9. Una compra por animal
     insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor)
@@ -170,14 +172,26 @@ begin
            'ok', codigos = array['23514','OK'], 'd', 'ambas: ' || codigos[1] || ' · solo externa: ' || codigos[2]);
 
     -- -------------------------------------------------------------- 14. Medicamento sin tildes ni espacios repetidos
-    -- Con «Prueba Ivermectina» registrada (verificación 3), las otras escrituras del mismo nombre se rechazan
+    -- Con «PI01 Ivermectina» registrada (verificación 3), las otras escrituras del mismo nombre se rechazan
     -- y un nombre distinto se admite (docs/tecnica/18-catalogo-de-medicamentos.md, sección 3).
     codigos := array(
       select pg_temp.intentar(format('insert into public.medicamento (id, autor_id, creado_en, nombre, tipo, unidad, intervalo_advertencia_dias) values (%L,%L,%s,%L,%L,%L,30)', gen_random_uuid(), usuario, ahora, c, 'purga', 'ml'))
-        from unnest(array['Prueba Ivermectína', '  prueba   IVERMECTINA ', 'Prueba Ivermectina 1%']) with ordinality as t(c, i)
+        from unnest(array['PI01 Ivermectína', '  pi01   IVERMECTINA ', 'PI01 Ivermectina 1%']) with ordinality as t(c, i)
        order by i);
     r := r || jsonb_build_object('n',14,'v','Medicamento con tilde o espacios repetidos se rechaza; otro nombre se admite',
            'ok', codigos = array['23505','23505','OK'], 'd', 'códigos: ' || array_to_string(codigos, ', '));
+
+    -- -------------------------------------------------------------- 15. Chapeta pendiente de poner
+    -- Un animal se registra sin la chapeta puesta, y su colocación se admite una sola vez
+    -- (docs/tecnica/25-parto-y-control-reproductivo.md, sección 7.1).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, chapeta_puesta) values (%L,%L,%s,%L,%L,true,false)', becerro, usuario, ahora, 'Z908', 'macho')),
+      pg_temp.intentar(format('insert into public.colocacion_chapeta (id, autor_id, creado_en, animal_id, fecha) values (%L,%L,%s,%L,current_date)', gen_random_uuid(), usuario, ahora, becerro)),
+      pg_temp.intentar(format('insert into public.colocacion_chapeta (id, autor_id, creado_en, animal_id, fecha) values (%L,%L,%s,%L,current_date)', gen_random_uuid(), usuario, ahora, becerro))];
+    select count(*) into cuenta from public.parametro p where p.clave = 'dias_recordar_chapeta' and p.valor = 90;
+    r := r || jsonb_build_object('n',15,'v','Animal sin chapeta puesta se admite; su colocación, una sola vez; plazo de 90 días cargado',
+           'ok', codigos = array['OK','OK','23505'] and cuenta = 1,
+           'd', 'códigos: ' || array_to_string(codigos, ', ') || ' · parámetro: ' || cuenta);
 
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.
     raise exception using errcode = 'P0099', message = 'REVERTIR';

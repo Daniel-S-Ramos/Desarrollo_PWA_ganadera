@@ -3,6 +3,7 @@
  * Especificación: docs/tecnica/18-catalogo-de-medicamentos.md, secciones 4 a 6
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { vigentes } from '../../datos/vigentes';
 import {
   compararMedicamentos,
   normalizarNombre,
@@ -19,7 +20,8 @@ export type MedicamentoLocal = RegistroLocal<'medicamento'>;
 
 /** El catálogo ordenado por tipo y nombre. */
 export async function listarCatalogo(): Promise<MedicamentoLocal[]> {
-  return (await consulta.medicamento.toArray()).sort(compararMedicamentos);
+  // Tipo, unidad e intervalo vigentes (documento técnico 26, sección 6.3).
+  return (await vigentes('medicamento', await consulta.medicamento.toArray())).sort(compararMedicamentos);
 }
 
 /** Lo que el catálogo ya tiene parecido a un nombre: la coincidencia exacta y los parecidos (sección 4). */

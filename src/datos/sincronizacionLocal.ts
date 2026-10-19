@@ -268,13 +268,30 @@ export async function registrarIntentoImagen(entrada: ImagenPendiente): Promise<
   await db.cola_imagenes.update(entrada.seq!, { intentos: entrada.intentos + 1, ultimo_intento: new Date().toISOString() });
 }
 
-/** Registros en conflicto en todas las tablas: requieren la revisión del propietario (documento 11). */
+/** Registros en conflicto en todas las tablas: los resuelve quien los registró o el propietario (documentos 11 y 26). */
 export async function contarConflictos(): Promise<number> {
   let total = 0;
   for (const tabla of TABLAS_SINCRONIZABLES) {
     total += await tablaDe(tabla).where('estado_sync').equals('conflicto').count();
   }
   return total;
+}
+
+/** Un registro en conflicto con su tabla, para la pantalla de conflictos (documento 26, sección 10.6). */
+export interface RegistroEnConflicto {
+  tabla: NombreTabla;
+  registro: Record<string, unknown> & { id: Uuid; autor_id: Uuid; creado_en: string; detalle_conflicto?: string };
+}
+
+/** Los registros en conflicto de todas las tablas, en el orden de sus dependencias y de creación. */
+export async function listarConflictos(): Promise<RegistroEnConflicto[]> {
+  const lista: RegistroEnConflicto[] = [];
+  for (const tabla of TABLAS_SINCRONIZABLES) {
+    const filas = await tablaDe(tabla).where('estado_sync').equals('conflicto').toArray();
+    filas.sort((x, y) => String(x['creado_en']).localeCompare(String(y['creado_en'])));
+    for (const fila of filas) lista.push({ tabla, registro: fila as RegistroEnConflicto['registro'] });
+  }
+  return lista;
 }
 
 // ---------------------------------------------------------------------------

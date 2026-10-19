@@ -1,0 +1,26 @@
+PI-01 · Tras la migración 20261018000100_chapeta_puesta.sql (2026-10-18)
+Salida de npm run db:push (ejecutado por el autor) y de npm run prueba:pi-01:
+
+Applying migration 20261018000100_chapeta_puesta.sql...
+Finished supabase db push.
+
+"15 de 15 tablas con RLS"|1|"APROBADA"|"Existen las 15 tablas con RLS activada"
+"15 tablas verificadas"|2|"APROBADA"|"authenticated: solo SELECT e INSERT (predio) o SELECT (referencia); anon: ninguno; nadie UPDATE ni DELETE"
+"enviado 2000-01-01, guardado 2026-10-18 05:05:03.536471+00"|3|"APROBADA"|"recibido_en la fija el servicio aunque el dispositivo envíe otra"
+"inserción repetida: 23505 · con ON CONFLICT: OK · filas con ese id: 1"|4|"APROBADA"|"Mismo id: se rechaza; con ON CONFLICT DO NOTHING se ignora sin error (3.7.8)"
+"código: 23505"|5|"APROBADA"|"Un segundo animal con la misma chapeta se rechaza"
+"código: 23505"|6|"APROBADA"|"Un segundo ordeño de la misma vaca en la misma fecha se rechaza"
+"códigos: 23514, 23514, 23514, 23514, 23514, 23514, 23514, 23514"|7|"APROBADA"|"Se rechazan valores fuera del dominio (8 casos de la Tabla 24)"
+"código: 23505"|8|"APROBADA"|"«pi01 ivermectina» se rechaza si ya existe «PI01 Ivermectina» (3.8.9)"
+"compra: 23505 · alimentación: OK"|9|"APROBADA"|"Segunda compra del mismo animal se rechaza; segunda alimentación se admite"
+"6 de 6"|10|"APROBADA"|"Están cargados los seis parámetros de la Tabla 30"
+"ninguna expuesta"|11|"APROBADA"|"Ninguna función SECURITY DEFINER de public es ejecutable por anon ni authenticated"
+"códigos: 23514, 23514, 23514, 23514, 23514, 23514, 23514, 23514, OK"|12|"APROBADA"|"Chapeta: se rechazan minúscula, espacio, cero inicial, letra O, cero, dos letras y fuera de rango; Z905 se admite"
+"ambas: 23514 · solo externa: OK"|13|"APROBADA"|"Madre del predio y externa a la vez se rechaza; solo externa se admite"
+"códigos: 23505, 23505, OK"|14|"APROBADA"|"Medicamento con tilde o espacios repetidos se rechaza; otro nombre se admite"
+"códigos: OK, OK, 23505 · parámetro: 1"|15|"APROBADA"|"Animal sin chapeta puesta se admite; su colocación, una sola vez; plazo de 90 días cargado"
+
+Resultado: 15 de 15 APROBADAS.
+- Verificaciones 1 y 2: ahora 15 tablas, con colocacion_chapeta (RLS, solo SELECT e INSERT).
+- Verificación 15: animal con chapeta_puesta false se admite; la colocación, una sola vez (23505 la segunda); parámetro de 90 días.
+- Verificaciones 3, 8 y 14: el medicamento de la prueba pasó a «PI01 Ivermectina». «Prueba Ivermectina» chocaba con «Prueba ivermectina», registrado por el trabajador en PE-25, y la prueba no se ejecutaba.

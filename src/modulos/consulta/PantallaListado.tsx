@@ -146,6 +146,7 @@ function FilaAnimal({ animal, hoy, exacta, alAbrir }: { animal: AnimalListado; h
             {animal.destino ? ` · ${NOMBRE_DESTINO[animal.destino]}` : ''}
           </span>
           {animal.retirado && <span className="fila-animal__retirado">{animal.sexo === 'hembra' ? 'Retirada' : 'Retirado'}</span>}
+          {animal.chapetaPendiente && <span className="fila-animal__chapeta-pendiente">Sin chapeta puesta</span>}
           <DistintivoSync estado={animal.estado_sync} {...(animal.detalle_conflicto ? { detalle: animal.detalle_conflicto } : {})} />
         </span>
       </button>

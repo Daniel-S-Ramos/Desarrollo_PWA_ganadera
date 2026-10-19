@@ -113,10 +113,16 @@ async function sincronizarSinCandado(servicio: ServicioRemoto): Promise<Resultad
 
 const ESPERA_TRAS_GUARDAR_MS = 3_000;
 const PERIODO_MS = 5 * 60 * 1_000;
+/** Cada cuánto se mira si volvió la señal, por si el navegador no avisa (iPhone, PE-32). */
+export const VIGILANCIA_RED_MS = 15_000;
 
 /**
- * Sincroniza al iniciar, al volver la conexión, pocos segundos después de guardar y cada 5 minutos
- * con la aplicación abierta (sección 2). Devuelve la función que detiene todo.
+ * Sincroniza al iniciar, al volver la conexión, al volver a la aplicación, pocos segundos después de
+ * guardar y cada 5 minutos con la aplicación abierta (sección 2). Devuelve la función que detiene todo.
+ *
+ * El aviso de que volvió la conexión no siempre llega: en PE-32, el iPhone salió del modo avión sin
+ * avisar y el envío esperó al turno de los 5 minutos. Por eso, además, cada 15 segundos se compara el
+ * estado de la red con el anterior y, si pasó de «sin señal» a «con señal», se sincroniza.
  */
 export function iniciarSincronizacionAutomatica(
   servicio: ServicioRemoto,
@@ -132,15 +138,29 @@ export function iniciarSincronizacionAutomatica(
     espera = setTimeout(ejecutar, ESPERA_TRAS_GUARDAR_MS);
   };
 
+  let conSenal = navigator.onLine;
+  const vigilarRed = () => {
+    const ahora = navigator.onLine;
+    if (ahora && !conSenal) ejecutar();
+    conSenal = ahora;
+  };
+  const alVolver = () => {
+    if (document.visibilityState === 'visible') ejecutar();
+  };
+
   window.addEventListener('online', ejecutar);
+  document.addEventListener('visibilitychange', alVolver);
   const dejarDeEscuchar = alGuardarLocalmente(trasGuardar);
   const periodico = setInterval(ejecutar, PERIODO_MS);
+  const vigilancia = setInterval(vigilarRed, VIGILANCIA_RED_MS);
   ejecutar();
 
   return () => {
     window.removeEventListener('online', ejecutar);
+    document.removeEventListener('visibilitychange', alVolver);
     dejarDeEscuchar();
     clearInterval(periodico);
+    clearInterval(vigilancia);
     clearTimeout(espera);
   };
 }

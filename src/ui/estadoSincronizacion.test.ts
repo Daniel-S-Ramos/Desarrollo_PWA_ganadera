@@ -75,8 +75,9 @@ describe('PU-12 · 1. Textos de la barra (sección 3)', () => {
     expect(lineas[1]).toEqual({
       icono: '⚠',
       texto: '2 registros en conflicto',
-      detalle: 'Requieren la revisión del propietario',
+      detalle: 'Los resuelve quien los registró o el propietario',
       tono: 'advertencia',
+      enlace: { texto: 'Ver cuáles', a: '/conflictos' },
     });
   });
 });

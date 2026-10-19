@@ -5,9 +5,10 @@
  */
 import { leerParametro } from '../../datos/parametros';
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
+import { animalVigente, animalesVigentes, leerVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
 import { fechaDelPredio } from '../../dominio/fechas';
-import { DIAS_PROMEDIO_POR_DEFECTO, litrosVigentes, promedioReciente, validarOrdeno, type ErroresOrdeno } from '../../dominio/leche';
+import { DIAS_PROMEDIO_POR_DEFECTO, promedioReciente, validarOrdeno, type ErroresOrdeno } from '../../dominio/leche';
 import type { FechaPredio, Perfil, RegistroLocal, Uuid } from '../../dominio/tipos';
 import { PermisoDenegado, puedeCorregir, puedeCrear } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
@@ -21,6 +22,8 @@ export interface RegistroExistente {
   litros: number;
   autor: string;
   perfilAutor: Perfil | undefined;
+  /** El ordeño de ese día fue anulado: la vaca no admite otro registro esa fecha (documento técnico 26, sección 7). */
+  anulado: boolean;
 }
 
 export interface VacaRonda {
@@ -32,47 +35,45 @@ export interface VacaRonda {
 /** ¿Está la vaca en la ronda? Hembra, con destino vigente leche y sin salida (sección 4). */
 async function enProduccion(animalId: Uuid): Promise<boolean> {
   const [animal, destinos, salidas] = await Promise.all([
-    consulta.animal.get(animalId),
-    consulta.destino_productivo.where('animal_id').equals(animalId).toArray(),
+    animalVigente(animalId),
+    consulta.destino_productivo.where('animal_id').equals(animalId).toArray().then((r) => vigentes('destino_productivo', r)),
     consulta.salida.where('animal_id').equals(animalId).count(),
   ]);
   return !!animal && animal.sexo === 'hembra' && salidas === 0 && destinoVigente(destinos)?.destino === 'leche';
 }
 
-/** Los litros vigentes de unos registros, leyendo sus correcciones (sección 8). */
-async function vigentes(registros: readonly OrdenoLocal[]): Promise<Map<Uuid, number>> {
-  if (registros.length === 0) return new Map();
-  const correcciones = await consulta.correccion.where('registro_id').anyOf(registros.map((r) => r.id)).toArray();
-  return litrosVigentes(registros, correcciones);
-}
-
 /** Las vacas de la ronda en la fecha, en orden de chapeta, con el registro que ya tengan (secciones 4 y 5). */
 export async function cargarRonda(fecha: FechaPredio): Promise<VacaRonda[]> {
   const [animales, destinos, salidas, registros, usuarios] = await Promise.all([
-    consulta.animal.toArray(),
-    consulta.destino_productivo.toArray(),
+    animalesVigentes(),
+    consulta.destino_productivo.toArray().then((r) => vigentes('destino_productivo', r)),
     consulta.salida.toArray(),
-    consulta.produccion_leche.where('fecha').equals(fecha).toArray(),
+    consulta.produccion_leche.where('fecha').equals(fecha).toArray().then((r) => leerVigentes('produccion_leche', r)),
     consulta.usuario.toArray(),
   ]);
   const retirados = new Set(salidas.map((s) => s.animal_id));
   const destinosPorAnimal = new Map<Uuid, typeof destinos>();
   for (const d of destinos) destinosPorAnimal.set(d.animal_id, [...(destinosPorAnimal.get(d.animal_id) ?? []), d]);
-  const litros = await vigentes(registros);
-  const porAnimal = new Map(registros.map((r) => [r.animal_id, r]));
+  const porAnimal = new Map(registros.map((v) => [v.original.animal_id, v]));
   const personas = new Map(usuarios.map((u) => [u.id, u]));
 
   return animales
     .filter((a) => a.sexo === 'hembra' && !retirados.has(a.id) && destinoVigente(destinosPorAnimal.get(a.id) ?? [])?.destino === 'leche')
     .sort((a, b) => compararChapetas(a.codigo_chapeta, b.codigo_chapeta))
     .map((a) => {
-      const registro = porAnimal.get(a.id);
-      const autor = registro ? personas.get(registro.autor_id) : undefined;
+      const vigente = porAnimal.get(a.id);
+      const autor = vigente ? personas.get(vigente.original.autor_id) : undefined;
       return {
         animal_id: a.id,
         codigo_chapeta: a.codigo_chapeta,
-        existente: registro
-          ? { registro, litros: litros.get(registro.id) ?? registro.litros, autor: autor?.nombre ?? 'un usuario que ya no está en el predio', perfilAutor: autor?.perfil }
+        existente: vigente
+          ? {
+              registro: vigente.original,
+              litros: vigente.registro.litros,
+              autor: autor?.nombre ?? 'un usuario que ya no está en el predio',
+              perfilAutor: autor?.perfil,
+              anulado: vigente.anulacion !== null,
+            }
           : null,
       };
     });
@@ -87,9 +88,9 @@ export function siguienteVaca(vacas: readonly VacaRonda[]): VacaRonda | null {
 export async function promedioDe(animalId: Uuid, fecha: FechaPredio): Promise<{ dias: number; resultado: { promedio: number; registros: number } | null }> {
   const [registros, parametro] = await Promise.all([consulta.produccion_leche.where('animal_id').equals(animalId).toArray(), leerParametro('dias_promedio_produccion')]);
   const dias = parametro ?? DIAS_PROMEDIO_POR_DEFECTO;
-  const litros = await vigentes(registros);
+  // Sin anulados y con los litros vigentes (documento técnico 26, sección 6.3).
   const resultado = promedioReciente(
-    registros.map((r) => ({ fecha: r.fecha, litros: litros.get(r.id) ?? r.litros })),
+    (await vigentes('produccion_leche', registros)).map((r) => ({ fecha: r.fecha, litros: r.litros })),
     fecha,
     dias,
   );
@@ -146,8 +147,12 @@ export async function registrarOrdeno(
         await tx.crear('produccion_leche', { animal_id: animalId, fecha, litros });
         return { ok: true, resultado: 'registrado' };
       }
+      const [actual] = await leerVigentes('produccion_leche', [registro]);
+      if (actual!.anulacion) {
+        throw new Detener({ ok: false, errores: { animal: 'El ordeño de esta vaca en esta fecha fue anulado: no admite otro registro ese día' } });
+      }
       if (!puedeCorregir(usuario, registro, perfiles.get(registro.autor_id), ahora)) throw new Detener({ ok: false, sinPermiso: true });
-      const vigente = (await vigentes([registro])).get(registro.id) ?? registro.litros;
+      const vigente = actual!.registro.litros;
       if (vigente === litros) return { ok: true, resultado: 'sin_cambios' };
       if (!confirmado) throw new Detener({ ok: false, requiereConfirmacion: true });
       await tx.crear('correccion', {
