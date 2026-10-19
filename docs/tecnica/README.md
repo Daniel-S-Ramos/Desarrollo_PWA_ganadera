@@ -36,3 +36,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 25 | [Parto, control reproductivo y chapeta pendiente de poner](25-parto-y-control-reproductivo.md) | 4.2 | RF-16 · RF-17 · CU-10 · CU-11 · HU-12 |
 | 26 | [Corrección, anulación, valor vigente y resolución de conflictos](26-correccion-y-anulacion.md) | 4.3 | RF-31 · CU-17 · HU-17 · Tabla 21 |
 | 27 | [Consulta de las correcciones y las anulaciones](27-consulta-de-correcciones.md) | 4.4 | RF-32 · CU-18 · HU-17.5 |
+| 28 | [Comparación de la producción de leche entre vacas](28-comparacion-entre-vacas.md) | 5.1 | RF-12 · CU-07 · HU-10 |

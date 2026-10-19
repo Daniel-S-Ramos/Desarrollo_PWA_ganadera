@@ -1173,3 +1173,18 @@ a.boton {
   font-weight: 600;
   color: var(--rojo-oscuro);
 }
+
+/* Comparación entre vacas (documento técnico 28). */
+.comparacion__titulo {
+  margin: 0;
+}
+.comparacion__enlace {
+  display: grid;
+  gap: 0.35rem;
+  color: inherit;
+  text-decoration: none;
+}
+.comparacion__pocos {
+  color: var(--rojo-oscuro);
+  font-size: 0.9rem;
+}

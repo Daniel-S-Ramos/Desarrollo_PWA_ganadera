@@ -7,6 +7,7 @@ import { PantallaCorregir } from '../modulos/correcciones/PantallaCorregir';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
 import { TernerosSinChapeta } from '../modulos/identificacion/AvisoChapeta';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
+import { PantallaComparacion } from '../modulos/leche/PantallaComparacion';
 import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
 import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
 import { PantallaRegistrarPesaje } from '../modulos/peso/PantallaRegistrarPesaje';
@@ -173,6 +174,8 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
             />
             {/* Documento técnico 23, sección 2: solo el propietario (CU-07). */}
             <Route path="/produccion" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaProduccion /> : <Navigate to="/" replace />} />
+            {/* Documento técnico 28: comparación entre vacas, solo el propietario (CU-07, pasos 5 y 6). */}
+            <Route path="/produccion/comparar" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaComparacion /> : <Navigate to="/" replace />} />
             {/* Documento técnico 27: solo el propietario (CU-18, Tabla 27). */}
             <Route path="/correcciones" element={puedeUsar(identidad.perfil, 'CU-18') ? <PantallaCorreccionesRecientes /> : <Navigate to="/" replace />} />
             {/* Documento técnico 26, sección 10.6: los conflictos de este teléfono, para ambos perfiles. */}

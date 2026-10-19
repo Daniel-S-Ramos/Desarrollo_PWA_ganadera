@@ -7,6 +7,7 @@ import { cargarVigente } from '../modulos/correcciones/correcciones';
 import { cargarCorreccionesRecientes } from '../modulos/correcciones/consultaCorrecciones';
 import { cargarHistorialDestino } from '../modulos/destino/destino';
 import { cargarTernerosSinChapeta, confirmarChapetaPuesta, estadoDeChapeta } from '../modulos/identificacion/chapetaPendiente';
+import { cargarComparacion } from '../modulos/leche/comparacion';
 import { cargarEvolucion } from '../modulos/peso/pesajes';
 import { cargarControlReproductivo } from '../modulos/reproduccion/partos';
 import { cargarHistorialSanitario } from '../modulos/sanidad/eventos';
@@ -118,6 +119,12 @@ describe('PU-27 · 9. Las pantallas se enteran de los cambios (PE-32)', () => {
       crear('correccion', { entidad_afectada: 'animal', registro_id: vaca.id, tipo: 'correccion', campo: 'peso_inicial', valor_anterior: '30', valor_nuevo: '34', motivo: 'error_digitacion', nota: null }, YO.usuario_id),
     );
     expect(ultimo(vistos)?.totalDelPredio).toBe(1);
+  });
+
+  it('comparación entre vacas: un ordeño nuevo aparece', async () => {
+    const vaca = await crear('animal', datosAnimal('Z1'), YO.usuario_id);
+    const vistos = await trasCambiar(() => cargarComparacion('semanal', 0, HOY), () => crear('produccion_leche', { animal_id: vaca.id, fecha: '2026-10-17', litros: 12 }, YO.usuario_id));
+    expect(ultimo(vistos)?.conRegistros).toHaveLength(1);
   });
 
   it('listado: un animal nuevo aparece', async () => {
