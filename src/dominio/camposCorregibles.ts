@@ -185,3 +185,33 @@ export function validarValor(entidad: EntidadCorregible, nombre: string, campo: 
       return ctx.existeMedicamento?.(limpio) ? { ok: true, texto: limpio } : { ok: false, error: 'Elija un medicamento del catálogo' };
   }
 }
+
+/** Los nombres con que se muestran los animales (chapeta) y los medicamentos de un valor corregido. */
+export interface NombresDeReferencia {
+  animales: ReadonlyMap<string, string>;
+  medicamentos: ReadonlyMap<string, string>;
+}
+
+/** Un valor de corrección, legible: fechas, opciones, animales y medicamentos por su nombre (sección 6.4). */
+export function valorLegible(campo: CampoCorregible | undefined, texto: string | null, nombres: NombresDeReferencia): string {
+  if (texto === null || texto === '') return 'vacío';
+  if (!campo) return texto;
+  const valor = desdeTexto(campo, texto);
+  switch (campo.tipo) {
+    case 'fecha':
+      return formatearFecha(String(valor));
+    case 'enum':
+      return campo.opciones?.find(([v]) => v === valor)?.[1] ?? String(valor);
+    case 'booleano':
+      return valor ? 'Sí' : 'No';
+    case 'animal':
+      return nombres.animales.get(String(valor)) ?? 'un animal que no está en el teléfono';
+    case 'medicamento':
+      return nombres.medicamentos.get(String(valor)) ?? 'un medicamento que no está en el teléfono';
+    case 'numero':
+    case 'entero':
+      return Number(valor).toLocaleString('es-CO', { maximumFractionDigits: 2 });
+    default:
+      return String(valor);
+  }
+}

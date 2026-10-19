@@ -221,7 +221,9 @@ function SeccionPeso({ animalId, identidad }: { animalId: string; identidad: Ide
 }
 
 function SeccionSanidad({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
-  const [verHistorial, setVerHistorial] = useState(false);
+  // Desde la consulta de correcciones (?sanidad=1) el historial aparece abierto (documento técnico 27, sección 6).
+  const [parametros] = useSearchParams();
+  const [verHistorial, setVerHistorial] = useState(() => parametros.get('sanidad') === '1');
   const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-04');
   if (!puedeRegistrar && !puedeUsar(identidad.perfil, 'CU-05')) return null;
   return (
@@ -245,7 +247,9 @@ function SeccionSanidad({ animalId, identidad }: { animalId: string; identidad: 
 
 /** Las opciones del propietario sobre el destino (documento técnico 19, secciones 2 y 4). */
 function SeccionDestino({ animalId, identidad, hoy }: { animalId: string; identidad: Identidad; hoy: string }) {
-  const [abierto, setAbierto] = useState<'cambiar' | 'historial' | null>(null);
+  // Desde la consulta de correcciones (?destino=1) el historial aparece abierto (documento técnico 27, sección 6).
+  const [parametros] = useSearchParams();
+  const [abierto, setAbierto] = useState<'cambiar' | 'historial' | null>(() => (parametros.get('destino') === '1' ? 'historial' : null));
   const contexto = useLiveQuery(() => cargarContextoDestino(animalId), [animalId]);
   const alternar = (opcion: 'cambiar' | 'historial') => setAbierto((actual) => (actual === opcion ? null : opcion));
 

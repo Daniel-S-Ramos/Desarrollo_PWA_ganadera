@@ -2,8 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { consulta } from '../../datos/repositorio';
-import { CAMPOS_CORREGIBLES, desdeTexto, type CampoCorregible } from '../../dominio/camposCorregibles';
-import { formatearFecha, formatearInstante } from '../../dominio/fechas';
+import { CAMPOS_CORREGIBLES, valorLegible } from '../../dominio/camposCorregibles';
+import { formatearInstante } from '../../dominio/fechas';
 import type { EntidadCorregible, Perfil, RegistroLocal, Uuid } from '../../dominio/tipos';
 import type { Vigente } from '../../dominio/vigente';
 import type { Identidad } from '../../sesion/token';
@@ -25,29 +25,8 @@ export function useNombresDeReferencia(): { animales: Map<Uuid, string>; medicam
   return { animales: new Map(datos.animales.map((a) => [a.id, a.codigo_chapeta])), medicamentos: new Map(datos.medicamentos.map((m) => [m.id, m.nombre])) };
 }
 
-/** Un valor de corrección, legible: fechas, opciones, animales y medicamentos por su nombre. */
-export function mostrarValor(campo: CampoCorregible | undefined, texto: string | null, nombres: ReturnType<typeof useNombresDeReferencia>): string {
-  if (texto === null || texto === '') return 'vacío';
-  if (!campo) return texto;
-  const valor = desdeTexto(campo, texto);
-  switch (campo.tipo) {
-    case 'fecha':
-      return formatearFecha(String(valor));
-    case 'enum':
-      return campo.opciones?.find(([v]) => v === valor)?.[1] ?? String(valor);
-    case 'booleano':
-      return valor ? 'Sí' : 'No';
-    case 'animal':
-      return nombres.animales.get(String(valor)) ?? 'un animal que no está en el teléfono';
-    case 'medicamento':
-      return nombres.medicamentos.get(String(valor)) ?? 'un medicamento que no está en el teléfono';
-    case 'numero':
-    case 'entero':
-      return Number(valor).toLocaleString('es-CO', { maximumFractionDigits: 2 });
-    default:
-      return String(valor);
-  }
-}
+/** Un valor de corrección, legible (la regla vive en el dominio: la comparte la consulta de correcciones). */
+export const mostrarValor = valorLegible;
 
 /**
  * La marca de un registro corregido o anulado (documento técnico 26, sección 6.4). Corregido: se despliega

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router';
 import { PantallaFicha } from '../modulos/consulta/PantallaFicha';
 import { PantallaConflictos } from '../modulos/correcciones/PantallaConflictos';
+import { PantallaCorreccionesRecientes } from '../modulos/correcciones/PantallaCorreccionesRecientes';
 import { PantallaCorregir } from '../modulos/correcciones/PantallaCorregir';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
 import { TernerosSinChapeta } from '../modulos/identificacion/AvisoChapeta';
@@ -172,6 +173,8 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
             />
             {/* Documento técnico 23, sección 2: solo el propietario (CU-07). */}
             <Route path="/produccion" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaProduccion /> : <Navigate to="/" replace />} />
+            {/* Documento técnico 27: solo el propietario (CU-18, Tabla 27). */}
+            <Route path="/correcciones" element={puedeUsar(identidad.perfil, 'CU-18') ? <PantallaCorreccionesRecientes /> : <Navigate to="/" replace />} />
             {/* Documento técnico 26, sección 10.6: los conflictos de este teléfono, para ambos perfiles. */}
             <Route path="/conflictos" element={<PantallaConflictos identidad={identidad} />} />
             <Route path="/medicamentos" element={<PantallaMedicamentos identidad={identidad} puedeAgregar={puedeUsar(identidad.perfil, 'CU-04')} />} />
@@ -216,6 +219,12 @@ function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; 
       {puedeUsar(identidad.perfil, 'CU-07') && cargaCompleta !== false && (
         <Link className="boton boton--secundario boton--ancho separado" to="/produccion">
           Producción de leche
+        </Link>
+      )}
+
+      {puedeUsar(identidad.perfil, 'CU-18') && cargaCompleta !== false && (
+        <Link className="boton boton--secundario boton--ancho separado" to="/correcciones">
+          Correcciones recientes
         </Link>
       )}
 
