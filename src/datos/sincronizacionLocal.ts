@@ -268,7 +268,7 @@ export async function registrarIntentoImagen(entrada: ImagenPendiente): Promise<
   await db.cola_imagenes.update(entrada.seq!, { intentos: entrada.intentos + 1, ultimo_intento: new Date().toISOString() });
 }
 
-/** Registros en conflicto en todas las tablas: requieren la revisión del propietario (documento 11). */
+/** Registros en conflicto en todas las tablas: los resuelve quien los registró o el propietario (documentos 11 y 26). */
 export async function contarConflictos(): Promise<number> {
   let total = 0;
   for (const tabla of TABLAS_SINCRONIZABLES) {

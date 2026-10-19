@@ -93,7 +93,7 @@ export function describirBarra(s: SituacionSincronizacion): Linea[] {
     lineas.push({
       icono: '⚠',
       texto: plural(s.conflictos, 'registro en conflicto', 'registros en conflicto'),
-      detalle: 'Requieren la revisión del propietario',
+      detalle: 'Los resuelve quien los registró o el propietario',
       tono: 'advertencia',
     });
   }

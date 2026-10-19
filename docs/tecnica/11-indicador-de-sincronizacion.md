@@ -47,7 +47,7 @@ el mecanismo técnico.
 | Nada pendiente y no hay señal | ✓ **Todo enviado** | Sin conexión |
 | La sesión con el servicio venció (documento 06) | ⚠ **3 registros pendientes de enviar** | Ingrese de nuevo con conexión para enviarlos |
 | La subida terminó pero la descarga falló | ✓ o ⏳ según los pendientes | No se pudo descargar lo nuevo; se reintentará |
-| Hay registros en conflicto | Se agrega una segunda línea: ⚠ **2 registros en conflicto** | Requieren la revisión del propietario |
+| Hay registros en conflicto | Se agrega una segunda línea: ⚠ **2 registros en conflicto** | Los resuelve quien los registró o el propietario (documento 26, sección 10) |
 
 Debajo, como hasta ahora, el espacio ocupado (apartado 3.8.7).
 
