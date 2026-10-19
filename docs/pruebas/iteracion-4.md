@@ -19,6 +19,8 @@ evolución del peso y el control reproductivo.
 | PE-30 | Parto y chapeta en el navegador real | 4.2 | CU-10 · CU-11 · HU-12 · HU-02.4 | ✅ |
 | PU-27 | Corrección, anulación y valor vigente | 4.3a | RF-31 · CU-17 · HU-17 · RD-05 | ✅ |
 | PE-31 | Corrección y anulación en el navegador real | 4.3a | CU-17 (1a, 2a, 2b, 5a) · HU-17 · HU-02.4 | ✅ |
+| PU-28 | Resolución de conflictos y lista de registros en conflicto | 4.3b | Tabla 21 · CU-17 · regla del propietario | ✅ |
+| PE-32 | Resolución de conflictos con dos teléfonos | 4.3b | Tabla 21 · CU-17 | ✅ |
 
 ---
 
@@ -210,3 +212,77 @@ termina en punto. La nota pasó a separarse con « · », como en la marca de co
 mismo caso que PE-20 en la ficha. (2) El primer intento del paso 4 quedó sin confirmar y la ficha siguió en
 32 kg sin marca ([captura](evidencias/iteracion-4/PE-31-13-ficha-z971-sin-correccion.png) ·
 [datos](evidencias/iteracion-4/PE-31-14-ficha-z971-datos.png)); al repetirlo y guardar quedó registrada.
+
+## PU-28 · Resolución de conflictos y lista de registros en conflicto
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar el cambio de número (validación, reenvío, cola reordenada para que salgan sus dependientes), la unión con el animal registrado (reescritura de lo no enviado, imágenes, correcciones, chapeta puesta; se detiene si algo ya llegó al servicio), el medicamento repetido, la chapeta puesta repetida, quién resuelve, la lista de registros en conflicto con su destino y que no se ofrezca corregir un registro en conflicto |
+| Requerimiento | Tabla 21 · regla del propietario del 2026-10-13 · CU-17 · decisión del autor del 2026-10-18 (quién resuelve) · pedido del autor en PE-32 (lista de conflictos) |
+| Tipo | Unitaria, automática; dos recorridos completos con el servicio simulado (conflicto real, bajada y nueva subida) |
+| Código | [`src/datos/resolucionConflictos.ts`](../../src/datos/resolucionConflictos.ts) · [`src/modulos/correcciones/conflictos.ts`](../../src/modulos/correcciones/conflictos.ts) · `listarConflictos` en [`sincronizacionLocal.ts`](../../src/datos/sincronizacionLocal.ts) · prueba [`conflictos.test.ts`](../../src/modulos/correcciones/conflictos.test.ts) · especificación [documento técnico 26](../tecnica/26-correccion-y-anulacion.md), secciones 10.4 a 10.6 |
+| Resultado obtenido | **28 de 28 aprobadas**. Total del conjunto automático: **802 de 802** ([informe](resultados/2026-10-18_230446_252358b.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-18 |
+
+**Mutaciones.** Treinta y tres sobre la resolución y la lista. De las veinticuatro de la resolución, dos
+sobrevivieron al principio y señalaron casos sin probar (la segunda verificación del número dentro de la
+transacción y no ofrecer unir con otro animal que tampoco llegó al servicio); se agregaron sus pruebas y
+quedaron 24 de 24. De las nueve de la lista, «el parto sin su madre» sobrevivió hasta agregar un parto al
+caso; quedaron 9 de 9.
+
+## Pruebas agregadas por los hallazgos de PE-32
+
+| Prueba | Qué comprueba | Resultado | Mutaciones |
+|---|---|---|---|
+| **PU-10 · 9** ([`motor.test.ts`](../../src/sync/motor.test.ts)) | Sincroniza cuando la señal vuelve sin el aviso del navegador (revisión cada 15 segundos), al volver a la aplicación y no al ocultarse; deja de vigilar al detenerse | 3 de 3 | 7 de 7 detectadas |
+| **PU-27 · 9** ([`consultasEnVivo.test.ts`](../../src/datos/consultasEnVivo.test.ts)) | Doce lecturas de pantallas observadas como lo hace useLiveQuery: chapeta, chapeta repetida, terneros de Inicio, ficha (pesaje y corrección), marca de corrección, listado, historiales sanitario y de destino, evolución del peso, control reproductivo y conflicto de chapeta | 12 de 12 | Con la versión anterior de `vigentes.ts` fallan 4 (chapeta, chapeta repetida, ficha y evolución) |
+
+## PE-32 · Resolución de conflictos con dos teléfonos
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Provocar conflictos reales con dos dispositivos sin conexión y resolverlos: chapeta repetida cambiando el número (trabajador) y uniendo (propietario), medicamento repetido y chapeta puesta repetida; entrar por la lista de registros en conflicto |
+| Requerimiento | Tabla 21 · CU-17 · regla del propietario del 2026-10-13 · documento técnico 26, sección 10 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Sin conexión: Wi-Fi apagado en el computador y modo avión en el iPhone. Dirección de la rama `iteracion-4` (commits aa724e6 a 252358b) |
+| Resultado obtenido | Las cuatro resoluciones funcionaron. Aparecieron tres defectos y una mejora, corregidos durante la prueba (observaciones 1 a 4) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-18 |
+
+| # | Parte | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 | A | Ambos | Z980 registrado por el propietario con conexión y por el trabajador sin ella | Al volver la señal, el Z980 del trabajador queda «En conflicto: El código de chapeta ya está asignado a otro animal» (tardó: observación 1) | [propietario](evidencias/iteracion-4/PE-32-01-propietario-registra-z980.png) · [sin conexión](evidencias/iteracion-4/PE-32-02-trabajador-z980-sin-conexion.png) · [pendiente](evidencias/iteracion-4/PE-32-03-trabajador-z980-pendiente-con-senal.png) · [conflicto](evidencias/iteracion-4/PE-32-04-trabajador-z980-en-conflicto.webp) |
+| 2 | A | Trabajador | **Resolver el conflicto** | Muestra el Z980 registrado («Macho · nacido el 25 de septiembre de 2026 · registrado por Jose Ramos») y las dos opciones; con «z980»: «Escriba un número distinto al que está repetido» | [opciones](evidencias/iteracion-4/PE-32-05-resolver-conflicto.webp) · [número repetido](evidencias/iteracion-4/PE-32-06-numero-repetido.webp) |
+| 3 | A | Propietario | Cambiado a Z981 | Llega **Z981**, hembra, 160 kg, con su chapeta pendiente | [captura](evidencias/iteracion-4/PE-32-07-propietario-recibe-z981.png) |
+| 4 | B | Ambos | Z982 del propietario (sin conexión, 3 fotos) y del trabajador (con conexión) | El del propietario queda en conflicto solo, sin recargar | [sin conexión](evidencias/iteracion-4/PE-32-08-propietario-z982-sin-conexion.png) · [conflicto](evidencias/iteracion-4/PE-32-09-propietario-z982-en-conflicto.png) |
+| 5 | B | Propietario | **Es el mismo animal: unir con Z982** | «Pasarán a Z982: 3 fotografías»; al confirmar abre la ficha del Z982 del trabajador, «Todo enviado» | [lista](evidencias/iteracion-4/PE-32-10-unir-lista-fotografias.png) · [ficha](evidencias/iteracion-4/PE-32-11-ficha-tras-unir.png) |
+| 6 | B | Ambos | Ficha de Z982 | La foto y «Fotos: 3 de 3» en los dos dispositivos: la foto siguió al animal correcto y se subió | [propietario](evidencias/iteracion-4/PE-32-12-propietario-z982-con-fotos.png) · [trabajador](evidencias/iteracion-4/PE-32-13-trabajador-recibe-fotos.webp) |
+| 7 | C | Ambos | «Prueba Oxitetraciclina» del trabajador sin conexión, con un evento en Z921; «prueba oxitetraciclina» del propietario | El del trabajador queda «En conflicto: Ya existe un medicamento con ese nombre» con **Usar el que ya existe (prueba oxitetraciclina)** | [sin conexión](evidencias/iteracion-4/PE-32-14-trabajador-medicamento-sin-conexion.png) · [evento](evidencias/iteracion-4/PE-32-15-trabajador-evento-con-medicamento-nuevo.png) · [propietario](evidencias/iteracion-4/PE-32-16-propietario-agrega-medicamento.png) · [conflicto](evidencias/iteracion-4/PE-32-17-medicamento-en-conflicto.webp) |
+| 8 | C | Trabajador | **Usar el que ya existe** | El evento de Z921 queda con «prueba oxitetraciclina · 15 ml», «Todo enviado» | [captura](evidencias/iteracion-4/PE-32-18-evento-con-medicamento-existente.png) |
+| 9 | D | Ambos | Z983: chapeta confirmada en los dos dispositivos | Aviso «Este teléfono también registró la chapeta puesta…» con **Descartar**; confirmar y descartar exigían un segundo clic (observación 3) | [registro](evidencias/iteracion-4/PE-32-19-propietario-registra-z983.png) · [segundo clic](evidencias/iteracion-4/PE-32-20-segundo-clic-confirmar.png) · [aviso](evidencias/iteracion-4/PE-32-21-chapeta-repetida-descartar.png) · [segundo clic](evidencias/iteracion-4/PE-32-22-segundo-clic-descartar.png) · [ficha](evidencias/iteracion-4/PE-32-23-ficha-sin-conflicto.png) · [trabajador](evidencias/iteracion-4/PE-32-24-trabajador-confirma-chapeta.png) |
+| 10 | D (repetida con Z984) | Propietario | Confirmar sin conexión | «Chapeta puesta el 17 de octubre…» al primer clic | [captura](evidencias/iteracion-4/PE-32-25-confirmar-un-clic.png) |
+| 11 | D | Propietario | Al reconectar | La barra muestra «⚠ 1 registro en conflicto» con **Ver cuáles**; la pantalla **Registros en conflicto** lista «Chapeta puesta de Z984», su causa e **Ir a la ficha de Z984** | [barra](evidencias/iteracion-4/PE-32-26-barra-ver-cuales.png) · [lista](evidencias/iteracion-4/PE-32-27-pantalla-registros-en-conflicto.png) |
+| 12 | D | Ambos | **Descartar** | El aviso desaparece al primer clic y queda «Todo enviado»; en el iPhone, la chapeta del trabajador, confirmada al primer clic | [descartar](evidencias/iteracion-4/PE-32-28-descartar-un-clic.png) · [ficha](evidencias/iteracion-4/PE-32-29-ficha-sin-conflicto.png) · [trabajador](evidencias/iteracion-4/PE-32-30-trabajador-chapeta-un-clic.png) |
+
+**Observaciones.**
+
+1. **El envío esperaba hasta 5 minutos al volver la señal (defecto).** El iPhone salió del modo avión sin el
+   evento `online`, y la barra prometía «en unos segundos». La aplicación revisa ahora cada 15 segundos si
+   volvió la señal y sincroniza al volver a ella (commit 153c861, documento 09, sección 2). En la parte B el
+   conflicto apareció solo. PU-10, apartado 9.
+2. **El texto de la barra** decía «Requieren la revisión del propietario». Con la decisión de quién resuelve
+   pasó a «Los resuelve quien los registró o el propietario» (commit 153c861).
+3. **Confirmar la chapeta y descartar la repetida exigían un segundo clic (defecto).** El primero guardaba,
+   pero la pantalla no se enteraba. La causa estaba en la lectura de los valores vigentes del paso 4.3a, que
+   también afectaba a la ficha y a la evolución del peso (documento 26, sección 10.7; commit 252358b). La
+   parte D se repitió con Z984 al primer clic. PU-27, apartado 9.
+4. **Mejora pedida por el autor:** la barra lleva a la lista de registros en conflicto, y cada uno al lugar
+   donde se resuelve; en un registro en conflicto ya no se ofrece «Corregir», que se vio en la parte C
+   (documento 26, sección 10.6; commit 252358b).
+5. **Fotos desde iPhone.** El trabajador no pudo tomar fotos: en iPhone todos los navegadores usan el motor
+   de Safari, que no genera WebP. Ya estaba fuera del alcance (decisión del 2026-10-12: el predio usa
+   Android); el mensaje ahora lo dice en lugar de sugerir Chrome (commit d695e6f). Por eso en la parte A el
+   animal no llevó registros dependientes; la parte B lo comprobó con las 3 fotos del propietario, que es
+   además el caso pendiente desde PE-22.
+6. En la parte B los dos Z982 no eran el mismo animal (macho comprado frente a hembra nacida); la prueba
+   comprueba el mecanismo, y la unión conserva los datos del animal registrado.
