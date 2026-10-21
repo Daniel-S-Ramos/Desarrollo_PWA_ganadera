@@ -6,7 +6,7 @@ import { consulta } from '../../datos/repositorio';
 import { CAMPOS_CORREGIBLES, seAnula, type CampoCorregible } from '../../dominio/camposCorregibles';
 import { NOMBRE_DESTINO } from '../../dominio/destino';
 import { fechaDelPredio, formatearFecha, formatearInstante } from '../../dominio/fechas';
-import { MOTIVOS_CORRECCION, type Destino, type MotivoCorreccion, type MotivoSalida, type RegistroLocal } from '../../dominio/tipos';
+import { MOTIVOS_CORRECCION, type Destino, type ConceptoMovimiento, type MotivoCorreccion, type MotivoSalida, type RegistroLocal } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import {
   camposPara,
@@ -22,7 +22,8 @@ import {
   type ErroresCorreccion,
   type FormularioCorreccion,
 } from './correcciones';
-import { NOMBRE_MOTIVO_SALIDA } from '../../dominio/salida';
+import { formatearPesos, NOMBRE_MOTIVO_SALIDA } from '../../dominio/salida';
+import { NOMBRE_CONCEPTO } from '../../dominio/economia';
 import { MarcaCorreccion, mostrarValor, useNombresDeReferencia, useUsuarios } from './MarcaCorreccion';
 
 const NOMBRE_ENTIDAD: Record<EntidadConCorreccion, string> = {
@@ -34,6 +35,7 @@ const NOMBRE_ENTIDAD: Record<EntidadConCorreccion, string> = {
   animal: 'Datos del animal',
   medicamento: 'Medicamento',
   salida: 'Salida del predio',
+  movimiento_economico: 'Costo',
 };
 
 /** Un resumen del registro para reconocerlo (sección 5). */
@@ -55,6 +57,8 @@ function resumen(entidad: EntidadConCorreccion, registro: Record<string, unknown
       return `Animal ${registro['codigo_chapeta']}`;
     case 'medicamento':
       return String(registro['nombre']);
+    case 'movimiento_economico':
+      return `${animal} · ${NOMBRE_CONCEPTO[registro['concepto'] as ConceptoMovimiento] ?? ''} · ${formatearPesos(Number(registro['valor']))} · ${fecha}`;
     case 'salida':
       return `${animal} · ${NOMBRE_MOTIVO_SALIDA[registro['motivo'] as MotivoSalida] ?? ''} · ${fecha}`;
   }

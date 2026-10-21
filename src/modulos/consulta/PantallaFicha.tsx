@@ -87,6 +87,18 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
       {/* Documento técnico 29, sección 2: registrar la salida, solo el propietario y en un animal activo. */}
       {!ficha.retirado && puedeUsar(identidad.perfil, 'CU-13') && <BotonSalida animalId={ficha.id} />}
 
+      {/* Documento técnico 31: costos y consolidado, solo el propietario; también en un retirado (sección 3, decisión C). */}
+      {puedeUsar(identidad.perfil, 'CU-14') && (
+        <div className="acciones-formulario">
+          <Link className="boton boton--secundario boton--ancho" to={`/animales/${ficha.id}/consolidado`}>
+            Consolidado económico
+          </Link>
+          <Link className="boton boton--secundario boton--ancho" to={`/animales/${ficha.id}/costo`}>
+            Registrar costo
+          </Link>
+        </div>
+      )}
+
       {/* Los datos que pidió el propietario, en su orden (3.10.4.4). */}
       <dl className="ficha__datos">
         <Dato nombre="Último peso" valor={textoPeso(ficha)} />

@@ -13,6 +13,8 @@ import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
 import { PantallaRegistrarPesaje } from '../modulos/peso/PantallaRegistrarPesaje';
 import { PantallaRegistrarParto } from '../modulos/reproduccion/PantallaRegistrarParto';
 import { PantallaRegistrarSalida } from '../modulos/salida/PantallaRegistrarSalida';
+import { PantallaConsolidado } from '../modulos/economia/PantallaConsolidado';
+import { PantallaRegistrarCosto } from '../modulos/economia/PantallaRegistrarCosto';
 import { PantallaMedicamentos } from '../modulos/sanidad/PantallaMedicamentos';
 import { PantallaRegistrarEvento } from '../modulos/sanidad/PantallaRegistrarEvento';
 import { puedeUsar } from '../sesion/permisos';
@@ -156,6 +158,9 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
                 )
               }
             />
+            {/* Documento técnico 31: costos y consolidado económico, solo el propietario (CU-14, Tabla 27). */}
+            <Route path="/animales/:id/costo" element={puedeUsar(identidad.perfil, 'CU-14') ? <PantallaRegistrarCosto identidad={identidad} /> : <Navigate to="/" replace />} />
+            <Route path="/animales/:id/consolidado" element={puedeUsar(identidad.perfil, 'CU-14') ? <PantallaConsolidado identidad={identidad} /> : <Navigate to="/" replace />} />
             {/* Documento técnico 29: la salida del animal, solo el propietario (CU-13, Tabla 27). */}
             <Route
               path="/animales/:id/salida"

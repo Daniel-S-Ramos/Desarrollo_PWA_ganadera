@@ -31,6 +31,7 @@ declare
   ternero   uuid := gen_random_uuid();
   becerro   uuid := gen_random_uuid();
   salida1   uuid := gen_random_uuid();
+  compra1   uuid := gen_random_uuid();
   codigos   text[];
   ok        boolean;
   valor     text;
@@ -217,6 +218,20 @@ begin
       pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, causa_muerte) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, 'muerte', 'Rayo'))];
     r := r || jsonb_build_object('n',17,'v','Una sola salida vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra',
            'ok', codigos = array['OK','23505','OK','OK','OK'],
+           'd', 'códigos: ' || array_to_string(codigos, ', '));
+
+    -- -------------------------------------------------------------- 18. Una sola compra vigente
+    -- Una segunda compra se rechaza mientras la primera esté vigente; el reenvío se ignora; anulada la primera, se
+    -- admite otra; la alimentación no se limita (docs/tecnica/31-consolidado-economico.md, sección 4).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,900000)', compra1, usuario, ahora, becerro, 'compra')),
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,950000)', gen_random_uuid(), usuario, ahora, becerro, 'compra')),
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,900000) on conflict (id) do nothing', compra1, usuario, ahora, becerro, 'compra')),
+      pg_temp.intentar(format('insert into public.correccion (id, autor_id, creado_en, entidad_afectada, registro_id, tipo, motivo) values (%L,%L,%s,%L,%L,%L,%L)', gen_random_uuid(), usuario, ahora, 'movimiento_economico', compra1, 'anulacion', 'error_digitacion')),
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,950000)', gen_random_uuid(), usuario, ahora, becerro, 'compra')),
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,50000)', gen_random_uuid(), usuario, ahora, becerro, 'alimentacion'))];
+    r := r || jsonb_build_object('n',18,'v','Una sola compra vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra',
+           'ok', codigos = array['OK','23505','OK','OK','OK','OK'],
            'd', 'códigos: ' || array_to_string(codigos, ', '));
 
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.

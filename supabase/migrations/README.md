@@ -17,6 +17,7 @@ Migraciones del servicio remoto, en orden de aplicación. Especificación:
 | `20261018000100_chapeta_puesta.sql` | Chapeta pendiente de poner: `animal.chapeta_puesta`, tabla `colocacion_chapeta` (una por animal, solo inserciones) y parámetro `dias_recordar_chapeta` de 90 días (documento técnico 25, sección 7.1) |
 | `20261020000100_salida_observacion.sql` | Observación opcional de la salida por pérdida o robo (CU-13, 3b; documento técnico 29, sección 4) |
 | `20261021000100_salida_vigente_unica.sql` | Una sola salida **vigente** por animal: la restricción única pasa a un disparador que no cuenta las salidas anuladas (documento técnico 29, sección 8) |
+| `20261021000200_compra_vigente_unica.sql` | Una sola compra **vigente** por animal: el índice único parcial pasa a un disparador que no cuenta las compras anuladas (documento técnico 31, sección 4) |
 
 Se aplican con `npm run db:push` (CLI de Supabase), que registra en el servicio cuáles ya se
 aplicaron. Una migración aplicada no se edita: los cambios van en un archivo nuevo.

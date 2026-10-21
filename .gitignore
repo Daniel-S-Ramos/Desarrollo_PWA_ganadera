@@ -9,3 +9,6 @@ coverage
 !.env.example
 .DS_Store
 Thumbs.db
+
+# Caché de tsc -b
+*.tsbuildinfo

@@ -1264,3 +1264,49 @@ a.boton {
   align-items: center;
   margin-top: 8px;
 }
+
+/* Consolidado económico (documento técnico 31). */
+.consolidado__lineas,
+.consolidado__detalle,
+.consolidado__avisos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.consolidado__lineas li,
+.consolidado__fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+.consolidado__lineas li + li,
+.consolidado__detalle li + li {
+  border-top: 1px solid var(--borde);
+}
+.consolidado__avisos li {
+  margin: 0 0 6px;
+  padding: 8px 12px;
+  border-left: 4px solid var(--amarillo);
+  background: var(--amarillo-claro);
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+.consolidado__resultado p {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.consolidado__resultado--ganancia {
+  background: var(--verde-claro);
+  border-color: var(--verde-oscuro);
+}
+.consolidado__resultado--perdida {
+  background: var(--rojo-fondo);
+  border-color: var(--rojo-oscuro);
+}
+.consolidado__detalle li {
+  padding: 6px 0;
+}
+.consolidado__ingreso {
+  color: var(--verde-oscuro);
+}

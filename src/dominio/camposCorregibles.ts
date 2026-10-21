@@ -109,7 +109,18 @@ export const CAMPOS_CORREGIBLES: Record<EntidadCorregible, Readonly<Record<strin
     causa_muerte: { etiqueta: 'Causa de la muerte', tipo: 'texto', vacio: true, maximoTexto: 300 },
     observacion: { etiqueta: 'Observación', tipo: 'texto', vacio: true, maximoTexto: 300 },
   },
-  movimiento_economico: {},
+  // Documento técnico 31, sección 5: el concepto no se corrige; si está mal, el costo se anula.
+  movimiento_economico: {
+    fecha: { etiqueta: 'Fecha', tipo: 'fecha', vacio: false, minimo: 'llegada' },
+    valor: {
+      etiqueta: 'Valor',
+      tipo: 'entero',
+      vacio: false,
+      soloPropietario: true,
+      validar: (v) => (Number(v) > 0 && Number(v) <= 100_000_000 ? null : 'Escriba el valor en pesos, sin decimales, hasta 100.000.000'),
+    },
+    descripcion: { etiqueta: 'Descripción', tipo: 'texto', vacio: true, maximoTexto: 300 },
+  },
 };
 
 /** Animal y medicamento solo se corrigen; los demás también se anulan (sección 3). */
