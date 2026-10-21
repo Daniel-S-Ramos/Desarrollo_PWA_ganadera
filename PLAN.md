@@ -60,12 +60,16 @@ repite, y las siguientes tienen más pantallas. Se recalibra al cierre de cada i
 | 2 · Identificación y ficha | 15 | 2026-10-12 | 2026-10-19 | 2026-10-13 | 15 puntos / 2 días |
 | 3 · Sanidad, leche y destino | 16 | 2026-10-13 | 2026-10-26 | 2026-10-15 | 16 puntos / 3 días |
 | 4 · Peso, partos y correcciones | 13 | 2026-10-15 | 2026-11-02 | 2026-10-19 | 13 puntos / 5 días |
-| 5 · Consultas, alertas y economía | 16 | 2026-10-20 | 2026-10-26 | | |
-| Cierre · Evaluación del prototipo | — | 2026-10-27 | 2026-11-09 | | |
+| 5 · Consultas, alertas y economía | 16 | 2026-10-19 | 2026-10-26 | 2026-10-21 | 16 puntos / 3 días |
+| Cierre · Evaluación del prototipo | — | 2026-10-22 | 2026-11-04 | | |
 
 Recalibrado al cierre de la Iteración 4: con 13 a 16 puntos en 3 a 5 días, la Iteración 5 se estima en una
 semana y el cierre en dos, que dependen también del tiempo que puedan dedicar el propietario y los
 trabajadores a la evaluación.
+
+Al cierre de la Iteración 5: los 76 puntos de la Fase 3 en 16 días (6 al 21 de octubre). El cierre se mantiene
+en dos semanas, del 22 de octubre al 4 de noviembre, porque depende sobre todo de la evaluación con el
+propietario y los trabajadores.
 
 ## Iteración 2 — Identificación animal y ficha (HU-01, HU-02, HU-15 · 15 puntos) · cerrada el 2026-10-13 · `v0.2`
 
@@ -109,7 +113,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 4.4 | Consulta de correcciones (CU-18) | ✅ |
 | 4.5 | Pruebas y cierre de iteración | ✅ |
 
-## Iteración 5 — Consultas, alertas y economía (HU-10, HU-11, HU-14, HU-16 · 16 puntos)
+## Iteración 5 — Consultas, alertas y economía (HU-10, HU-11, HU-14, HU-16 · 16 puntos) · cerrada el 2026-10-21 · `v0.5`
 
 | Paso | Contenido | Estado |
 |---|---|---|
@@ -117,7 +121,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 5.2 | Registro de salida y venta (CU-13) | ✅ |
 | 5.3 | Recordatorios derivados y posponer (CU-15) | ✅ |
 | 5.4 | Consolidado económico por animal (CU-14) | ✅ |
-| 5.5 | Pruebas y cierre de iteración | ⬜ |
+| 5.5 | Pruebas y cierre de iteración | ✅ |
 
 ## Cierre — Evaluación del prototipo (apartados 1.6.3.7 – 1.6.3.11)
 
@@ -235,7 +239,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | ~~2.6~~ | **Hecho:** capturas del teléfono en PE-20 (listado, fichas, fotos sin señal) y PE-22. Tomar capturas de la aplicación en el teléfono (registro con fotos, barra sin señal, ficha) para la sustentación; PE-18 parte 2 se evidenció con datos del servicio | PE-18, observación 1 |
 | ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** En PE-22 el registro de datos sin conexión funcionó en Chrome para iOS. **Confirmado en PE-32 (2026-10-18): en iPhone la foto no se guarda en ningún navegador**, porque todos usan el motor de Safari, que no genera WebP; el mensaje ahora lo dice en lugar de sugerir Chrome. Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
-| 5.x | El ordeño anulado impide otro ordeño de esa vaca ese día (restricción única de `produccion_leche`, documento técnico 26, sección 7). Evaluar el mismo arreglo que la salida: unicidad del ordeño vigente con un disparador | PE-35, cambio de la salida (documento técnico 29, sección 8) |
+| 6.x | El ordeño anulado impide otro ordeño de esa vaca ese día (restricción única de `produccion_leche`, documento técnico 26, sección 7). Evaluar el mismo arreglo que la salida: unicidad del ordeño vigente con un disparador | PE-35, cambio de la salida (documento técnico 29, sección 8) |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
 | 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros (fotos, destinos, eventos sanitarios), y los medicamentos de prueba: los que empiezan por «Prueba» y además «Otro mas» (PE-25) y «pp prueba» (PE-26) | Documento técnico 13, sección 2.4 · PE-25, observación 4 |
 | 6.x | Opcional: dividir el código por pantallas (el paquete pesa 633 kB, 188 kB comprimido) para aligerar la primera carga | Aviso de Vite en la compilación del paso 2.1 |

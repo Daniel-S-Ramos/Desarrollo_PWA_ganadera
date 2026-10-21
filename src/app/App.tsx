@@ -199,7 +199,7 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
 
 /**
  * Pantalla de inicio. Los accesos se muestran solo a los perfiles que pueden usarlos (Tabla 27);
- * los recordatorios llegarán en la Iteración 5 (3.10.4.4).
+ * los recordatorios van arriba (3.10.4.4, documento técnico 30).
  */
 function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; alCerrar: () => void; cargaCompleta: boolean | undefined }) {
   return (
