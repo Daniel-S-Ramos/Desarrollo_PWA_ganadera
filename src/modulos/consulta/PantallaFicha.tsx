@@ -298,14 +298,14 @@ function Encabezado({ ficha, hoy, verFotos, alAlternarFotos }: { ficha: FichaAni
         <DistintivoSync estado={ficha.estado_sync} {...(ficha.detalle_conflicto ? { detalle: ficha.detalle_conflicto } : {})} />
       </div>
       <div className="ficha__fotos-resumen">
-        {ficha.fotos.length < 3 ? (
+        {ficha.fotos.length < 3 && !ficha.retirado ? (
           // Tabla 31: el registro fotográfico incompleto se señala para completarlo después.
           <p className="aviso aviso--atencion aviso--en-contenido">⚠ Registro fotográfico incompleto: {ficha.fotos.length} de 3.</p>
         ) : (
-          <p className="texto-secundario">Fotos: 3 de 3</p>
+          <p className="texto-secundario">Fotos: {ficha.fotos.length} de 3</p>
         )}
         <button type="button" className="boton boton--secundario boton--ancho" onClick={alAlternarFotos}>
-          {verFotos ? 'Ocultar fotos' : ficha.fotos.length < 3 ? 'Ver y completar fotos' : 'Ver fotos'}
+          {verFotos ? 'Ocultar fotos' : ficha.fotos.length < 3 && !ficha.retirado ? 'Ver y completar fotos' : 'Ver fotos'}
         </button>
       </div>
     </header>

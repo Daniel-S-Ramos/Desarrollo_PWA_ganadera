@@ -1,0 +1,12 @@
+PI-01 · Esquema remoto · verificación 17 (paso 5.2, cambio del autor en PE-35)
+Fecha: 2026-10-20 · migración 20261021000100_salida_vigente_unica.sql aplicada con npm run db:push
+Comando: npm run prueba:pi-01
+
+Verificaciones 1 a 16: APROBADA (sin cambios respecto de PI-01-9-salida-observacion.txt).
+
+ n  | verificacion                                                                                               | resultado | detalle
+----+------------------------------------------------------------------------------------------------------------+-----------+------------------------------
+ 16 | La salida admite una observación opcional de hasta 300 caracteres                                          | APROBADA  | códigos: OK, 23514 · columna: 1
+ 17 | Una sola salida vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra | APROBADA  | códigos: OK, 23505, OK, OK, OK
+
+Resultado: 17 de 17 aprobadas.
