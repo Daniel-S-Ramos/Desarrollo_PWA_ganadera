@@ -88,9 +88,14 @@ periodo anterior.
   dice «Sin registro de Z921 este día» y ofrece **Ir al ordeño anterior** y **Ir al siguiente**, con su fecha,
   para no tener que retroceder día por día a ciegas. Así la vista diaria deja de tener la sugerencia «Ver por
   semanas»: la semanal está a un botón.
-- **Semanal y mensual conservan la ventana** (12 semanas, 12 meses), útil para ver la tendencia. Su rango se
-  muestra siempre debajo de los botones, en el orden de la lista («19 oct a 20 sep»), y la lista sigue a la
-  vista aunque no haya registros; el aviso va encima, como nota.
+- **Semanal y mensual también son un periodo a la vez**: una semana de lunes a domingo («19 – 25 oct (en
+  curso)») o un mes calendario («Octubre de 2026 (en curso)»), y **← Anterior** y **Siguiente →** se mueven de
+  a una semana o de a un mes. Las ventanas de 12 semanas o 12 meses mostraban rangos que no se entendían
+  («25 oct a 3 ago», «octubre de 2025 a noviembre de 2024»). El periodo muestra su total, su promedio por día
+  registrado y sus días registrados (sección 5), y debajo **cada día** hasta hoy con sus litros o «Sin
+  registro». Sin registros, ofrece ir a la semana o al mes del ordeño anterior o del siguiente.
+- Las secciones 4, 6 y 7 quedan reemplazadas por estos ajustes en lo que toca a la pantalla; las funciones de
+  ventana (`periodosDeVentana`) siguen sirviendo a la comparación entre vacas (documento 28).
 
 ## 8. Relación con los requerimientos
 

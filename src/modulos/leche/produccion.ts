@@ -6,6 +6,7 @@ import { consulta } from '../../datos/repositorio';
 import { animalesVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
 import { compararConPromedio, promedioReciente, type Comparacion } from '../../dominio/leche';
+import { agregar, diasEntreInclusive, inicioDeSemana, sumarDias, type Agregacion, type FilaPeriodo, type Periodo } from '../../dominio/periodos';
 import type { FechaPredio, Uuid } from '../../dominio/tipos';
 import { compararChapetas } from '../consulta/listado';
 
@@ -68,4 +69,41 @@ export function diaDeVaca(registros: readonly { fecha: FechaPredio; litros: numb
     anterior: anterior && { fecha: anterior.fecha, litros: anterior.litros },
     siguiente: siguiente && { fecha: siguiente.fecha, litros: siguiente.litros },
   };
+}
+
+export interface PeriodoDeVaca {
+  periodo: Periodo;
+  /** Total, promedio por día registrado y días registrados del periodo (documento 23, sección 5). */
+  resumen: FilaPeriodo;
+  /** Cada día del periodo hasta hoy, del más reciente al más antiguo; null si no tiene registro. */
+  dias: { fecha: FechaPredio; litros: number | null }[];
+  /** El ordeño más reciente antes del periodo y el primero después, para ir a ellos. */
+  anterior: { fecha: FechaPredio; litros: number } | null;
+  siguiente: { fecha: FechaPredio; litros: number } | null;
+}
+
+/** Una semana o un mes de la vaca, de a uno a la vez (ajuste de PE-34), con todos sus días. */
+export function periodoDeVaca(registros: readonly { fecha: FechaPredio; litros: number }[], periodo: Periodo, hoy: FechaPredio): PeriodoDeVaca {
+  const [resumen] = agregar([periodo], registros, hoy);
+  const porFecha = new Map(registros.map((r) => [r.fecha, r.litros]));
+  const dias: PeriodoDeVaca['dias'] = [];
+  for (let f = periodo.fin < hoy ? periodo.fin : hoy; f >= periodo.inicio; f = sumarDias(f, -1)) dias.push({ fecha: f, litros: porFecha.get(f) ?? null });
+  const ordenados = [...registros].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const anterior = [...ordenados].reverse().find((r) => r.fecha < periodo.inicio) ?? null;
+  const siguiente = ordenados.find((r) => r.fecha > periodo.fin) ?? null;
+  return {
+    periodo,
+    resumen: resumen!,
+    dias,
+    anterior: anterior && { fecha: anterior.fecha, litros: anterior.litros },
+    siguiente: siguiente && { fecha: siguiente.fecha, litros: siguiente.litros },
+  };
+}
+
+/** Cuántos días, semanas o meses hacia atrás está el periodo que contiene la fecha (0 es el actual). */
+export function desplazamientoHasta(agregacion: Agregacion, fecha: FechaPredio, hoy: FechaPredio): number {
+  if (agregacion === 'diaria') return 1 - diasEntreInclusive(fecha, hoy);
+  if (agregacion === 'semanal') return (1 - diasEntreInclusive(inicioDeSemana(fecha), inicioDeSemana(hoy))) / 7;
+  const meses = (f: FechaPredio) => Number(f.slice(0, 4)) * 12 + Number(f.slice(5, 7));
+  return meses(fecha) - meses(hoy);
 }

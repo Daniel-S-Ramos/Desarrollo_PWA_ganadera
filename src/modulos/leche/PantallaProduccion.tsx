@@ -4,8 +4,9 @@ import { Link, useSearchParams } from 'react-router';
 import { leerParametro } from '../../datos/parametros';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { DIAS_PROMEDIO_POR_DEFECTO, formatearLitros } from '../../dominio/leche';
-import { agregar, diasEntreInclusive, etiquetaDia, periodosDeVentana, resumir, sumarDias, type Agregacion, type FilaPeriodo, type Periodo } from '../../dominio/periodos';
-import { diaDeVaca, registrosDe, vacasConsultables, type DiaDeVaca } from './produccion';
+import { etiquetaDia, sumarDias, type Agregacion } from '../../dominio/periodos';
+import { periodoComparado } from './comparacion';
+import { desplazamientoHasta, diaDeVaca, periodoDeVaca, registrosDe, vacasConsultables, type DiaDeVaca, type PeriodoDeVaca } from './produccion';
 
 const AGREGACIONES: [Agregacion, string][] = [
   ['diaria', 'Diaria'],
@@ -13,13 +14,17 @@ const AGREGACIONES: [Agregacion, string][] = [
   ['mensual', 'Mensual'],
 ];
 
-const MAS_AMPLIA: Partial<Record<Agregacion, [Agregacion, string]>> = {
-  semanal: ['mensual', 'Ver por meses'],
+/** Cómo se nombra el periodo en los avisos y en los botones de ir a otro registro. */
+const NOMBRE: Record<Agregacion, { este: string; anterior: string; siguiente: string }> = {
+  diaria: { este: 'este día', anterior: 'Ir al ordeño anterior', siguiente: 'Ir al siguiente' },
+  semanal: { este: 'esta semana', anterior: 'Ir a la semana del ordeño anterior', siguiente: 'Ir a la semana del siguiente' },
+  mensual: { este: 'este mes', anterior: 'Ir al mes del ordeño anterior', siguiente: 'Ir al mes del siguiente' },
 };
 
 /**
- * Consulta de producción por vaca, diaria, semanal y mensual (CU-07 pasos 1 a 4, RF-11). Solo el
- * propietario. Especificación: docs/tecnica/23-consulta-de-produccion.md, secciones 3 a 7.
+ * Consulta de producción por vaca (CU-07 pasos 1 a 4, RF-11). Solo el propietario. Especificación:
+ * docs/tecnica/23-consulta-de-produccion.md. Desde PE-34 muestra un periodo a la vez: un día, una semana
+ * o un mes, y Anterior y Siguiente se mueven de a uno.
  */
 export function PantallaProduccion() {
   const [parametros, setParametros] = useSearchParams();
@@ -45,16 +50,7 @@ export function PantallaProduccion() {
   }
 
   const vaca = vacas.find((v) => v.id === vacaId) ?? vacas[0]!;
-  const periodos = periodosDeVentana(agregacion, hoy, desplazamiento);
-  const filas = registros ? agregar(periodos, registros, hoy) : [];
-  const resumen = resumir(filas);
-  const maximo = Math.max(0, ...filas.map((f) => valorDeBarra(f, agregacion) ?? 0));
-  const amplia = MAS_AMPLIA[agregacion];
-
-  const cambiarAgregacion = (a: Agregacion) => {
-    setAgregacion(a);
-    setDesplazamiento(0);
-  };
+  const irA = (fecha: string) => setDesplazamiento(desplazamientoHasta(agregacion, fecha, hoy));
 
   return (
     <div className="formulario produccion">
@@ -88,7 +84,16 @@ export function PantallaProduccion() {
 
       <div className="opciones opciones--tres" role="group" aria-label="Agregación">
         {AGREGACIONES.map(([clave, nombre]) => (
-          <button key={clave} type="button" className="opcion" aria-pressed={agregacion === clave} onClick={() => cambiarAgregacion(clave)}>
+          <button
+            key={clave}
+            type="button"
+            className="opcion"
+            aria-pressed={agregacion === clave}
+            onClick={() => {
+              setAgregacion(clave);
+              setDesplazamiento(0);
+            }}
+          >
             {nombre}
           </button>
         ))}
@@ -103,59 +108,51 @@ export function PantallaProduccion() {
         </button>
       </div>
 
-      {agregacion === 'diaria' ? (
-        // PE-34: la vista diaria es un día a la vez; Anterior y Siguiente se mueven de a un día.
-        registros ? (
-          <DiaVaca
-            chapeta={vaca.codigo_chapeta}
-            dia={diaDeVaca(registros, sumarDias(hoy, desplazamiento), diasPromedio)}
-            hoy={hoy}
-            diasPromedio={diasPromedio}
-            irA={(fecha) => setDesplazamiento(1 - diasEntreInclusive(fecha, hoy))}
-          />
-        ) : (
-          <p className="texto-secundario">Cargando…</p>
-        )
-      ) : !registros ? (
+      {!registros ? (
         <p className="texto-secundario">Cargando…</p>
+      ) : agregacion === 'diaria' ? (
+        <DiaVaca chapeta={vaca.codigo_chapeta} dia={diaDeVaca(registros, sumarDias(hoy, desplazamiento), diasPromedio)} hoy={hoy} diasPromedio={diasPromedio} irA={irA} />
       ) : (
-        <>
-          {/* El rango siempre a la vista: al retroceder sin registros no se sabía qué semanas o meses se veían (PE-34). */}
-          <p className="produccion__ventana" aria-live="polite">
-            {tituloVentana(periodos, agregacion)}
-          </p>
+        <PeriodoVaca chapeta={vaca.codigo_chapeta} datos={periodoDeVaca(registros, periodoComparado(agregacion, hoy, desplazamiento), hoy)} agregacion={agregacion} irA={irA} />
+      )}
+    </div>
+  );
+}
 
-          {resumen.total === null ? (
-            // CU-07, 3a: se informa y se sugiere ampliar el rango; la lista de días sigue a la vista (PE-34).
-            <div className="aviso aviso--atencion aviso--en-contenido">
-              <p>Sin registros de {vaca.codigo_chapeta} en este periodo.</p>
-              <div className="aviso__acciones">
-                <button type="button" className="boton boton--secundario" onClick={() => setDesplazamiento((d) => d - 1)}>
-                  Ver el periodo anterior
-                </button>
-                {amplia && (
-                  <button type="button" className="boton boton--secundario" onClick={() => cambiarAgregacion(amplia[0])}>
-                    {amplia[1]}
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <section className="tarjeta produccion__resumen">
-              <h2>{vaca.codigo_chapeta}</h2>
-              <p>
-                <strong>{formatearLitros(resumen.total)} litros</strong> · {formatearLitros(resumen.promedio!)} por día registrado ·{' '}
-                {resumen.diasRegistrados} de {resumen.diasDelPeriodo} días registrados
-              </p>
-            </section>
+/** Los botones para saltar al registro anterior o siguiente cuando el periodo no tiene ninguno. */
+function SinRegistro({
+  chapeta,
+  agregacion,
+  anterior,
+  siguiente,
+  irA,
+}: {
+  chapeta: string;
+  agregacion: Agregacion;
+  anterior: { fecha: string } | null;
+  siguiente: { fecha: string } | null;
+  irA: (fecha: string) => void;
+}) {
+  const n = NOMBRE[agregacion];
+  return (
+    // CU-07, 3a: se informa y se ofrece ir al registro más cercano (PE-34).
+    <div className="aviso aviso--atencion aviso--en-contenido">
+      <p>
+        Sin registro de {chapeta} {n.este}.
+      </p>
+      {(anterior || siguiente) && (
+        <div className="aviso__acciones">
+          {anterior && (
+            <button type="button" className="boton boton--secundario" onClick={() => irA(anterior.fecha)}>
+              {n.anterior}: {etiquetaDia(anterior.fecha)}
+            </button>
           )}
-
-          <ul className="produccion__filas">
-            {filas.map((f) => (
-              <Fila key={f.periodo.inicio} fila={f} agregacion={agregacion} maximo={maximo} />
-            ))}
-          </ul>
-        </>
+          {siguiente && (
+            <button type="button" className="boton boton--secundario" onClick={() => irA(siguiente.fecha)}>
+              {n.siguiente}: {etiquetaDia(siguiente.fecha)}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -188,65 +185,51 @@ function DiaVaca({ chapeta, dia, hoy, diasPromedio, irA }: { chapeta: string; di
           )}
         </section>
       ) : (
-        <div className="aviso aviso--atencion aviso--en-contenido">
-          <p>Sin registro de {chapeta} este día.</p>
-          {(dia.anterior || dia.siguiente) && (
-            <div className="aviso__acciones">
-              {dia.anterior && (
-                <button type="button" className="boton boton--secundario" onClick={() => irA(dia.anterior!.fecha)}>
-                  Ir al ordeño anterior: {etiquetaDia(dia.anterior.fecha)}
-                </button>
-              )}
-              {dia.siguiente && (
-                <button type="button" className="boton boton--secundario" onClick={() => irA(dia.siguiente!.fecha)}>
-                  Ir al siguiente: {etiquetaDia(dia.siguiente.fecha)}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+        <SinRegistro chapeta={chapeta} agregacion="diaria" anterior={dia.anterior} siguiente={dia.siguiente} irA={irA} />
       )}
     </>
   );
 }
 
-/**
- * El rango de la ventana: «16 sep a 15 oct», «27 jul a 18 oct», «noviembre de 2025 a octubre de 2026».
- * Por semanas se usan los días extremos: «27 jul – 2 ago a 12 – 18 oct» se leía mal (PE-28).
- */
-function tituloVentana(periodos: readonly Periodo[], agregacion: Agregacion): string {
-  // En el orden de la lista, de lo más reciente a lo más antiguo (PE-34): «19 oct a 20 sep».
-  const [reciente, antigua] = [periodos[0]!, periodos.at(-1)!];
-  return agregacion === 'mensual' ? `${reciente.etiqueta} a ${antigua.etiqueta}` : `${etiquetaDia(reciente.fin)} a ${etiquetaDia(antigua.inicio)}`;
-}
-
-/** La barra: litros del día en la diaria, promedio por día registrado en las demás (sección 6). */
-function valorDeBarra(fila: FilaPeriodo, agregacion: Agregacion): number | null {
-  return agregacion === 'diaria' ? fila.total : fila.promedio;
-}
-
-function Fila({ fila, agregacion, maximo }: { fila: FilaPeriodo; agregacion: Agregacion; maximo: number }) {
-  const valor = valorDeBarra(fila, agregacion);
-  const ancho = valor === null || maximo === 0 ? 0 : (valor / maximo) * 100;
-  const etiqueta = `${fila.periodo.etiqueta}${fila.periodo.enCurso && agregacion !== 'diaria' ? ' (en curso)' : ''}`;
-
-  let detalle: string;
-  if (fila.total === null) detalle = agregacion === 'diaria' ? 'Sin registro' : 'Sin registros';
-  else if (agregacion === 'diaria') detalle = `${formatearLitros(fila.total)} litros`;
-  else
-    detalle = `${formatearLitros(fila.total)} litros · ${formatearLitros(fila.promedio!)} por día · ${fila.diasRegistrados} de ${fila.diasDelPeriodo} días registrados`;
-
+/** Una semana o un mes: el resumen y cada uno de sus días hasta hoy (PE-34). */
+function PeriodoVaca({ chapeta, datos, agregacion, irA }: { chapeta: string; datos: PeriodoDeVaca; agregacion: Agregacion; irA: (fecha: string) => void }) {
+  const { periodo, resumen, dias } = datos;
+  const titulo = `${periodo.etiqueta.charAt(0).toUpperCase()}${periodo.etiqueta.slice(1)}${periodo.enCurso ? ' (en curso)' : ''}`;
+  const maximo = Math.max(0, ...dias.map((d) => d.litros ?? 0));
   return (
-    <li className="produccion__fila">
-      <div className="produccion__texto">
-        <span className="produccion__etiqueta">{etiqueta}</span>
-        <span className={fila.total === null ? 'texto-secundario' : ''}>{detalle}</span>
-      </div>
-      {valor !== null && (
-        <div className="produccion__barra" aria-hidden="true">
-          <div className="produccion__relleno" style={{ width: `${Math.max(ancho, valor > 0 ? 2 : 0)}%` }} />
-        </div>
+    <>
+      <p className="produccion__ventana" aria-live="polite">
+        {titulo}
+      </p>
+      {resumen.total === null ? (
+        <SinRegistro chapeta={chapeta} agregacion={agregacion} anterior={datos.anterior} siguiente={datos.siguiente} irA={irA} />
+      ) : (
+        <section className="tarjeta produccion__resumen">
+          <h2>
+            {chapeta} · {formatearLitros(resumen.total)} litros
+          </h2>
+          <p>
+            {formatearLitros(resumen.promedio!)} litros por día registrado · {resumen.diasRegistrados} de {resumen.diasDelPeriodo} días registrados
+          </p>
+        </section>
       )}
-    </li>
+      {dias.length > 0 && (
+        <ul className="produccion__filas">
+          {dias.map((d) => (
+            <li key={d.fecha} className="produccion__fila">
+              <div className="produccion__texto">
+                <span className="produccion__etiqueta">{etiquetaDia(d.fecha)}</span>
+                <span className={d.litros === null ? 'texto-secundario' : ''}>{d.litros === null ? 'Sin registro' : `${formatearLitros(d.litros)} litros`}</span>
+              </div>
+              {d.litros !== null && (
+                <div className="produccion__barra" aria-hidden="true">
+                  <div className="produccion__relleno" style={{ width: `${maximo === 0 ? 0 : Math.max((d.litros / maximo) * 100, d.litros > 0 ? 2 : 0)}%` }} />
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
   );
 }

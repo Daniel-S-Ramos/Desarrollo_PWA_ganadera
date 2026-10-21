@@ -194,7 +194,7 @@ function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; 
   return (
     <>
       <p className="titulo-seccion">Prototipo en construcción</p>
-      <p className="texto-secundario">Iteración 4 · Peso, partos y correcciones</p>
+      <p className="texto-secundario">Iteración 5 · Consultas, alertas y economía</p>
 
       {cargaCompleta === false && <PreparandoTelefono />}
 
