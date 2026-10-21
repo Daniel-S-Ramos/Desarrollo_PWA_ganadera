@@ -4,7 +4,7 @@
  */
 import { leerParametro } from '../../datos/parametros';
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
-import { animalVigente, animalesVigentes } from '../../datos/vigentes';
+import { animalVigente, animalesVigentes, salidasVigentes } from '../../datos/vigentes';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { diasEntre } from '../../dominio/repeticion';
 import type { Animal, FechaPredio, RegistroLocal, Uuid } from '../../dominio/tipos';
@@ -73,7 +73,7 @@ export async function cargarTernerosSinChapeta(hoy: FechaPredio = fechaDelPredio
   const [animales, colocaciones, salidas, plazo] = await Promise.all([
     animalesVigentes(),
     consulta.colocacion_chapeta.toArray(),
-    consulta.salida.toArray(),
+    salidasVigentes(),
     plazoDeChapeta(),
   ]);
   return ternerosSinChapeta(animales, colocaciones, new Set(salidas.map((s) => s.animal_id)), hoy, plazo);

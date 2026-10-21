@@ -9,6 +9,7 @@ import { cargarHistorialDestino } from '../modulos/destino/destino';
 import { cargarTernerosSinChapeta, confirmarChapetaPuesta, estadoDeChapeta } from '../modulos/identificacion/chapetaPendiente';
 import { cargarComparacion } from '../modulos/leche/comparacion';
 import { cargarEvolucion } from '../modulos/peso/pesajes';
+import { salidaDelAnimal } from '../modulos/salida/salidas';
 import { cargarControlReproductivo } from '../modulos/reproduccion/partos';
 import { cargarHistorialSanitario } from '../modulos/sanidad/eventos';
 import type { DatosNuevos, Uuid } from '../dominio/tipos';
@@ -125,6 +126,16 @@ describe('PU-27 · 9. Las pantallas se enteran de los cambios (PE-32)', () => {
     const vaca = await crear('animal', datosAnimal('Z1'), YO.usuario_id);
     const vistos = await trasCambiar(() => cargarComparacion('semanal', 0, HOY), () => crear('produccion_leche', { animal_id: vaca.id, fecha: '2026-10-17', litros: 12 }, YO.usuario_id));
     expect(ultimo(vistos)?.conRegistros).toHaveLength(1);
+  });
+
+  it('salida: la ficha pasa a retirado y muestra la salida al primer clic', async () => {
+    const vaca = await crear('animal', datosAnimal('Z1'), YO.usuario_id);
+    const salida = { animal_id: vaca.id, fecha: HOY, motivo: 'muerte' as const, peso_venta: null, valor_venta: null, comprador: null, causa_muerte: 'Rayo', observacion: null };
+    const ficha = await trasCambiar(() => consolidarFicha(vaca.id), () => crear('salida', salida, YO.usuario_id));
+    expect(ultimo(ficha)?.retirado).toBe(true);
+    const otra = await crear('animal', datosAnimal('Z2'), YO.usuario_id);
+    const texto = await trasCambiar(() => salidaDelAnimal(otra.id), () => crear('salida', { ...salida, animal_id: otra.id }, YO.usuario_id));
+    expect(ultimo(texto)?.registro.causa_muerte).toBe('Rayo');
   });
 
   it('listado: un animal nuevo aparece', async () => {

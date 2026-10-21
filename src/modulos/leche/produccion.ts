@@ -3,7 +3,7 @@
  * Especificación: docs/tecnica/23-consulta-de-produccion.md
  */
 import { consulta } from '../../datos/repositorio';
-import { animalesVigentes, vigentes } from '../../datos/vigentes';
+import { animalesVigentes, salidasVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
 import { compararConPromedio, promedioReciente, type Comparacion } from '../../dominio/leche';
 import { agregar, diasEntreInclusive, inicioDeSemana, sumarDias, type Agregacion, type FilaPeriodo, type Periodo } from '../../dominio/periodos';
@@ -22,7 +22,7 @@ export async function vacasConsultables(): Promise<VacaConsultable[]> {
     animalesVigentes(),
     consulta.destino_productivo.toArray().then((r) => vigentes('destino_productivo', r)),
     consulta.produccion_leche.toArray().then((r) => vigentes('produccion_leche', r)),
-    consulta.salida.toArray(),
+    salidasVigentes(),
   ]);
   const conRegistros = new Set(registros.map((r) => r.animal_id));
   const retiradas = new Set(salidas.map((s) => s.animal_id));

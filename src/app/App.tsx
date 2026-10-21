@@ -12,6 +12,7 @@ import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
 import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
 import { PantallaRegistrarPesaje } from '../modulos/peso/PantallaRegistrarPesaje';
 import { PantallaRegistrarParto } from '../modulos/reproduccion/PantallaRegistrarParto';
+import { PantallaRegistrarSalida } from '../modulos/salida/PantallaRegistrarSalida';
 import { PantallaMedicamentos } from '../modulos/sanidad/PantallaMedicamentos';
 import { PantallaRegistrarEvento } from '../modulos/sanidad/PantallaRegistrarEvento';
 import { puedeUsar } from '../sesion/permisos';
@@ -154,6 +155,11 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
                   <PantallaRegistrarParto identidad={identidad} />
                 )
               }
+            />
+            {/* Documento técnico 29: la salida del animal, solo el propietario (CU-13, Tabla 27). */}
+            <Route
+              path="/animales/:id/salida"
+              element={puedeUsar(identidad.perfil, 'CU-13') ? <PantallaRegistrarSalida identidad={identidad} /> : <Navigate to="/" replace />}
             />
             <Route
               path="/animales/:id/pesaje"

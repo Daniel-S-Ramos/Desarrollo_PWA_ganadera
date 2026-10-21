@@ -4,7 +4,7 @@
  */
 import { leerParametro } from '../../datos/parametros';
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
-import { animalVigente, leerVigentes } from '../../datos/vigentes';
+import { animalVigente, contarSalidasVigentes, leerVigentes } from '../../datos/vigentes';
 import type { Vigente } from '../../dominio/vigente';
 import { fechaDelPredio } from '../../dominio/fechas';
 import {
@@ -36,7 +36,7 @@ async function datosDe(animalId: Uuid): Promise<{ animal: RegistroLocal<'animal'
   if (!animal) return null;
   const [todos, salidas] = await Promise.all([
     consulta.pesaje.where('animal_id').equals(animalId).toArray().then((r) => leerVigentes('pesaje', r)),
-    consulta.salida.where('animal_id').equals(animalId).count(),
+    contarSalidasVigentes(animalId),
   ]);
   const pesajes = todos.filter((v) => v.anulacion === null).map((v) => v.registro);
   return { animal, pesajes, todos, contexto: { llegada: fechaDeLlegada(animal), retirado: salidas > 0 } };

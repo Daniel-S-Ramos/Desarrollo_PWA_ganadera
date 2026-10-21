@@ -38,3 +38,21 @@ export function animalVigente(id: Uuid): Promise<RegistroLocal<'animal'> | undef
 export function animalesVigentes(): Promise<RegistroLocal<'animal'>[]> {
   return consulta.animal.toArray().then((animales) => vigentes('animal', animales));
 }
+
+/**
+ * Las salidas vigentes, registradas y no anuladas: un animal está retirado si tiene una (Tabla 24; documento
+ * técnico 29, sección 7). Anular la salida devuelve el animal al inventario activo.
+ */
+export function salidasVigentes(): Promise<RegistroLocal<'salida'>[]> {
+  return consulta.salida.toArray().then((salidas) => vigentes('salida', salidas));
+}
+
+/** Cuántas salidas vigentes tiene el animal: 0 si está activo, 1 si está retirado. */
+export function contarSalidasVigentes(animalId: Uuid): Promise<number> {
+  return consulta.salida
+    .where('animal_id')
+    .equals(animalId)
+    .toArray()
+    .then((salidas) => vigentes('salida', salidas))
+    .then((v) => v.length);
+}

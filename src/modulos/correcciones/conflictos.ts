@@ -12,7 +12,7 @@ import {
   unirMedicamento,
   type Movimiento,
 } from '../../datos/resolucionConflictos';
-import { vigentes } from '../../datos/vigentes';
+import { contarSalidasVigentes, vigentes } from '../../datos/vigentes';
 import { listarConflictos } from '../../datos/sincronizacionLocal';
 import { normalizarNombre } from '../../dominio/medicamentos';
 import type { NombreTabla, RegistroLocal, Uuid } from '../../dominio/tipos';
@@ -71,7 +71,7 @@ export async function cargarConflictoDeChapeta(animalId: Uuid): Promise<Conflict
   // No con buscarPorChapeta: devuelve el primero con ese número, que puede ser el duplicado.
   const [[vigente], salidas, autor] = await Promise.all([
     vigentes('animal', [otro]),
-    consulta.salida.where('animal_id').equals(otro.id).count(),
+    contarSalidasVigentes(otro.id),
     consulta.usuario.get(otro.autor_id),
   ]);
   return {

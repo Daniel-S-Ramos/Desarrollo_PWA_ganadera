@@ -6,7 +6,7 @@ import { consulta } from '../../datos/repositorio';
 import { CAMPOS_CORREGIBLES, seAnula, type CampoCorregible } from '../../dominio/camposCorregibles';
 import { NOMBRE_DESTINO } from '../../dominio/destino';
 import { fechaDelPredio, formatearFecha, formatearInstante } from '../../dominio/fechas';
-import { MOTIVOS_CORRECCION, type Destino, type MotivoCorreccion, type RegistroLocal } from '../../dominio/tipos';
+import { MOTIVOS_CORRECCION, type Destino, type MotivoCorreccion, type MotivoSalida, type RegistroLocal } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import {
   camposPara,
@@ -22,6 +22,7 @@ import {
   type ErroresCorreccion,
   type FormularioCorreccion,
 } from './correcciones';
+import { NOMBRE_MOTIVO_SALIDA } from '../../dominio/salida';
 import { MarcaCorreccion, mostrarValor, useNombresDeReferencia, useUsuarios } from './MarcaCorreccion';
 
 const NOMBRE_ENTIDAD: Record<EntidadConCorreccion, string> = {
@@ -32,6 +33,7 @@ const NOMBRE_ENTIDAD: Record<EntidadConCorreccion, string> = {
   destino_productivo: 'Destino productivo',
   animal: 'Datos del animal',
   medicamento: 'Medicamento',
+  salida: 'Salida del predio',
 };
 
 /** Un resumen del registro para reconocerlo (sección 5). */
@@ -53,6 +55,8 @@ function resumen(entidad: EntidadConCorreccion, registro: Record<string, unknown
       return `Animal ${registro['codigo_chapeta']}`;
     case 'medicamento':
       return String(registro['nombre']);
+    case 'salida':
+      return `${animal} · ${NOMBRE_MOTIVO_SALIDA[registro['motivo'] as MotivoSalida] ?? ''} · ${fecha}`;
   }
 }
 
@@ -209,6 +213,14 @@ function Corregir({ entidad, id, identidad }: { entidad: EntidadConCorreccion; i
         <p className="aviso aviso--atencion aviso--en-contenido">
           Esta vaca no podrá tener otro ordeño el {formatearFecha(String((v.registro as RegistroLocal<'produccion_leche'>).fecha))}. Si el error es la cantidad, corrija los litros en
           lugar de anular.
+        </p>
+      )}
+
+      {f.operacion === 'anular' && entidad === 'salida' && (
+        // Documento técnico 29, sección 8: una salida anulada impide registrar otra para el animal.
+        <p className="aviso aviso--atencion aviso--en-contenido">
+          ⚠ El animal volverá al inventario activo y <strong>no podrá registrarse otra salida para él</strong>: el servicio admite una sola. Anule solo si el
+          animal en realidad no salió del predio. Si el error es la fecha, el peso, el valor o el comprador, corríjalo en lugar de anular.
         </p>
       )}
 

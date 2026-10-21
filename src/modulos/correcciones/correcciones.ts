@@ -23,7 +23,7 @@ export const NOMBRE_MOTIVO: Record<MotivoCorreccion, string> = {
 export const LARGO_NOTA = 300;
 
 /** Las entidades que tienen pantalla de corrección (sección 3). */
-export const ENTIDADES_CON_CORRECCION = ['evento_sanitario', 'produccion_leche', 'pesaje', 'parto', 'destino_productivo', 'animal', 'medicamento'] as const;
+export const ENTIDADES_CON_CORRECCION = ['evento_sanitario', 'produccion_leche', 'pesaje', 'parto', 'destino_productivo', 'animal', 'medicamento', 'salida'] as const;
 export type EntidadConCorreccion = (typeof ENTIDADES_CON_CORRECCION)[number];
 
 export function esEntidadConCorreccion(valor: string): valor is EntidadConCorreccion {
@@ -71,7 +71,7 @@ export async function contextoDeValor(entidad: EntidadConCorreccion, registro: R
   if (animal && (entidad === 'evento_sanitario' || entidad === 'parto') && animal.fecha_nacimiento) {
     limite = { fecha: animal.fecha_nacimiento, mensaje: (f) => (entidad === 'parto' ? `La vaca nació el ${f}` : `El animal nació el ${f}`) };
   }
-  if (animal && entidad === 'pesaje') {
+  if (animal && (entidad === 'pesaje' || entidad === 'salida')) {
     const llegada = fechaDeLlegada(animal);
     if (llegada) limite = { fecha: llegada, mensaje: (f) => `El animal llegó al predio el ${f}` };
   }

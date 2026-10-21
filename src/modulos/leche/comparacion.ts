@@ -116,7 +116,8 @@ export async function cargarComparacion(tipo: TipoPeriodo, desplazamiento: numbe
       hembras,
       destinos: soloVigentes('destino_productivo', destinos, correcciones),
       ordenos: soloVigentes('produccion_leche', ordenos, correcciones),
-      retiradas: new Set(salidas.map((s) => s.animal_id)),
+      // Retirada: con salida vigente, no anulada (documento técnico 29, sección 7).
+      retiradas: new Set(soloVigentes('salida', salidas, correcciones).map((s) => s.animal_id)),
     },
     periodoComparado(tipo, hoy, desplazamiento),
     hoy,

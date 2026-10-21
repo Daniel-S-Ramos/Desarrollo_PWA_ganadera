@@ -216,6 +216,11 @@ export interface Salida extends Auditable {
   valor_venta: number | null;
   comprador: string | null;
   causa_muerte: string | null;
+  /**
+   * Observación de una pérdida o un robo (CU-13, 3b). Ausente en las salidas registradas antes de la
+   * columna (documento técnico 29, sección 4).
+   */
+  observacion?: string | null;
 }
 
 /** Solo se almacena la decisión de posponer; los recordatorios vigentes se derivan. */

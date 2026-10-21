@@ -193,6 +193,18 @@ begin
            'ok', codigos = array['OK','OK','23505'] and cuenta = 1,
            'd', 'códigos: ' || array_to_string(codigos, ', ') || ' · parámetro: ' || cuenta);
 
+    -- -------------------------------------------------------------- 16. Observación de la salida
+    -- Una salida por pérdida o robo admite una observación opcional, de hasta 300 caracteres
+    -- (docs/tecnica/29-salida-y-venta.md, sección 4).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, observacion) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, becerro, 'perdida_robo', 'Se salió por la cerca del potrero de abajo')),
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, observacion) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, 'perdida_robo', repeat('x', 301)))];
+    select count(*) into cuenta from information_schema.columns c
+     where c.table_schema = 'public' and c.table_name = 'salida' and c.column_name = 'observacion' and c.is_nullable = 'YES';
+    r := r || jsonb_build_object('n',16,'v','La salida admite una observación opcional de hasta 300 caracteres',
+           'ok', codigos = array['OK','23514'] and cuenta = 1,
+           'd', 'códigos: ' || array_to_string(codigos, ', ') || ' · columna: ' || cuenta);
+
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.
     raise exception using errcode = 'P0099', message = 'REVERTIR';
   exception when sqlstate 'P0099' then
