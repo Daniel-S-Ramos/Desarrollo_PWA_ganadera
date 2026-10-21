@@ -30,6 +30,7 @@ declare
   vaca      uuid := gen_random_uuid();
   ternero   uuid := gen_random_uuid();
   becerro   uuid := gen_random_uuid();
+  salida1   uuid := gen_random_uuid();
   codigos   text[];
   ok        boolean;
   valor     text;
@@ -204,6 +205,19 @@ begin
     r := r || jsonb_build_object('n',16,'v','La salida admite una observación opcional de hasta 300 caracteres',
            'ok', codigos = array['OK','23514'] and cuenta = 1,
            'd', 'códigos: ' || array_to_string(codigos, ', ') || ' · columna: ' || cuenta);
+
+    -- -------------------------------------------------------------- 17. Una sola salida vigente
+    -- Una segunda salida se rechaza mientras la primera esté vigente; el reenvío de la misma se ignora; anulada
+    -- la primera, se admite otra (docs/tecnica/29-salida-y-venta.md, sección 8).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, peso_venta, valor_venta) values (%L,%L,%s,%L,current_date,%L,410,1000000)', salida1, usuario, ahora, vaca, 'venta')),
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, causa_muerte) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, 'muerte', 'Rayo')),
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, peso_venta, valor_venta) values (%L,%L,%s,%L,current_date,%L,410,1000000) on conflict (id) do nothing', salida1, usuario, ahora, vaca, 'venta')),
+      pg_temp.intentar(format('insert into public.correccion (id, autor_id, creado_en, entidad_afectada, registro_id, tipo, motivo) values (%L,%L,%s,%L,%L,%L,%L)', gen_random_uuid(), usuario, ahora, 'salida', salida1, 'anulacion', 'animal_equivocado')),
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, causa_muerte) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, 'muerte', 'Rayo'))];
+    r := r || jsonb_build_object('n',17,'v','Una sola salida vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra',
+           'ok', codigos = array['OK','23505','OK','OK','OK'],
+           'd', 'códigos: ' || array_to_string(codigos, ', '));
 
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.
     raise exception using errcode = 'P0099', message = 'REVERTIR';

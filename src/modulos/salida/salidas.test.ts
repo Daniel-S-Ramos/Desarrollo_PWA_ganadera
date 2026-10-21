@@ -110,7 +110,7 @@ describe('PU-31 · 2. Último peso y pesaje reciente (sección 5, CU-13 2a)', ()
     const a = await animal('Z950');
     await db.parametro.put({ clave: 'dias_sin_pesaje', valor: 45, unidad: 'días', descripcion: '' } as never);
     let c = await cargarParaSalida(a.id);
-    expect(c).toMatchObject({ ultimoPeso: { tipo: 'peso al nacer', kg: 30 }, ultimoPesaje: null, diasSinPesaje: 45, llegada: '2024-01-10', retirado: false, salidaAnulada: false });
+    expect(c).toMatchObject({ ultimoPeso: { tipo: 'peso al nacer', kg: 30 }, ultimoPesaje: null, diasSinPesaje: 45, llegada: '2024-01-10', retirado: false });
     await crear('pesaje', { animal_id: a.id, fecha: '2026-10-02', peso: 420, metodo: 'cinta' }, PROPIETARIO.usuario_id);
     c = await cargarParaSalida(a.id);
     expect(c).toMatchObject({ ultimoPeso: { tipo: 'pesaje', kg: 420, fecha: '2026-10-02' }, ultimoPesaje: '2026-10-02' });
@@ -132,14 +132,18 @@ describe('PU-31 · 3. Registro (sección 6)', () => {
     expect((await operacionesPendientes()).some((o) => o.registro_id === r.salida.id && o.entidad === 'salida')).toBe(true);
   });
 
-  it('una segunda salida se rechaza dentro de la transacción, aunque la primera esté anulada', async () => {
+  it('una segunda salida se rechaza mientras la primera esté vigente; anulada, se admite otra (sección 8, PE-35)', async () => {
     const a = await animal('Z950');
     const primera = await registrarSalida(a.id, venta(), PROPIETARIO, HOY);
     expect(await registrarSalida(a.id, venta(), PROPIETARIO, HOY)).toEqual({ ok: false, errores: { registro: 'Este animal ya tiene registrada su salida' } });
     if (!primera.ok) return;
     await registrarCorreccion('salida', primera.salida.id, { operacion: 'anular', campo: '', valor: '', motivo: 'animal_equivocado', nota: '' }, PROPIETARIO, HOY);
-    expect(await cargarParaSalida(a.id)).toMatchObject({ retirado: false, salidaAnulada: true });
-    expect(await registrarSalida(a.id, venta(), PROPIETARIO, HOY)).toEqual({ ok: false, errores: { registro: 'Este animal ya tiene registrada su salida' } });
+    expect(await cargarParaSalida(a.id)).toMatchObject({ retirado: false });
+    const segunda = await registrarSalida(a.id, { ...formularioSalidaVacio(HOY), motivo: 'muerte', causa: 'Rayo' }, PROPIETARIO, HOY);
+    expect(segunda).toMatchObject({ ok: true, salida: { motivo: 'muerte' } });
+    expect(await cargarParaSalida(a.id)).toMatchObject({ retirado: true });
+    // La ficha muestra la vigente, no la anulada.
+    expect((await salidaDelAnimal(a.id))?.registro.motivo).toBe('muerte');
   });
 
   it('con datos inválidos no guarda nada', async () => {

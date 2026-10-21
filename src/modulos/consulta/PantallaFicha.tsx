@@ -312,16 +312,8 @@ function Encabezado({ ficha, hoy, verFotos, alAlternarFotos }: { ficha: FichaAni
   );
 }
 
-/**
- * El acceso a registrar la salida (documento técnico 29, sección 2). Con una salida anulada no se ofrece: el
- * servicio admite una sola por animal (sección 8, límite).
- */
+/** El acceso a registrar la salida (documento técnico 29, sección 2). Con la salida anterior anulada, se admite otra. */
 function BotonSalida({ animalId }: { animalId: string }) {
-  const salida = useLiveQuery(async () => ({ s: await salidaDelAnimal(animalId) }), [animalId]);
-  if (!salida) return null;
-  if (salida.s) {
-    return <p className="texto-secundario">La salida de este animal fue anulada y el servicio no admite otra: consulte al desarrollador si debe registrarse.</p>;
-  }
   return (
     <Link className="boton boton--secundario boton--ancho" to={`/animales/${animalId}/salida`}>
       Registrar salida

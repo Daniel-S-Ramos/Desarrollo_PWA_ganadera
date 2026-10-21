@@ -25,17 +25,11 @@ export function PantallaRegistrarSalida({ identidad }: { identidad: Identidad })
   const contexto = useLiveQuery(async () => ({ c: await cargarParaSalida(id) }), [id]);
   if (!contexto) return <p className="texto-secundario">Cargando…</p>;
   const c = contexto.c;
-  if (!c || c.retirado || c.salidaAnulada) {
+  if (!c || c.retirado) {
     return (
       <div className="formulario">
         <p className="titulo-seccion">Registrar salida</p>
-        <p>
-          {!c
-            ? 'Este animal no está en este teléfono.'
-            : c.retirado
-              ? 'Este animal ya tiene registrada su salida.'
-              : 'La salida de este animal fue anulada y el servicio no admite otra: consulte al desarrollador si debe registrarse.'}
-        </p>
+        <p>{!c ? 'Este animal no está en este teléfono.' : 'Este animal ya tiene registrada su salida.'}</p>
         <Link className="boton boton--secundario boton--ancho" to={c ? `/animales/${id}` : '/animales'}>
           {c ? 'Volver a la ficha' : 'Volver al listado'}
         </Link>

@@ -6,8 +6,8 @@
 | **Capa** | Dominio, datos, lógica y presentación |
 | **Origen en el documento** | RF-15 · RF-20 · RF-27 · RF-28 · CU-13, pasos 1 a 7 y flujos 2a, 3a y 3b (Tabla A13) · HU-11 (Tabla B11) · Tabla 24 (fila `salida`) · Tabla 27 |
 | **Depende de** | [24 · Pesaje](24-pesaje-y-evolucion.md) (último peso) · [26 · Corrección y anulación](26-correccion-y-anulacion.md) · [16 · Ficha](16-ficha-del-animal.md) · [15 · Listado](15-listado-de-animales.md) |
-| **Base de datos** | Migración [`20261020000100_salida_observacion.sql`](../../supabase/migrations/20261020000100_salida_observacion.sql) · PI-01, verificación 16 |
-| **Pruebas** | PU-31 · PI-01 (verificación 16) · PE-35 |
+| **Base de datos** | Migraciones [`20261020000100_salida_observacion.sql`](../../supabase/migrations/20261020000100_salida_observacion.sql) y [`20261021000100_salida_vigente_unica.sql`](../../supabase/migrations/20261021000100_salida_vigente_unica.sql) · PI-01, verificaciones 16 y 17 |
+| **Pruebas** | PU-31 · PI-01 (verificaciones 16 y 17) · PE-35 |
 
 ---
 
@@ -102,13 +102,24 @@ desde **Corregir o anular** en el texto de la salida de la ficha. El trabajador 
 El motivo no se corrige: si se registró una venta en lugar de una muerte, se anula. **Anulada**, el animal
 vuelve a ser activo en todas las pantallas y la ficha muestra la salida tachada con su anulación.
 
-**Límite.** El servicio admite una sola salida por animal (restricción única, Tabla 24), y una salida anulada
-ya no admite correcciones (CU-17, 1a): un animal con la salida anulada **no puede volver a salir** desde la
-aplicación. La ficha no ofrece **Registrar salida** en ese caso y explica «La salida de este animal fue anulada
-y el servicio no admite otra: consulte al desarrollador si debe registrarse». Para que no ocurra por error, al
-elegir **Anular** en una salida la pantalla advierte que el animal no podrá registrar otra salida y que, si el
-error es la fecha, el peso, el valor o el comprador, se corrija en lugar de anular. Es el mismo límite del
-ordeño anulado (documento 26, sección 7), más grave aquí porque no hay otro día en que registrarla.
+**Una sola salida vigente (cambio del autor en PE-35, 2026-10-20).** El diseño aprobado conservaba la
+restricción única de `salida.animal_id`, que contaba también las salidas anuladas. Como el servicio solo admite
+inserciones y lo anulado no admite correcciones (CU-17, 1a), un animal con la salida anulada no podía volver a
+salir nunca; en PE-35 ocurrió con Z971. La regla pasa a ser **un animal admite una sola salida vigente**:
+
+- La migración `20261021000100_salida_vigente_unica.sql` quita la restricción y agrega un disparador que, antes
+  de insertar, rechaza la salida si el animal ya tiene una **sin anulación**, con el mismo código de unicidad
+  (23505). El reenvío del mismo registro sigue ignorándose (3.7.8), y dos salidas que llegan a la vez se
+  atienden una tras otra.
+- El teléfono aplica la misma regla dentro de la transacción. Con la salida anterior anulada, la ficha vuelve
+  a ofrecer **Registrar salida**; la anulada queda en el historial de correcciones como constancia.
+- Al anular una salida, la pantalla recuerda que el animal vuelve al inventario y que, si el error es la fecha,
+  el peso, el valor o el comprador, conviene corregir en lugar de anular.
+- PI-01, verificación 17: la segunda salida se rechaza, el reenvío se ignora y, anulada la primera, se admite
+  otra.
+
+El ordeño anulado tiene un límite parecido (una vaca con el ordeño de un día anulado no admite otro ese día;
+documento 26, sección 7). Queda como pendiente de diseño.
 
 ## 9. Economía (decisión H)
 
@@ -125,7 +136,7 @@ corrección.
 | **CU-13 3a y 3b** | Causa obligatoria en la muerte; observación en la pérdida o el robo |
 | **CU-13 pasos 6 y 7 · HU-11.3 y 11.4** | Confirmación; retirado del inventario activo con el historial consultable |
 | **RF-27 · RF-28** | Autor y fecha; sin conexión, por la cola |
-| **Tabla 24** | Una salida por animal; estado retirado deducido de la salida vigente |
+| **Tabla 24** | Una sola salida vigente por animal; estado retirado deducido de la salida vigente |
 | **Tabla 27 · RD-05** | Solo el propietario, en pantalla y en el servicio |
 
 ## 11. Pruebas
@@ -142,9 +153,10 @@ corrección.
 | 6 | Corrección | Campos corregibles; el motivo no |
 | 7 | Permisos | Solo el propietario registra; el trabajador recibe `PermisoDenegado` |
 
-### PI-01, verificación 16
+### PI-01, verificaciones 16 y 17
 
-La salida admite una observación opcional, y rechaza una de más de 300 caracteres.
+16: la salida admite una observación opcional, y rechaza una de más de 300 caracteres. 17: una sola salida
+vigente por animal (sección 8).
 
 ### PE-35 (manual)
 

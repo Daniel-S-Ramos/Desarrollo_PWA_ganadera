@@ -4,7 +4,7 @@
  */
 import { leerParametro } from '../../datos/parametros';
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
-import { animalVigente, leerVigentes, vigentes } from '../../datos/vigentes';
+import { animalVigente, contarSalidasVigentes, leerVigentes, vigentes } from '../../datos/vigentes';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { validarSalida, type ErroresSalida, type FormularioSalida } from '../../dominio/salida';
 import type { FechaPredio, RegistroLocal, Uuid } from '../../dominio/tipos';
@@ -21,8 +21,6 @@ export interface ContextoSalida {
   animal: RegistroLocal<'animal'>;
   /** Tiene una salida vigente: ya está retirado. */
   retirado: boolean;
-  /** Tuvo una salida y se anuló: el servicio no admite otra (sección 8, límite). */
-  salidaAnulada: boolean;
   llegada: FechaPredio | null;
   ultimoPeso: UltimoPeso;
   /** Fecha del último pesaje vigente, para el aviso de pesaje reciente (sección 5). */
@@ -44,7 +42,6 @@ export async function cargarParaSalida(animalId: Uuid): Promise<ContextoSalida |
   return {
     animal,
     retirado,
-    salidaAnulada: !retirado && salidas.length > 0,
     llegada: fechaDeLlegada(animal),
     ultimoPeso: ultimoPeso(animal, pesajes),
     ultimoPesaje: ultimo?.fecha ?? null,
@@ -68,8 +65,8 @@ class Detener extends Error {
 }
 
 /**
- * Registra la salida (sección 6). Dentro de la transacción se comprueba que el animal no tenga ya una salida,
- * vigente o anulada: el servicio admite una sola por animal.
+ * Registra la salida (sección 6). Dentro de la transacción se comprueba que el animal no tenga ya una salida
+ * vigente; una anulada no cuenta, como en el servicio (sección 8).
  *
  * @throws PermisoDenegado si el perfil no es el propietario (Tabla 27, RD-05).
  */
@@ -81,7 +78,7 @@ export async function registrarSalida(animalId: Uuid, formulario: FormularioSali
   if (!v.ok) return { ok: false, errores: v.errores };
   try {
     const salida = await unidadDeTrabajo(usuario.usuario_id, async (tx) => {
-      if ((await consulta.salida.where('animal_id').equals(animalId).count()) > 0) throw new Detener({ registro: 'Este animal ya tiene registrada su salida' });
+      if ((await contarSalidasVigentes(animalId)) > 0) throw new Detener({ registro: 'Este animal ya tiene registrada su salida' });
       return tx.crear('salida', { animal_id: animalId, ...v.datos });
     });
     return { ok: true, salida };

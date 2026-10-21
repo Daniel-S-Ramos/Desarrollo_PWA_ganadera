@@ -217,10 +217,10 @@ function Corregir({ entidad, id, identidad }: { entidad: EntidadConCorreccion; i
       )}
 
       {f.operacion === 'anular' && entidad === 'salida' && (
-        // Documento técnico 29, sección 8: una salida anulada impide registrar otra para el animal.
+        // Documento técnico 29, sección 8: anulada, el animal vuelve al inventario y admite una salida nueva.
         <p className="aviso aviso--atencion aviso--en-contenido">
-          ⚠ El animal volverá al inventario activo y <strong>no podrá registrarse otra salida para él</strong>: el servicio admite una sola. Anule solo si el
-          animal en realidad no salió del predio. Si el error es la fecha, el peso, el valor o el comprador, corríjalo en lugar de anular.
+          El animal volverá al inventario activo; si salió por otro motivo o en otra fecha, registre después la salida correcta. Si el error es la fecha, el
+          peso, el valor o el comprador, corríjalo en lugar de anular.
         </p>
       )}
 
