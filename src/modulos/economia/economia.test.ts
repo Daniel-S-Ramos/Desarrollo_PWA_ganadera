@@ -10,7 +10,7 @@ import type { Vigente } from '../../dominio/vigente';
 import { PermisoDenegado, puedeUsar } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
 import { registrarCorreccion } from '../correcciones/correcciones';
-import { calcularConsolidado, cargarConsolidado, type Consolidado, type DatosConsolidado } from './consolidado';
+import { calcularConsolidado, cargarConsolidado, rotuloResultado, type Consolidado, type DatosConsolidado } from './consolidado';
 import { cargarParaCosto, registrarCosto } from './costos';
 
 /**
@@ -174,6 +174,14 @@ describe('PU-33 · 5. Resultado y avisos (sección 6, CU-14 2a, 3a, 4a, 4b, HU-1
     expect(muerte).toMatchObject({ resultado: -2_000_000, venta: null, salida: 'muerte', totalGenerado: 0 });
     expect(avisos(muerte)).toContain('Salió por muerte: no hubo venta, y lo invertido se presenta como pérdida.');
     expect(avisos(calcularConsolidado(base({ salida: { fecha: '2026-10-15', motivo: 'perdida_robo', valor_venta: null } })))).toContain('Salió por pérdida o robo: no hubo venta, y lo invertido se presenta como pérdida.');
+  });
+
+  it('el rótulo: una muerte o pérdida siempre es pérdida, aunque sea de $0 (PE-37)', () => {
+    expect(rotuloResultado({ resultado: 0, salida: 'muerte' })).toEqual({ clase: 'perdida', texto: 'Pérdida por muerte' });
+    expect(rotuloResultado({ resultado: 500, salida: 'perdida_robo' })).toEqual({ clase: 'perdida', texto: 'Pérdida por pérdida o robo' });
+    expect(rotuloResultado({ resultado: 0, salida: null })).toEqual({ clase: 'neutro', texto: 'Sin ganancia ni pérdida' });
+    expect(rotuloResultado({ resultado: -1, salida: 'venta' })).toEqual({ clase: 'perdida', texto: 'Pérdida' });
+    expect(rotuloResultado({ resultado: 1, salida: 'venta' })).toEqual({ clase: 'ganancia', texto: 'Ganancia' });
   });
 
   it('el detalle: costos, medicamentos y venta, del más reciente al más antiguo', () => {

@@ -8,7 +8,7 @@ import { formatearLitros } from '../../dominio/leche';
 import { formatearPesos } from '../../dominio/salida';
 import type { Identidad } from '../../sesion/token';
 import { EnlaceCorregir, MarcaCorreccion } from '../correcciones/MarcaCorreccion';
-import { cargarConsolidado, type ConceptoInvertido } from './consolidado';
+import { cargarConsolidado, rotuloResultado, type ConceptoInvertido } from './consolidado';
 
 const NOMBRE_INVERTIDO: Record<ConceptoInvertido, string> = { ...NOMBRE_CONCEPTO, servicio_veterinario: 'Servicios veterinarios', medicamentos: 'Medicamentos' };
 
@@ -32,8 +32,7 @@ export function PantallaConsolidado({ identidad }: { identidad: Identidad }) {
     );
   }
 
-  const ganancia = c.resultado >= 0;
-  const motivo = c.salida === 'muerte' ? ' por muerte' : c.salida === 'perdida_robo' ? ' por pérdida o robo' : '';
+  const rotulo = rotuloResultado(c);
 
   return (
     <div className="formulario consolidado">
@@ -94,9 +93,14 @@ export function PantallaConsolidado({ identidad }: { identidad: Identidad }) {
         ))}
       </ul>
 
-      <section className={ganancia ? 'tarjeta consolidado__resultado consolidado__resultado--ganancia' : 'tarjeta consolidado__resultado consolidado__resultado--perdida'}>
+      <section className={`tarjeta consolidado__resultado consolidado__resultado--${rotulo.clase}`}>
         <p>
-          {ganancia ? 'Ganancia' : `Pérdida${motivo}`}: <strong>{formatearPesos(Math.abs(c.resultado))}</strong>
+          {rotulo.texto}
+          {rotulo.clase !== 'neutro' && (
+            <>
+              : <strong>{formatearPesos(Math.abs(c.resultado))}</strong>
+            </>
+          )}
         </p>
       </section>
 

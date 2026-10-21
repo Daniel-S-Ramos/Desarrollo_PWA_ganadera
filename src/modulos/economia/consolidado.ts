@@ -104,6 +104,18 @@ export function calcularConsolidado(d: DatosConsolidado): Consolidado {
   };
 }
 
+/**
+ * Cómo se presenta el resultado (sección 6). Una muerte o una pérdida se presenta siempre como pérdida, aunque no
+ * haya costos (PE-37: «Ganancia: $0» en un animal muerto confundía).
+ */
+export function rotuloResultado(c: Pick<Consolidado, 'resultado' | 'salida'>): { clase: 'ganancia' | 'perdida' | 'neutro'; texto: string } {
+  if (c.salida === 'muerte') return { clase: 'perdida', texto: 'Pérdida por muerte' };
+  if (c.salida === 'perdida_robo') return { clase: 'perdida', texto: 'Pérdida por pérdida o robo' };
+  if (c.resultado < 0) return { clase: 'perdida', texto: 'Pérdida' };
+  if (c.resultado === 0) return { clase: 'neutro', texto: 'Sin ganancia ni pérdida' };
+  return { clase: 'ganancia', texto: 'Ganancia' };
+}
+
 /** Lee el teléfono y calcula (sección 7); null si el animal no está. */
 export async function cargarConsolidado(animalId: Uuid): Promise<Consolidado | null> {
   const [animal, movimientos, eventos, ordenos, salidas, correcciones, medicamentos, parametro] = await Promise.all([
