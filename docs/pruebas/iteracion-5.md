@@ -14,6 +14,9 @@ Historias de usuario: HU-10 (comparación de la producción entre vacas), HU-11 
 | PU-30 | Comparación de la producción entre vacas | 5.1 | RF-12 · CU-07 (pasos 5 y 6, 5a) · HU-10 | ✅ |
 | PU-24 | Producción por vaca: un periodo a la vez (apartados 9 y 10, agregados en PE-34) | 5.1 | RF-11 · CU-07 (pasos 1 a 4, 3a) · HU-04.2 | ✅ |
 | PE-34 | Comparación entre vacas y producción por vaca en el navegador real | 5.1 | CU-07 · HU-10 · HU-04.2 · Tabla 27 | ✅ |
+| PU-31 | Registro de la salida y venta del animal | 5.2 | RF-15 · CU-13 · HU-11 · Tabla 24 | ✅ |
+| PI-01 | Esquema remoto: observación de la salida y una sola salida vigente (verificaciones 16 y 17) | 5.2 | CU-13 3b · Tabla 24 | ✅ |
+| PE-35 | Salida y venta en el navegador real | 5.2 | CU-13 · HU-11 · Tabla 27 | ✅ |
 
 ---
 
@@ -94,3 +97,73 @@ del mismo periodo (sobrevivió; se agregó). Al cierre, 13 de 13.
 5. Inicio seguía rotulado «Iteración 4»; se actualizó a la Iteración 5 (commit 890fdf2).
 6. Las capturas de la ronda 1 (PE-34-r1-08) muestran la producción semanal con la ventana de 12 semanas, que
    quedó reemplazada; se conservan como evidencia del hallazgo.
+
+## PU-31 · Registro de la salida y venta del animal
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las validaciones por motivo (venta con peso y valor, muerte con causa, pérdida o robo con observación opcional, campos de otro motivo descartados, fecha), el último peso y el aviso de pesaje no reciente, el registro con su cola y la unicidad de la salida vigente, el retiro del animal en todas las pantallas y su regreso al anular, el texto de la ficha, los campos corregibles y los permisos |
+| Requerimiento | RF-15 · RF-27 · RF-28 · CU-13 (pasos 2 a 7, flujos 2a, 3a y 3b) · HU-11 · Tabla 24 · Tabla 27 · RD-05 |
+| Tipo | Unitaria, automática |
+| Código | [`src/dominio/salida.ts`](../../src/dominio/salida.ts) · [`src/modulos/salida/salidas.ts`](../../src/modulos/salida/salidas.ts) · `salidasVigentes` y `contarSalidasVigentes` en [`vigentes.ts`](../../src/datos/vigentes.ts) · prueba [`salidas.test.ts`](../../src/modulos/salida/salidas.test.ts) · especificación [documento técnico 29](../tecnica/29-salida-y-venta.md), sección 11 |
+| Resultado obtenido | **18 de 18 aprobadas**, más el caso de la salida agregado a PU-27.9 (15 de 15). Total del conjunto automático: **858 de 858** ([informe](resultados/2026-10-20_233749_6a53d49.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+**Mutaciones.** Veintiséis. Veinticuatro detectadas a la primera: sin exigir peso, valor o causa, sin límite
+de observación o de comprador, sin descartar la causa de otro motivo, fecha futura o anterior a la llegada,
+sin motivo, valor cero o sin quitar los puntos de miles, pesaje reciente con «mayor o igual», sin aviso para un
+animal nunca pesado, género fijo, sin comprador en el texto, segunda salida admitida, sin permiso, parámetro
+ignorado, retirado con cualquier salida, salidas vigentes sin filtrar las anuladas, todas las salidas contadas,
+valor corregible por todos y peso de venta sin la lectura del pesaje. **Dos sobrevivieron:** «sin descartar el
+peso de otro motivo» era equivalente, porque el peso solo se lee en la venta (la condición sobrante se quitó), y
+«la ficha prefiere la anulada» no se probaba porque normalmente hay una sola salida (se agregó el caso de una
+anulada y una vigente). Tras el cambio de la unicidad, la mutación «una anulada cuenta como vigente» también se
+detecta. Al cierre, 26 de 26.
+
+## PI-01 · Salida: observación y una sola salida vigente (verificaciones 16 y 17)
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las dos migraciones del paso: la columna `salida.observacion` (opcional, hasta 300 caracteres) y la unicidad de la salida vigente por disparador (la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra) |
+| Código | Migraciones [`20261020000100_salida_observacion.sql`](../../supabase/migrations/20261020000100_salida_observacion.sql) y [`20261021000100_salida_vigente_unica.sql`](../../supabase/migrations/20261021000100_salida_vigente_unica.sql) · [`supabase/pruebas/pi-01-esquema.sql`](../../supabase/pruebas/pi-01-esquema.sql), verificaciones 16 y 17 |
+| Resultado obtenido | **16 de 16** tras la primera migración y **17 de 17** tras la segunda ([evidencia 16](evidencias/iteracion-5/PI-01-9-salida-observacion.txt) · [evidencia 17](evidencias/iteracion-5/PI-01-10-salida-vigente-unica.txt)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+## PE-35 · Salida y venta en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario la venta con el aviso de pesaje, las validaciones y la confirmación, la muerte y la pérdida o robo, el animal retirado en la ficha y en el listado, la corrección de la venta y la anulación con una salida nueva; y como trabajador que ve la salida sin poder registrarla ni corregirla |
+| Requerimiento | CU-13 (pasos 1 a 7, flujos 2a, 3a y 3b) · HU-11.1 a 11.4 · Tabla 27 · RD-05 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-5` (commits ba442ab a 6a53d49) |
+| Resultado obtenido | Aprobada en la tercera ronda. La primera reveló que un animal con la salida anulada no podía volver a salir; el autor aprobó el cambio a una sola salida vigente (observación 1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+| # | Ronda | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 | 1 | Propietario | Venta de Z971, nunca pesado | «⚠ Nunca se ha pesado. Conviene pesarlo antes de venderlo» con **Registrar pesaje**; tras pesarlo (430 kg) el formulario muestra ese último peso; confirmación «Vendido el 20 de octubre de 2026 · 432 kg · $4.500.000 · comprador Finca Alquitania» | [aviso](evidencias/iteracion-5/PE-35-r1-01-aviso-nunca-pesado.png) · [pesaje](evidencias/iteracion-5/PE-35-r1-02-pesaje-antes-de-vender.png) · [formulario](evidencias/iteracion-5/PE-35-r1-03-formulario-venta.png) · [confirmación](evidencias/iteracion-5/PE-35-r1-04-confirmacion.png) |
+| 2 | 1 | Propietario | Anular la venta de Z971 | La salida queda tachada con su anulación, pero el animal ya no admitía otra (hallazgo, observación 1) | [captura](evidencias/iteracion-5/PE-35-r1-05-salida-anulada-sin-otra.png) |
+| 3 | 2 | Propietario | Venta de Z982 | Aviso de nunca pesado; sin peso ni valor, «Escriba el peso de venta» y «Escriba el valor recibido, en pesos»; confirmación y ficha «Vendida el 20 de octubre de 2026 · 510 kg · $5.100.000 · comprador Finca la alquitania» con «RETIRADA DEL PREDIO» y sin acciones de registro; en **Retirados** | [aviso](evidencias/iteracion-5/PE-35-r2-01-z982-aviso-nunca-pesado.png) · [errores](evidencias/iteracion-5/PE-35-r2-02-z982-errores-sin-peso-ni-valor.png) · [confirmación](evidencias/iteracion-5/PE-35-r2-03-z982-confirmacion.png) · [ficha](evidencias/iteracion-5/PE-35-r2-04-z982-ficha-vendida.png) · [retirados](evidencias/iteracion-5/PE-35-r2-05-listado-retirados.png) |
+| 4 | 2 | Propietario | Muerte de Z980 | La causa aparece obligatoria; «Murió el 20 de octubre de 2026 · causa: De viejo»; Z980 sale de los activos | [antes](evidencias/iteracion-5/PE-35-r2-06-listado-activos-antes.png) · [formulario](evidencias/iteracion-5/PE-35-r2-07-z980-muerte-sin-causa.png) · [confirmación](evidencias/iteracion-5/PE-35-r2-08-z980-confirmacion.png) |
+| 5 | 2 | Propietario | Pérdida o robo de Z981 con observación | «Perdida o robada el 20 de octubre de 2026 · Robo» | [formulario](evidencias/iteracion-5/PE-35-r2-09-z981-perdida-con-observacion.png) · [confirmación](evidencias/iteracion-5/PE-35-r2-10-z981-confirmacion.png) |
+| 6 | 2 | Propietario | Corregir el valor de la venta de Z982 | $6.900.000 con la marca **Corregido** y «Valor recibido: antes 5.100.000, ahora 6.900.000» | [captura](evidencias/iteracion-5/PE-35-r2-11-z982-valor-corregido.png) |
+| 7 | 2 | Propietario | Anular la salida de Z981 y registrar otra | El aviso nuevo («El animal volverá al inventario activo…»); Z981 vuelve a los activos con la salida tachada y **Registrar salida**; la venta nueva se acepta | [aviso](evidencias/iteracion-5/PE-35-r2-12-z981-anular-aviso.png) · [anulada](evidencias/iteracion-5/PE-35-r2-13-z981-anulada-registrar-salida.png) · [activos](evidencias/iteracion-5/PE-35-r2-14-listado-activos-con-z981-sin-z980.png) · [ficha](evidencias/iteracion-5/PE-35-r2-15-z981-anulada-ficha.png) · [nueva](evidencias/iteracion-5/PE-35-r2-16-z981-nueva-salida.png) |
+| 8 | 3 | Propietario | Z971, con la venta anulada en la ronda 1, registra una salida nueva | «Murió el 20 de octubre de 2026 · causa: natural»; el servicio la acepta | [formulario](evidencias/iteracion-5/PE-35-r3-01-z971-nueva-salida-muerte.png) · [confirmación](evidencias/iteracion-5/PE-35-r3-02-z971-confirmacion.png) · [ficha](evidencias/iteracion-5/PE-35-r3-03-z971-ficha-retirado.png) |
+| 9 | 3 | Trabajador | Z983 activo, Z982 retirada y el listado | Z983 sin **Registrar salida**; Z982 con la venta corregida, «Fotos: 3 de 3» y **Ver fotos**, sin **Corregir o anular**; «4 animales retirados» | [Z983](evidencias/iteracion-5/PE-35-r3-04-trabajador-z983-activo.png) · [acciones](evidencias/iteracion-5/PE-35-r3-05-trabajador-z983-sin-salida.png) · [pie](evidencias/iteracion-5/PE-35-r3-06-trabajador-z983-pie.png) · [Z982](evidencias/iteracion-5/PE-35-r3-07-trabajador-z982-sin-corregir.png) · [fotos](evidencias/iteracion-5/PE-35-r3-08-trabajador-z982-ver-fotos.webp) · [retirados](evidencias/iteracion-5/PE-35-r3-09-trabajador-retirados.png) |
+
+**Observaciones.**
+
+1. **Hallazgo: un animal con la salida anulada no podía volver a salir** (ronda 1). La restricción única de
+   `salida.animal_id` contaba también las anuladas, y lo anulado no admite correcciones. El autor aprobó el
+   cambio a **una sola salida vigente** por animal: migración `20261021000100_salida_vigente_unica.sql`, PI-01
+   verificación 17 y ajuste de la aplicación (documento 29, sección 8; commit 3017ff5). En la ronda 3, Z971 —el
+   animal del hallazgo— registró su salida nueva.
+2. **El animal retirado pedía completar fotos** (ronda 2): «⚠ Registro fotográfico incompleto» y **Ver y
+   completar fotos**, aunque ya no se pueden agregar. Se corrigió, y el texto alternativo pasó de «Fotos: 3 de
+   3» fijo al número real (commit 6a53d49). La captura de Z971 de la ronda 3 se tomó antes de publicar el
+   arreglo; en el teléfono del trabajador ya se ve «Fotos: 3 de 3 · Ver fotos» en Z982.
+3. Las salidas de prueba quedan en Z971, Z980, Z981 y Z982 (serie Z9xx), que se borrarán con los demás datos de
+   prueba antes de la evaluación.
