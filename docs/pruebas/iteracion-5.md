@@ -19,6 +19,9 @@ Historias de usuario: HU-10 (comparación de la producción entre vacas), HU-11 
 | PE-35 | Salida y venta en el navegador real | 5.2 | CU-13 · HU-11 · Tabla 27 | ✅ |
 | PU-32 | Recordatorios derivados y posponer | 5.3 | RF-22 · RF-23 · CU-15 · HU-14 | ✅ |
 | PE-36 | Recordatorios en el navegador real | 5.3 | CU-15 · HU-14 · Tabla 27 | ✅ |
+| PU-33 | Costos por animal y consolidado económico | 5.4 | RF-20 · RF-21 · CU-14 · HU-16 · apartado 3.8.12 | ✅ |
+| PI-01 | Esquema remoto: una sola compra vigente por animal (verificación 18) | 5.4 | RF-20 · Tabla 24 | ✅ |
+| PE-37 | Costos y consolidado económico en el navegador real | 5.4 | CU-14 · HU-16 · Tabla 27 | ✅ |
 
 ---
 
@@ -222,3 +225,81 @@ registro más antiguo de la cola. Se agregaron sus pruebas y quedaron 30 de 30.
    PE-35.
 3. En la ronda 2 la aplicación mostró primero la versión anterior (abría en Z920) hasta que se publicó y se
    actualizó el commit 5537268.
+
+## PU-33 · Costos por animal y consolidado económico
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las validaciones del costo (concepto, fecha entre la llegada y la salida o hoy, valor en pesos enteros, descripción), la compra solo para un comprado y una sola vigente (también con dos registros a la vez), lo invertido con los medicamentos de los eventos, lo generado (leche al precio del parámetro o de ejemplo, venta solo si salió por venta), el resultado, los avisos y su rótulo, el detalle, el valor vigente (correcciones y anulaciones de costos, eventos, ordeños y salida), los campos corregibles y los permisos |
+| Requerimiento | RF-20 · RF-21 · RF-27 · RF-28 · CU-14 (pasos 1 a 5, flujos 2a, 3a, 4a y 4b) · HU-16.1 a 16.4 · apartado 3.8.12 · Tablas 24, 27 y 30 |
+| Tipo | Unitaria, automática; la consulta en vivo se observa como en la pantalla |
+| Código | [`src/dominio/economia.ts`](../../src/dominio/economia.ts) · [`src/modulos/economia/costos.ts`](../../src/modulos/economia/costos.ts) · [`src/modulos/economia/consolidado.ts`](../../src/modulos/economia/consolidado.ts) · prueba [`economia.test.ts`](../../src/modulos/economia/economia.test.ts) · especificación [documento técnico 31](../tecnica/31-consolidado-economico.md), sección 9 |
+| Resultado obtenido | **18 de 18 aprobadas** (17 iniciales y la del rótulo, agregada en PE-37), más el caso del consolidado agregado a PU-27.9 (16 de 16). Total del conjunto automático: **897 de 897** ([informe](resultados/2026-10-21_175258_e1e46be.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+**Mutaciones.** Cuarenta y cinco. Cuarenta detectadas a la primera: cada validación quitada o con el borde
+cambiado, compra para un nacido o con otra vigente, compra anulada contada, salida ignorada, sin permiso, sin
+validar, anulados en lo invertido o en el detalle, medicamentos fuera, líneas vacías, sin precio de ejemplo,
+venta fuera de lo generado, resultado al revés, cada aviso quitado o con el texto fijo, detalle sin ordenar o al
+revés, y eventos, ordeños, salida, parámetro y correcciones leídos sin el valor vigente. **Cinco sobrevivieron y
+señalaron casos sin probar:** la fecha de hoy se admite; la comprobación de la compra dentro de la transacción
+(se prueba con dos registros a la vez: queda uno y el otro recibe «Este animal ya tiene registrada su compra»);
+un evento con costo cero no cuenta; el valor de la leche se redondea al peso; y una muerte no suma venta aunque
+traiga un valor. Se agregaron sus pruebas y quedaron 45 de 45. Con el rótulo del resultado (PE-37, observación 1)
+se agregaron cuatro más: 49 de 49.
+
+**Consulta en vivo.** La pantalla del consolidado leía el animal y el consolidado con dos esperas seguidas, el
+patrón que causó el defecto de PE-32 (documento 26, sección 10.7); se cambió a una sola espera antes de la prueba
+manual. El caso de PU-27.9 comprueba que el consolidado se actualiza con una venta, con el precio del litro y con
+la anulación de un costo.
+
+## PI-01 · Una sola compra vigente por animal (verificación 18)
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar la migración del paso: la unicidad de la compra vigente por disparador (la segunda se rechaza con 23505, el reenvío se ignora y, anulada la primera, se admite otra), en lugar del índice único que impedía registrar de nuevo una compra anulada |
+| Código | Migración [`20261021000200_compra_vigente_unica.sql`](../../supabase/migrations/20261021000200_compra_vigente_unica.sql) · [`supabase/pruebas/pi-01-esquema.sql`](../../supabase/pruebas/pi-01-esquema.sql), verificación 18 (la 9 sigue aprobada) |
+| Resultado obtenido | **18 de 18** ([evidencia](evidencias/iteracion-5/PI-01-11-compra-vigente-unica.txt)). El primer intento de `db:push` se detuvo porque el índice `movimiento_economico_animal` ya existía desde el esquema inicial; se quitó esa línea de la migración y se aplicó completa |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+## PE-37 · Costos y consolidado económico en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario el registro de la compra, un servicio veterinario y una alimentación de un animal comprado, las validaciones, el consolidado de una vaca de leche, de una nacida en el predio, de un vendido y de un muerto, la corrección de un costo y la anulación de la compra para registrarla de nuevo; y como trabajador que no aparecen las opciones |
+| Requerimiento | CU-14 (pasos 1 a 5, flujos 2a, 3a, 4a y 4b) · HU-16.1 a 16.4 · RF-20 · RF-21 · RF-28 · Tabla 27 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-5` (commits 3970b61 y e1e46be) |
+| Resultado obtenido | Aprobada en la segunda ronda, tras un ajuste: un animal muerto sin costos se presentaba como «Ganancia: $0» (observación 1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+| # | Ronda | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 | 1 | Propietario | Ficha de Z960 (comprado el 1 de octubre de 2026) | Aparecen **Consolidado económico** y **Registrar costo** | [captura](evidencias/iteracion-5/PE-37-r1-01-z960-ficha-botones.png) |
+| 2 | 1 | Propietario | Registrar la **Compra**: $3.500.000, «Reproductor» | La fecha llega con la de ingreso (1/10/2026); al guardar abre el consolidado: invertido $3.500.000, «Resultado parcial», «Pérdida: $3.500.000» | [formulario](evidencias/iteracion-5/PE-37-r1-02-z960-compra.png) · [consolidado](evidencias/iteracion-5/PE-37-r1-03-z960-consolidado-compra.png) |
+| 3 | 1 | Propietario | Registrar un servicio veterinario ($350.000) y una alimentación ($250.000) | Invertido $3.850.000 y luego $4.100.000, con una línea por concepto | [servicio](evidencias/iteracion-5/PE-37-r1-04-z960-servicio-veterinario.png) · [alimentación](evidencias/iteracion-5/PE-37-r1-05-z960-alimentacion.png) |
+| 4 | 1 | Propietario | Volver a **Registrar costo** | Ya no se ofrece **Compra**; la fecha llega con hoy | [captura](evidencias/iteracion-5/PE-37-r1-06-z960-sin-compra.png) |
+| 5 | 1 | Propietario | Fecha 10/09/2026 sin valor; luego valor «1,123123» | «El animal llegó al predio el 1 de octubre de 2026» · «Escriba el valor, en pesos» · «Escriba el valor en pesos, sin decimales, hasta 100.000.000» | [llegada y valor](evidencias/iteracion-5/PE-37-r1-07-z960-errores-llegada-valor.png) · [decimales](evidencias/iteracion-5/PE-37-r1-08-z960-error-decimales.png) |
+| 6 | 1 | Propietario | Consolidado de Z920 (vaca de leche) | Medicamentos $3.000 (1); «Leche: 46 litros a $1.950» $89.700; avisos de un evento sin costo y de la leche al precio del parámetro; «Ganancia: $86.700» | [captura](evidencias/iteracion-5/PE-37-r1-09-z920-leche.png) |
+| 7 | 1 | Propietario | Consolidado y **Registrar costo** de Z921 (nacida en el predio) | Aviso «Nació en el predio…»; dos eventos sin costo, en plural; sin **Compra** entre los conceptos | [consolidado](evidencias/iteracion-5/PE-37-r1-10-z921-nacida.png) · [sin compra](evidencias/iteracion-5/PE-37-r1-11-z921-sin-compra.png) |
+| 8 | 1 | Propietario | Consolidado de Z981 (vendido en PE-35) | Venta $1.000.000 en lo generado; aviso «No tiene costos registrados…»; sin «Resultado parcial» | [captura](evidencias/iteracion-5/PE-37-r1-12-z981-vendido.png) |
+| 9 | 1 | Propietario | Consolidado de Z980 (muerto en PE-35, sin costos) | Aviso «Salió por muerte…», pero el resultado decía **«Ganancia: $0»** en verde: defecto (observación 1) | [captura](evidencias/iteracion-5/PE-37-r1-13-z980-muerte-ganancia-cero.png) |
+| 10 | 1 | Propietario | **Ver el detalle** y corregir el valor de la alimentación: 250.000 → 200.000 | Confirmación «Valor pasará de 250.000 a 200.000»; en el detalle, marca **Corregido** y «Pérdida: $4.050.000» | [corregir](evidencias/iteracion-5/PE-37-r1-14-z960-corregir-valor.png) · [detalle](evidencias/iteracion-5/PE-37-r1-15-z960-detalle-corregido.png) |
+| 11 | 1 | Propietario | Anular la compra | Confirmación de anulación del costo «Z960 · Compra · $3.500.000 · 1 de octubre de 2026»; **Compra** vuelve a ofrecerse | [anular](evidencias/iteracion-5/PE-37-r1-16-z960-anular-compra.png) · [compra ofrecida](evidencias/iteracion-5/PE-37-r1-17-z960-compra-de-nuevo-ofrecida.png) |
+| 12 | 2 | Propietario | Consolidado de Z980 tras el ajuste | **«Pérdida por muerte: $0»**, en rojo | [captura](evidencias/iteracion-5/PE-37-r2-01-z980-perdida-por-muerte.png) |
+| 13 | 2 | Propietario | Registrar de nuevo la compra de Z960 | Compra (1) $3.500.000; invertido $4.050.000 | [captura](evidencias/iteracion-5/PE-37-r2-02-z960-compra-registrada-de-nuevo.png) |
+| 14 | 2 | Trabajador | Ficha de Z960 en el iPhone | Sin **Consolidado económico** ni **Registrar costo** (ni **Registrar salida**) | [ficha](evidencias/iteracion-5/PE-37-r2-05-trabajador-z960-ficha.png) · [botones](evidencias/iteracion-5/PE-37-r2-04-trabajador-z960-botones.png) · [pie](evidencias/iteracion-5/PE-37-r2-03-trabajador-z960-pie.png) |
+
+**Observaciones.**
+
+1. **Ajuste: una muerte o una pérdida se presenta siempre como pérdida** (ronda 1). Z980, muerto y sin costos,
+   mostraba «Ganancia: $0» en verde, contrario al aviso «lo invertido se presenta como pérdida». El rótulo se
+   decide ahora en `rotuloResultado`: muerte → «Pérdida por muerte», pérdida o robo → «Pérdida por pérdida o
+   robo», aunque el valor sea $0; un resultado de $0 en los demás casos → «Sin ganancia ni pérdida», sin color
+   (commit e1e46be; prueba agregada a PU-33).
+2. El precio de la leche fue el del parámetro (1.950, igual al de ejemplo), por eso el aviso dice «del parámetro».
+   El caso sin parámetro lo cubre PU-33.
+3. Ningún costo se registró sin conexión; la sincronización de `movimiento_economico` y la unicidad en el
+   servidor las cubren PI-01 (verificaciones 9 y 18).

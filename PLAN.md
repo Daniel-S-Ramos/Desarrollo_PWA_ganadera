@@ -116,7 +116,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 5.1 | Comparación de producción entre vacas (CU-07) | ✅ |
 | 5.2 | Registro de salida y venta (CU-13) | ✅ |
 | 5.3 | Recordatorios derivados y posponer (CU-15) | ✅ |
-| 5.4 | Consolidado económico por animal (CU-14) | ⬜ |
+| 5.4 | Consolidado económico por animal (CU-14) | ✅ |
 | 5.5 | Pruebas y cierre de iteración | ⬜ |
 
 ## Cierre — Evaluación del prototipo (apartados 1.6.3.7 – 1.6.3.11)

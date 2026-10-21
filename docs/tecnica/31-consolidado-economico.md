@@ -91,7 +91,9 @@ El concepto no se corrige: si una compra se registró como alimentación, se anu
 | Leche | Litros vigentes de sus ordeños × `precio_litro_leche` (Tabla 30, $1.950): «320 litros a $1.950 = $624.000» |
 | Venta | `salida.valor_venta` de la salida vigente por venta |
 
-**Resultado:** generado − invertido, como **Ganancia: $X** o **Pérdida: $X** (con el valor absoluto). Debajo, **Ver el
+**Resultado:** generado − invertido, como **Ganancia: $X** o **Pérdida: $X** (con el valor absoluto). Si salió por
+muerte o por pérdida o robo, siempre como pérdida, aunque sea de $0; un resultado de $0 en los demás casos, como
+**Sin ganancia ni pérdida**, sin color (PE-37: un muerto sin costos aparecía como «Ganancia: $0»). Debajo, **Ver el
 detalle** despliega cada registro de costo e ingreso del animal, del más reciente al más antiguo, con fecha,
 concepto, valor y su marca de corregido; los costos registrados aquí llevan **Corregir o anular**.
 
