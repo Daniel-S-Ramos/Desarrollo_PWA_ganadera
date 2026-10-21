@@ -5,12 +5,16 @@ import { PantallaConflictos } from '../modulos/correcciones/PantallaConflictos';
 import { PantallaCorreccionesRecientes } from '../modulos/correcciones/PantallaCorreccionesRecientes';
 import { PantallaCorregir } from '../modulos/correcciones/PantallaCorregir';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
-import { TernerosSinChapeta } from '../modulos/identificacion/AvisoChapeta';
+import { Recordatorios } from '../modulos/recordatorios/SeccionRecordatorios';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
+import { PantallaComparacion } from '../modulos/leche/PantallaComparacion';
 import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
 import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
 import { PantallaRegistrarPesaje } from '../modulos/peso/PantallaRegistrarPesaje';
 import { PantallaRegistrarParto } from '../modulos/reproduccion/PantallaRegistrarParto';
+import { PantallaRegistrarSalida } from '../modulos/salida/PantallaRegistrarSalida';
+import { PantallaConsolidado } from '../modulos/economia/PantallaConsolidado';
+import { PantallaRegistrarCosto } from '../modulos/economia/PantallaRegistrarCosto';
 import { PantallaMedicamentos } from '../modulos/sanidad/PantallaMedicamentos';
 import { PantallaRegistrarEvento } from '../modulos/sanidad/PantallaRegistrarEvento';
 import { puedeUsar } from '../sesion/permisos';
@@ -154,6 +158,14 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
                 )
               }
             />
+            {/* Documento técnico 31: costos y consolidado económico, solo el propietario (CU-14, Tabla 27). */}
+            <Route path="/animales/:id/costo" element={puedeUsar(identidad.perfil, 'CU-14') ? <PantallaRegistrarCosto identidad={identidad} /> : <Navigate to="/" replace />} />
+            <Route path="/animales/:id/consolidado" element={puedeUsar(identidad.perfil, 'CU-14') ? <PantallaConsolidado identidad={identidad} /> : <Navigate to="/" replace />} />
+            {/* Documento técnico 29: la salida del animal, solo el propietario (CU-13, Tabla 27). */}
+            <Route
+              path="/animales/:id/salida"
+              element={puedeUsar(identidad.perfil, 'CU-13') ? <PantallaRegistrarSalida identidad={identidad} /> : <Navigate to="/" replace />}
+            />
             <Route
               path="/animales/:id/pesaje"
               element={puedeUsar(identidad.perfil, 'CU-08') ? <PantallaRegistrarPesaje identidad={identidad} /> : <Navigate to="/" replace />}
@@ -173,6 +185,8 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
             />
             {/* Documento técnico 23, sección 2: solo el propietario (CU-07). */}
             <Route path="/produccion" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaProduccion /> : <Navigate to="/" replace />} />
+            {/* Documento técnico 28: comparación entre vacas, solo el propietario (CU-07, pasos 5 y 6). */}
+            <Route path="/produccion/comparar" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaComparacion /> : <Navigate to="/" replace />} />
             {/* Documento técnico 27: solo el propietario (CU-18, Tabla 27). */}
             <Route path="/correcciones" element={puedeUsar(identidad.perfil, 'CU-18') ? <PantallaCorreccionesRecientes /> : <Navigate to="/" replace />} />
             {/* Documento técnico 26, sección 10.6: los conflictos de este teléfono, para ambos perfiles. */}
@@ -185,18 +199,18 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
 
 /**
  * Pantalla de inicio. Los accesos se muestran solo a los perfiles que pueden usarlos (Tabla 27);
- * los recordatorios llegarán en la Iteración 5 (3.10.4.4).
+ * los recordatorios van arriba (3.10.4.4, documento técnico 30).
  */
 function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; alCerrar: () => void; cargaCompleta: boolean | undefined }) {
   return (
     <>
       <p className="titulo-seccion">Prototipo en construcción</p>
-      <p className="texto-secundario">Iteración 4 · Peso, partos y correcciones</p>
+      <p className="texto-secundario">Iteración 5 · Consultas, alertas y economía</p>
 
       {cargaCompleta === false && <PreparandoTelefono />}
 
-      {/* Documento técnico 25, sección 7.3: el recordatorio de la chapeta, para ambos perfiles. */}
-      {cargaCompleta !== false && <TernerosSinChapeta />}
+      {/* Documento técnico 30: los recordatorios derivados, arriba y para ambos perfiles (incluye la chapeta del 4.2). */}
+      {cargaCompleta !== false && <Recordatorios identidad={identidad} />}
 
       {puedeUsar(identidad.perfil, 'CU-03') && cargaCompleta !== false && (
         <Link className="boton boton--principal boton--ancho" to="/animales">

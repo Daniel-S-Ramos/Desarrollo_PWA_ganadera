@@ -6,8 +6,11 @@ import { cargarConflictoDeChapeta, resolverCambiandoNumero, resolverColocacion }
 import { cargarVigente } from '../modulos/correcciones/correcciones';
 import { cargarCorreccionesRecientes } from '../modulos/correcciones/consultaCorrecciones';
 import { cargarHistorialDestino } from '../modulos/destino/destino';
+import { cargarConsolidado } from '../modulos/economia/consolidado';
 import { cargarTernerosSinChapeta, confirmarChapetaPuesta, estadoDeChapeta } from '../modulos/identificacion/chapetaPendiente';
+import { cargarComparacion } from '../modulos/leche/comparacion';
 import { cargarEvolucion } from '../modulos/peso/pesajes';
+import { salidaDelAnimal } from '../modulos/salida/salidas';
 import { cargarControlReproductivo } from '../modulos/reproduccion/partos';
 import { cargarHistorialSanitario } from '../modulos/sanidad/eventos';
 import type { DatosNuevos, Uuid } from '../dominio/tipos';
@@ -120,6 +123,22 @@ describe('PU-27 · 9. Las pantallas se enteran de los cambios (PE-32)', () => {
     expect(ultimo(vistos)?.totalDelPredio).toBe(1);
   });
 
+  it('comparación entre vacas: un ordeño nuevo aparece', async () => {
+    const vaca = await crear('animal', datosAnimal('Z1'), YO.usuario_id);
+    const vistos = await trasCambiar(() => cargarComparacion('semanal', 0, HOY), () => crear('produccion_leche', { animal_id: vaca.id, fecha: '2026-10-17', litros: 12 }, YO.usuario_id));
+    expect(ultimo(vistos)?.conRegistros).toHaveLength(1);
+  });
+
+  it('salida: la ficha pasa a retirado y muestra la salida al primer clic', async () => {
+    const vaca = await crear('animal', datosAnimal('Z1'), YO.usuario_id);
+    const salida = { animal_id: vaca.id, fecha: HOY, motivo: 'muerte' as const, peso_venta: null, valor_venta: null, comprador: null, causa_muerte: 'Rayo', observacion: null };
+    const ficha = await trasCambiar(() => consolidarFicha(vaca.id), () => crear('salida', salida, YO.usuario_id));
+    expect(ultimo(ficha)?.retirado).toBe(true);
+    const otra = await crear('animal', datosAnimal('Z2'), YO.usuario_id);
+    const texto = await trasCambiar(() => salidaDelAnimal(otra.id), () => crear('salida', { ...salida, animal_id: otra.id }, YO.usuario_id));
+    expect(ultimo(texto)?.registro.causa_muerte).toBe('Rayo');
+  });
+
   it('listado: un animal nuevo aparece', async () => {
     await crear('animal', datosAnimal('Z1'), YO.usuario_id);
     const vistos = await trasCambiar(() => cargarListado(), () => crear('animal', datosAnimal('Z2'), YO.usuario_id));
@@ -163,5 +182,21 @@ describe('PU-27 · 9. Las pantallas se enteran de los cambios (PE-32)', () => {
     await db.animal.update(dup.id, { estado_sync: 'conflicto' });
     const vistos = await trasCambiar(() => cargarConflictoDeChapeta(dup.id), () => resolverCambiandoNumero(dup.id, 'Z10', YO));
     expect(ultimo(vistos)).toBeUndefined();
+  });
+
+  it('consolidado económico: la venta, el precio del litro y una anulación aparecen', async () => {
+    const vaca = await crear('animal', datosAnimal('Z1', { fecha_nacimiento: '2020-01-01' }), YO.usuario_id);
+    await crear('produccion_leche', { animal_id: vaca.id, fecha: '2026-10-10', litros: 10 }, YO.usuario_id);
+    const costo = await crear('movimiento_economico', { animal_id: vaca.id, concepto: 'alimentacion', fecha: '2026-10-10', valor: 50_000, descripcion: null }, YO.usuario_id);
+    let vistos = await trasCambiar(() => cargarConsolidado(vaca.id), () =>
+      crear('salida', { animal_id: vaca.id, fecha: '2026-10-15', motivo: 'venta', peso_venta: 400, valor_venta: 3_000_000, comprador: null, causa_muerte: null, observacion: null }, YO.usuario_id),
+    );
+    expect(ultimo(vistos)?.venta).toBe(3_000_000);
+    vistos = await trasCambiar(() => cargarConsolidado(vaca.id), () => db.parametro.put({ clave: 'precio_litro_leche', valor: 2000, unidad: 'pesos', descripcion: '' } as never));
+    expect(ultimo(vistos)?.leche?.total).toBe(20_000);
+    vistos = await trasCambiar(() => cargarConsolidado(vaca.id), () =>
+      crear('correccion', { entidad_afectada: 'movimiento_economico', registro_id: costo.id, tipo: 'anulacion', campo: null, valor_anterior: null, valor_nuevo: null, motivo: 'error_digitacion', nota: null }, YO.usuario_id),
+    );
+    expect(ultimo(vistos)?.totalInvertido).toBe(0);
   });
 });

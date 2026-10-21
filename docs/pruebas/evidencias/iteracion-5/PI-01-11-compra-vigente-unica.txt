@@ -1,0 +1,14 @@
+PI-01 · Esquema remoto · verificación 18 (paso 5.4)
+Fecha: 2026-10-21 · migración 20261021000200_compra_vigente_unica.sql aplicada con npm run db:push
+(el primer intento se detuvo porque el índice movimiento_economico_animal ya existía desde el esquema
+inicial; se quitó esa línea y la migración se aplicó completa)
+Comando: npm run prueba:pi-01
+
+Verificaciones 1 a 17: APROBADA (la 9, «segunda compra se rechaza», sigue aprobada con el disparador).
+
+ n  | verificacion                                                                                               | resultado | detalle
+----+------------------------------------------------------------------------------------------------------------+-----------+------------------------------------
+ 9  | Segunda compra del mismo animal se rechaza; segunda alimentación se admite                                 | APROBADA  | compra: 23505 · alimentación: OK
+ 18 | Una sola compra vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra | APROBADA  | códigos: OK, 23505, OK, OK, OK, OK
+
+Resultado: 18 de 18 aprobadas.

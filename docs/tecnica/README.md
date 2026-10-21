@@ -36,3 +36,7 @@ actualiza si la implementación obliga a cambiar algo.
 | 25 | [Parto, control reproductivo y chapeta pendiente de poner](25-parto-y-control-reproductivo.md) | 4.2 | RF-16 · RF-17 · CU-10 · CU-11 · HU-12 |
 | 26 | [Corrección, anulación, valor vigente y resolución de conflictos](26-correccion-y-anulacion.md) | 4.3 | RF-31 · CU-17 · HU-17 · Tabla 21 |
 | 27 | [Consulta de las correcciones y las anulaciones](27-consulta-de-correcciones.md) | 4.4 | RF-32 · CU-18 · HU-17.5 |
+| 28 | [Comparación de la producción de leche entre vacas](28-comparacion-entre-vacas.md) | 5.1 | RF-12 · CU-07 · HU-10 |
+| 29 | [Registro de la salida y venta del animal](29-salida-y-venta.md) | 5.2 | RF-15 · CU-13 · HU-11 |
+| 30 | [Recordatorios derivados y posponer](30-recordatorios.md) | 5.3 | RF-22 · RF-23 · CU-15 · HU-14 |
+| 31 | [Costos por animal y consolidado económico](31-consolidado-economico.md) | 5.4 | RF-20 · RF-21 · CU-14 · HU-16 |

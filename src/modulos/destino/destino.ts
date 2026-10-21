@@ -3,7 +3,7 @@
  * Especificación: docs/tecnica/19-destino-productivo.md
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
-import { animalVigente, leerVigentes, vigentes } from '../../datos/vigentes';
+import { animalVigente, contarSalidasVigentes, leerVigentes, vigentes } from '../../datos/vigentes';
 import type { Vigente } from '../../dominio/vigente';
 import { destinoVigente, historialDestino, validarCambioDestino, type ContextoDestino, type ErroresDestino, type FormularioDestino } from '../../dominio/destino';
 import { fechaDelPredio } from '../../dominio/fechas';
@@ -24,7 +24,7 @@ async function contextoDe(animalId: Uuid): Promise<{ registros: RegistroDestinoL
   if (!animal) return null;
   const [registros, salidas] = await Promise.all([
     consulta.destino_productivo.where('animal_id').equals(animalId).toArray().then((r) => vigentes('destino_productivo', r)),
-    consulta.salida.where('animal_id').equals(animalId).count(),
+    contarSalidasVigentes(animalId),
   ]);
   return { registros, contexto: { vigente: destinoVigente(registros), retirado: salidas > 0, llegada: fechaDeLlegada(animal) } };
 }

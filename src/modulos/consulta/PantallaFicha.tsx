@@ -21,7 +21,9 @@ import { cargarContextoDestino } from '../destino/destino';
 import { HistorialDestino } from '../destino/HistorialDestino';
 import { AvisoChapeta } from '../identificacion/AvisoChapeta';
 import { cargarVigente } from '../correcciones/correcciones';
-import { EnlaceCorregir, MarcaCorreccion } from '../correcciones/MarcaCorreccion';
+import { EnlaceCorregir, MarcaCorreccion, useUsuarios } from '../correcciones/MarcaCorreccion';
+import { describirSalida } from '../../dominio/salida';
+import { salidaDelAnimal } from '../salida/salidas';
 import { ResolverConflictoChapeta } from '../correcciones/ResolverConflicto';
 import { EvolucionPeso } from '../peso/EvolucionPeso';
 import { ControlReproductivo } from '../reproduccion/ControlReproductivo';
@@ -74,9 +76,28 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
       {/* Documento técnico 26, sección 10.1: la chapeta repetida, para el propietario o quien la registró. */}
       {ficha.estado_sync === 'conflicto' && <ResolverConflictoChapeta animalId={ficha.id} numero={ficha.codigo_chapeta} identidad={identidad} />}
 
-      <AvisoChapeta animalId={ficha.id} numero={ficha.codigo_chapeta} nacimiento={ficha.fecha_nacimiento} identidad={identidad} />
+      {/* Documento técnico 29, sección 7: la salida del animal, con su marca y su corrección. */}
+      <SalidaDelAnimal animalId={ficha.id} hembra={ficha.sexo === 'hembra'} identidad={identidad} />
+
+      {/* Un animal retirado ya no recibe la chapeta (documento técnico 29, sección 7). */}
+      {!ficha.retirado && <AvisoChapeta animalId={ficha.id} numero={ficha.codigo_chapeta} nacimiento={ficha.fecha_nacimiento} identidad={identidad} />}
 
       {verFotos && <VistasFotos ficha={ficha} identidad={identidad} />}
+
+      {/* Documento técnico 29, sección 2: registrar la salida, solo el propietario y en un animal activo. */}
+      {!ficha.retirado && puedeUsar(identidad.perfil, 'CU-13') && <BotonSalida animalId={ficha.id} />}
+
+      {/* Documento técnico 31: costos y consolidado, solo el propietario; también en un retirado (sección 3, decisión C). */}
+      {puedeUsar(identidad.perfil, 'CU-14') && (
+        <div className="acciones-formulario">
+          <Link className="boton boton--secundario boton--ancho" to={`/animales/${ficha.id}/consolidado`}>
+            Consolidado económico
+          </Link>
+          <Link className="boton boton--secundario boton--ancho" to={`/animales/${ficha.id}/costo`}>
+            Registrar costo
+          </Link>
+        </div>
+      )}
 
       {/* Los datos que pidió el propietario, en su orden (3.10.4.4). */}
       <dl className="ficha__datos">
@@ -101,14 +122,15 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
         </Link>
       )}
 
-      <SeccionSanidad animalId={ficha.id} identidad={identidad} />
+      {/* Documento técnico 29, sección 7: en un animal retirado se consulta, pero ya no se registra. */}
+      <SeccionSanidad animalId={ficha.id} identidad={identidad} retirado={ficha.retirado} />
 
-      <SeccionPeso animalId={ficha.id} identidad={identidad} />
+      <SeccionPeso animalId={ficha.id} identidad={identidad} retirado={ficha.retirado} />
 
-      {ficha.sexo === 'hembra' && <SeccionReproduccion animalId={ficha.id} identidad={identidad} />}
+      {ficha.sexo === 'hembra' && <SeccionReproduccion animalId={ficha.id} identidad={identidad} retirado={ficha.retirado} />}
 
       {/* CU-12: solo el propietario cambia el destino y ve su historial; al trabajador no se le muestran (HU-06.4). */}
-      {puedeUsar(identidad.perfil, 'CU-12') && <SeccionDestino animalId={ficha.id} identidad={identidad} hoy={hoy} />}
+      {puedeUsar(identidad.perfil, 'CU-12') && <SeccionDestino animalId={ficha.id} identidad={identidad} hoy={hoy} retirado={ficha.retirado} />}
 
       <section className="tarjeta">
         <h2>Origen</h2>
@@ -171,11 +193,11 @@ function DatosCorregidos({ animalId, identidad }: { animalId: string; identidad:
  * Documento técnico 25, sección 3. Al volver de registrar un parto sin cría (?reproduccion=1), el control
  * aparece abierto.
  */
-function SeccionReproduccion({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
+function SeccionReproduccion({ animalId, identidad, retirado }: { animalId: string; identidad: Identidad; retirado: boolean }) {
   const [parametros] = useSearchParams();
   const puedeVerControl = puedeUsar(identidad.perfil, 'CU-11');
   const [verControl, setVerControl] = useState(() => puedeVerControl && parametros.get('reproduccion') === '1');
-  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-10');
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-10') && !retirado;
   if (!puedeRegistrar && !puedeVerControl) return null;
   return (
     <>
@@ -196,10 +218,10 @@ function SeccionReproduccion({ animalId, identidad }: { animalId: string; identi
   );
 }
 
-function SeccionPeso({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
+function SeccionPeso({ animalId, identidad, retirado }: { animalId: string; identidad: Identidad; retirado: boolean }) {
   const [parametros] = useSearchParams();
   const [verEvolucion, setVerEvolucion] = useState(() => parametros.get('peso') === '1');
-  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-08');
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-08') && !retirado;
   if (!puedeRegistrar && !puedeUsar(identidad.perfil, 'CU-09')) return null;
   return (
     <>
@@ -220,11 +242,11 @@ function SeccionPeso({ animalId, identidad }: { animalId: string; identidad: Ide
   );
 }
 
-function SeccionSanidad({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
+function SeccionSanidad({ animalId, identidad, retirado }: { animalId: string; identidad: Identidad; retirado: boolean }) {
   // Desde la consulta de correcciones (?sanidad=1) el historial aparece abierto (documento técnico 27, sección 6).
   const [parametros] = useSearchParams();
   const [verHistorial, setVerHistorial] = useState(() => parametros.get('sanidad') === '1');
-  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-04');
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-04') && !retirado;
   if (!puedeRegistrar && !puedeUsar(identidad.perfil, 'CU-05')) return null;
   return (
     <>
@@ -246,7 +268,7 @@ function SeccionSanidad({ animalId, identidad }: { animalId: string; identidad: 
 }
 
 /** Las opciones del propietario sobre el destino (documento técnico 19, secciones 2 y 4). */
-function SeccionDestino({ animalId, identidad, hoy }: { animalId: string; identidad: Identidad; hoy: string }) {
+function SeccionDestino({ animalId, identidad, hoy, retirado }: { animalId: string; identidad: Identidad; hoy: string; retirado: boolean }) {
   // Desde la consulta de correcciones (?destino=1) el historial aparece abierto (documento técnico 27, sección 6).
   const [parametros] = useSearchParams();
   const [abierto, setAbierto] = useState<'cambiar' | 'historial' | null>(() => (parametros.get('destino') === '1' ? 'historial' : null));
@@ -256,9 +278,11 @@ function SeccionDestino({ animalId, identidad, hoy }: { animalId: string; identi
   return (
     <>
       <div className="acciones-formulario">
-        <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={abierto === 'cambiar'} onClick={() => alternar('cambiar')}>
-          Cambiar destino
-        </button>
+        {!retirado && (
+          <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={abierto === 'cambiar'} onClick={() => alternar('cambiar')}>
+            Cambiar destino
+          </button>
+        )}
         <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={abierto === 'historial'} onClick={() => alternar('historial')}>
           {abierto === 'historial' ? 'Ocultar historial del destino' : 'Historial del destino'}
         </button>
@@ -286,17 +310,46 @@ function Encabezado({ ficha, hoy, verFotos, alAlternarFotos }: { ficha: FichaAni
         <DistintivoSync estado={ficha.estado_sync} {...(ficha.detalle_conflicto ? { detalle: ficha.detalle_conflicto } : {})} />
       </div>
       <div className="ficha__fotos-resumen">
-        {ficha.fotos.length < 3 ? (
+        {ficha.fotos.length < 3 && !ficha.retirado ? (
           // Tabla 31: el registro fotográfico incompleto se señala para completarlo después.
           <p className="aviso aviso--atencion aviso--en-contenido">⚠ Registro fotográfico incompleto: {ficha.fotos.length} de 3.</p>
         ) : (
-          <p className="texto-secundario">Fotos: 3 de 3</p>
+          <p className="texto-secundario">Fotos: {ficha.fotos.length} de 3</p>
         )}
         <button type="button" className="boton boton--secundario boton--ancho" onClick={alAlternarFotos}>
-          {verFotos ? 'Ocultar fotos' : ficha.fotos.length < 3 ? 'Ver y completar fotos' : 'Ver fotos'}
+          {verFotos ? 'Ocultar fotos' : ficha.fotos.length < 3 && !ficha.retirado ? 'Ver y completar fotos' : 'Ver fotos'}
         </button>
       </div>
     </header>
+  );
+}
+
+/** El acceso a registrar la salida (documento técnico 29, sección 2). Con la salida anterior anulada, se admite otra. */
+function BotonSalida({ animalId }: { animalId: string }) {
+  return (
+    <Link className="boton boton--secundario boton--ancho" to={`/animales/${animalId}/salida`}>
+      Registrar salida
+    </Link>
+  );
+}
+
+/**
+ * La salida del animal (documento técnico 29, secciones 7 y 8): «Vendido el …», con su autor, la marca de
+ * corregida o anulada y la opción de corregirla o anularla. Anulada, se muestra tachada.
+ */
+function SalidaDelAnimal({ animalId, hembra, identidad }: { animalId: string; hembra: boolean; identidad: Identidad }) {
+  const salida = useLiveQuery(() => salidaDelAnimal(animalId), [animalId]);
+  const usuarios = useUsuarios();
+  if (!salida) return null;
+  const s = salida.registro;
+  const anulada = salida.anulacion !== null;
+  return (
+    <section className={anulada ? 'tarjeta ficha__salida ficha__salida--anulada' : 'tarjeta ficha__salida'}>
+      <p className={anulada ? 'ficha__salida-texto tachado' : 'ficha__salida-texto'}>{describirSalida({ ...s, observacion: s.observacion ?? null }, hembra)}</p>
+      <p className="texto-secundario">Registrado por {usuarios.get(s.autor_id)?.nombre ?? 'un usuario que ya no está en el predio'}</p>
+      <MarcaCorreccion entidad="salida" vigente={salida} />
+      {!anulada && <EnlaceCorregir entidad="salida" registro={salida.original} identidad={identidad} />}
+    </section>
   );
 }
 
@@ -312,13 +365,16 @@ function VistasFotos({ ficha, identidad }: { ficha: FichaAnimal; identidad: Iden
           <div key={tipo} className="ficha__vista">
             <p className="ficha__vista-nombre">{NOMBRE_VISTA[tipo]}</p>
             {foto ? <FotoCompleta animalId={ficha.id} foto={foto} enLinea={enLinea} /> : <div className="ficha__vacia fila-animal__sin-foto">Sin foto</div>}
-            <CapturaFoto
-              etiqueta={foto ? 'Cambiar foto' : 'Tomar foto'}
-              principal={!foto}
-              alCapturar={async (nueva) => {
-                await agregarFotografia(ficha.id, tipo, nueva, identidad);
-              }}
-            />
+            {/* Documento técnico 29, sección 7: un animal retirado ya no recibe fotos nuevas. */}
+            {!ficha.retirado && (
+              <CapturaFoto
+                etiqueta={foto ? 'Cambiar foto' : 'Tomar foto'}
+                principal={!foto}
+                alCapturar={async (nueva) => {
+                  await agregarFotografia(ficha.id, tipo, nueva, identidad);
+                }}
+              />
+            )}
           </div>
         );
       })}

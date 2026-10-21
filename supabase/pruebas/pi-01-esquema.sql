@@ -30,6 +30,8 @@ declare
   vaca      uuid := gen_random_uuid();
   ternero   uuid := gen_random_uuid();
   becerro   uuid := gen_random_uuid();
+  salida1   uuid := gen_random_uuid();
+  compra1   uuid := gen_random_uuid();
   codigos   text[];
   ok        boolean;
   valor     text;
@@ -192,6 +194,45 @@ begin
     r := r || jsonb_build_object('n',15,'v','Animal sin chapeta puesta se admite; su colocación, una sola vez; plazo de 90 días cargado',
            'ok', codigos = array['OK','OK','23505'] and cuenta = 1,
            'd', 'códigos: ' || array_to_string(codigos, ', ') || ' · parámetro: ' || cuenta);
+
+    -- -------------------------------------------------------------- 16. Observación de la salida
+    -- Una salida por pérdida o robo admite una observación opcional, de hasta 300 caracteres
+    -- (docs/tecnica/29-salida-y-venta.md, sección 4).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, observacion) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, becerro, 'perdida_robo', 'Se salió por la cerca del potrero de abajo')),
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, observacion) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, 'perdida_robo', repeat('x', 301)))];
+    select count(*) into cuenta from information_schema.columns c
+     where c.table_schema = 'public' and c.table_name = 'salida' and c.column_name = 'observacion' and c.is_nullable = 'YES';
+    r := r || jsonb_build_object('n',16,'v','La salida admite una observación opcional de hasta 300 caracteres',
+           'ok', codigos = array['OK','23514'] and cuenta = 1,
+           'd', 'códigos: ' || array_to_string(codigos, ', ') || ' · columna: ' || cuenta);
+
+    -- -------------------------------------------------------------- 17. Una sola salida vigente
+    -- Una segunda salida se rechaza mientras la primera esté vigente; el reenvío de la misma se ignora; anulada
+    -- la primera, se admite otra (docs/tecnica/29-salida-y-venta.md, sección 8).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, peso_venta, valor_venta) values (%L,%L,%s,%L,current_date,%L,410,1000000)', salida1, usuario, ahora, vaca, 'venta')),
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, causa_muerte) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, 'muerte', 'Rayo')),
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, peso_venta, valor_venta) values (%L,%L,%s,%L,current_date,%L,410,1000000) on conflict (id) do nothing', salida1, usuario, ahora, vaca, 'venta')),
+      pg_temp.intentar(format('insert into public.correccion (id, autor_id, creado_en, entidad_afectada, registro_id, tipo, motivo) values (%L,%L,%s,%L,%L,%L,%L)', gen_random_uuid(), usuario, ahora, 'salida', salida1, 'anulacion', 'animal_equivocado')),
+      pg_temp.intentar(format('insert into public.salida (id, autor_id, creado_en, animal_id, fecha, motivo, causa_muerte) values (%L,%L,%s,%L,current_date,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, 'muerte', 'Rayo'))];
+    r := r || jsonb_build_object('n',17,'v','Una sola salida vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra',
+           'ok', codigos = array['OK','23505','OK','OK','OK'],
+           'd', 'códigos: ' || array_to_string(codigos, ', '));
+
+    -- -------------------------------------------------------------- 18. Una sola compra vigente
+    -- Una segunda compra se rechaza mientras la primera esté vigente; el reenvío se ignora; anulada la primera, se
+    -- admite otra; la alimentación no se limita (docs/tecnica/31-consolidado-economico.md, sección 4).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,900000)', compra1, usuario, ahora, becerro, 'compra')),
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,950000)', gen_random_uuid(), usuario, ahora, becerro, 'compra')),
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,900000) on conflict (id) do nothing', compra1, usuario, ahora, becerro, 'compra')),
+      pg_temp.intentar(format('insert into public.correccion (id, autor_id, creado_en, entidad_afectada, registro_id, tipo, motivo) values (%L,%L,%s,%L,%L,%L,%L)', gen_random_uuid(), usuario, ahora, 'movimiento_economico', compra1, 'anulacion', 'error_digitacion')),
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,950000)', gen_random_uuid(), usuario, ahora, becerro, 'compra')),
+      pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,50000)', gen_random_uuid(), usuario, ahora, becerro, 'alimentacion'))];
+    r := r || jsonb_build_object('n',18,'v','Una sola compra vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra',
+           'ok', codigos = array['OK','23505','OK','OK','OK','OK'],
+           'd', 'códigos: ' || array_to_string(codigos, ', '));
 
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.
     raise exception using errcode = 'P0099', message = 'REVERTIR';

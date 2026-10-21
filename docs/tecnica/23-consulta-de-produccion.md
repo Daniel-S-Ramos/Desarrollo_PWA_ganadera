@@ -73,11 +73,29 @@ gráficos, y se lee en un teléfono de 360 px.
 
 ## 7. Sin registros en la ventana (decisión F, CU-07 3a)
 
-> Sin registros de Z920 en este periodo.
+> Sin registros de Z920 en estos días.
 > [Ver el periodo anterior] · [Ver por semanas] (o [Ver por meses])
 
 La agregación más amplia: de diaria a semanal y de semanal a mensual; en mensual solo se ofrece el
 periodo anterior.
+
+**Ajustes del autor en PE-34 (2026-10-19).**
+
+- **La vista diaria es un día a la vez**, no una ventana de 30 días. Abre en hoy («19 de octubre de 2026
+  (hoy)»); **← Anterior** pasa al día anterior y **Siguiente →** al siguiente. El ordeño se hace en un día
+  concreto, y un rango de días confundía al ganadero. El día muestra sus litros y la comparación con su
+  promedio de los días anteriores, con las mismas palabras de la ronda (documento 22, sección 6). Sin registro,
+  dice «Sin registro de Z921 este día» y ofrece **Ir al ordeño anterior** y **Ir al siguiente**, con su fecha,
+  para no tener que retroceder día por día a ciegas. Así la vista diaria deja de tener la sugerencia «Ver por
+  semanas»: la semanal está a un botón.
+- **Semanal y mensual también son un periodo a la vez**: una semana de lunes a domingo («19 – 25 oct (en
+  curso)») o un mes calendario («Octubre de 2026 (en curso)»), y **← Anterior** y **Siguiente →** se mueven de
+  a una semana o de a un mes. Las ventanas de 12 semanas o 12 meses mostraban rangos que no se entendían
+  («25 oct a 3 ago», «octubre de 2025 a noviembre de 2024»). El periodo muestra su total, su promedio por día
+  registrado y sus días registrados (sección 5), y debajo **cada día** hasta hoy con sus litros o «Sin
+  registro». Sin registros, ofrece ir a la semana o al mes del ordeño anterior o del siguiente.
+- Las secciones 4, 6 y 7 quedan reemplazadas por estos ajustes en lo que toca a la pantalla; las funciones de
+  ventana (`periodosDeVentana`) siguen sirviendo a la comparación entre vacas (documento 28).
 
 ## 8. Relación con los requerimientos
 

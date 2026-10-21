@@ -1173,3 +1173,140 @@ a.boton {
   font-weight: 600;
   color: var(--rojo-oscuro);
 }
+
+/* Comparación entre vacas (documento técnico 28). */
+.comparacion__titulo {
+  margin: 0;
+}
+.comparacion__enlace {
+  display: grid;
+  gap: 0.35rem;
+  color: inherit;
+  text-decoration: none;
+}
+.comparacion__pocos {
+  color: var(--rojo-oscuro);
+  font-size: 0.9rem;
+}
+
+/* El rango de días de la ventana, siempre visible (PE-34). */
+.produccion__ventana {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* La salida del animal en su ficha (documento técnico 29, sección 7). */
+.ficha__salida {
+  border-color: var(--amarillo);
+  background: var(--amarillo-claro);
+}
+.ficha__salida p {
+  margin: 0 0 0.35rem;
+}
+.ficha__salida-texto {
+  font-weight: 700;
+}
+.ficha__salida--anulada {
+  background: var(--blanco);
+  border-color: var(--borde);
+}
+.tachado {
+  color: var(--texto-secundario);
+  text-decoration: line-through;
+}
+
+/* Recordatorios de Inicio (documento técnico 30). Reemplazan el bloque de terneros sin chapeta. */
+.recordatorios h2 {
+  margin-bottom: 0.25rem;
+}
+.recordatorios__grupo + .recordatorios__grupo {
+  margin-top: 1rem;
+}
+.recordatorios__grupo h3 {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+.recordatorios__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.recordatorio {
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  padding: 8px 16px;
+}
+.recordatorio--vencido {
+  background: var(--amarillo-claro);
+  border-color: var(--amarillo);
+  font-weight: 600;
+}
+.recordatorio__enlace {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  min-height: 40px;
+  color: inherit;
+  text-decoration: none;
+}
+.recordatorio__boton {
+  margin-top: 4px;
+}
+.recordatorio__posponer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* Consolidado económico (documento técnico 31). */
+.consolidado__lineas,
+.consolidado__detalle,
+.consolidado__avisos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.consolidado__lineas li,
+.consolidado__fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+.consolidado__lineas li + li,
+.consolidado__detalle li + li {
+  border-top: 1px solid var(--borde);
+}
+.consolidado__avisos li {
+  margin: 0 0 6px;
+  padding: 8px 12px;
+  border-left: 4px solid var(--amarillo);
+  background: var(--amarillo-claro);
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+.consolidado__resultado p {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.consolidado__resultado--ganancia {
+  background: var(--verde-claro);
+  border-color: var(--verde-oscuro);
+}
+.consolidado__resultado--perdida {
+  background: var(--rojo-fondo);
+  border-color: var(--rojo-oscuro);
+}
+.consolidado__detalle li {
+  padding: 6px 0;
+}
+.consolidado__ingreso {
+  color: var(--verde-oscuro);
+}

@@ -94,8 +94,33 @@ export const CAMPOS_CORREGIBLES: Record<EntidadCorregible, Readonly<Record<strin
     },
   },
   fotografia: {},
-  salida: {},
-  movimiento_economico: {},
+  // Documento técnico 29, sección 8: el motivo no se corrige; si está mal, la salida se anula.
+  salida: {
+    fecha: { etiqueta: 'Fecha de salida', tipo: 'fecha', vacio: false, minimo: 'llegada' },
+    peso_venta: { etiqueta: 'Peso de venta en kg', tipo: 'numero', vacio: true },
+    valor_venta: {
+      etiqueta: 'Valor recibido',
+      tipo: 'entero',
+      vacio: true,
+      soloPropietario: true,
+      validar: (v) => (Number(v) > 0 && Number(v) <= 100_000_000 ? null : 'Escriba el valor en pesos, sin decimales, hasta 100.000.000'),
+    },
+    comprador: { etiqueta: 'Comprador', tipo: 'texto', vacio: true, maximoTexto: 100 },
+    causa_muerte: { etiqueta: 'Causa de la muerte', tipo: 'texto', vacio: true, maximoTexto: 300 },
+    observacion: { etiqueta: 'Observación', tipo: 'texto', vacio: true, maximoTexto: 300 },
+  },
+  // Documento técnico 31, sección 5: el concepto no se corrige; si está mal, el costo se anula.
+  movimiento_economico: {
+    fecha: { etiqueta: 'Fecha', tipo: 'fecha', vacio: false, minimo: 'llegada' },
+    valor: {
+      etiqueta: 'Valor',
+      tipo: 'entero',
+      vacio: false,
+      soloPropietario: true,
+      validar: (v) => (Number(v) > 0 && Number(v) <= 100_000_000 ? null : 'Escriba el valor en pesos, sin decimales, hasta 100.000.000'),
+    },
+    descripcion: { etiqueta: 'Descripción', tipo: 'texto', vacio: true, maximoTexto: 300 },
+  },
 };
 
 /** Animal y medicamento solo se corrigen; los demás también se anulan (sección 3). */
@@ -150,7 +175,7 @@ export function validarValor(entidad: EntidadCorregible, nombre: string, campo: 
   switch (campo.tipo) {
     case 'numero': {
       const numero =
-        entidad === 'produccion_leche' ? leerLitros(limpio) : nombre === 'peso' || nombre === 'peso_inicial' ? leerPeso(limpio) : Number(limpio.replace(',', '.'));
+        entidad === 'produccion_leche' ? leerLitros(limpio) : nombre === 'peso' || nombre === 'peso_inicial' || nombre === 'peso_venta' ? leerPeso(limpio) : Number(limpio.replace(',', '.'));
       if (numero === null || Number.isNaN(numero)) {
         return { ok: false, error: entidad === 'produccion_leche' ? 'Escriba los litros, de 0 a 60, con un decimal como máximo' : 'El peso debe estar entre 1 y 1.500 kg, con un decimal como máximo' };
       }

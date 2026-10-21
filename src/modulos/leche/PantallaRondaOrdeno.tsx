@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { compararConPromedio, formatearLitros, leerLitros, validarOrdeno } from '../../dominio/leche';
 import type { Identidad } from '../../sesion/token';
@@ -14,7 +14,9 @@ import { cargarRonda, promedioDe, puedeReemplazar, registrarOrdeno, siguienteVac
 export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
   const [hoy] = useState(() => fechaDelPredio());
   const [fecha, setFecha] = useState(hoy);
-  const [elegida, setElegida] = useState<string | null>(null);
+  // Desde un recordatorio (?vaca=) la ronda abre en esa vaca (documento técnico 30, sección 5; PE-36).
+  const [parametros] = useSearchParams();
+  const [elegida, setElegida] = useState<string | null>(() => parametros.get('vaca'));
   const [ultimo, setUltimo] = useState<string | null>(null);
   const vacas = useLiveQuery(() => cargarRonda(fecha), [fecha]);
 

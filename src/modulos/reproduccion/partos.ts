@@ -3,7 +3,7 @@
  * Especificación: docs/tecnica/25-parto-y-control-reproductivo.md
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
-import { animalVigente, animalesVigentes, leerVigentes, vigentes } from '../../datos/vigentes';
+import { animalVigente, animalesVigentes, contarSalidasVigentes, leerVigentes, vigentes } from '../../datos/vigentes';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { buscarParentesco, type AnimalGenealogia, type Parentesco, type Reproductor } from '../../dominio/parentesco';
 import { controlReproductivo, partoCercano, validarParto, type ContextoParto, type ErroresParto, type FormularioParto } from '../../dominio/reproduccion';
@@ -72,7 +72,7 @@ async function contextoDe(vacaId: Uuid) {
   const vaca = await animalVigente(vacaId);
   if (!vaca) return null;
   const [salidas, partos] = await Promise.all([
-    consulta.salida.where('animal_id').equals(vacaId).count(),
+    contarSalidasVigentes(vacaId),
     consulta.parto.where('madre_id').equals(vacaId).toArray().then((r) => vigentes('parto', r)),
   ]);
   const contexto: ContextoParto = { esHembra: vaca.sexo === 'hembra', retirada: salidas > 0, nacimientoVaca: vaca.fecha_nacimiento };

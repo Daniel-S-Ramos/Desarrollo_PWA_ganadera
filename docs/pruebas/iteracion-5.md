@@ -1,0 +1,404 @@
+# Pruebas de la Iteración 5 — Consultas, alertas y economía
+
+Historias de usuario: HU-10 (comparación de la producción entre vacas), HU-11 (salida y venta), HU-14
+(recordatorios derivados), HU-16 (consolidado económico por animal). Pasos 5.1 a 5.5 del
+[plan](../../PLAN.md). Rama `iteracion-5`.
+
+**Responsable:** Daniel Santiago Ramos Pintor
+**Estado:** cerrada el 2026-10-21 · `v0.5`
+
+## Resumen de resultados
+
+| Id | Prueba | Paso | Requerimiento | Estado |
+|---|---|---|---|---|
+| PU-30 | Comparación de la producción entre vacas | 5.1 | RF-12 · CU-07 (pasos 5 y 6, 5a) · HU-10 | ✅ |
+| PU-24 | Producción por vaca: un periodo a la vez (apartados 9 y 10, agregados en PE-34) | 5.1 | RF-11 · CU-07 (pasos 1 a 4, 3a) · HU-04.2 | ✅ |
+| PE-34 | Comparación entre vacas y producción por vaca en el navegador real | 5.1 | CU-07 · HU-10 · HU-04.2 · Tabla 27 | ✅ |
+| PU-31 | Registro de la salida y venta del animal | 5.2 | RF-15 · CU-13 · HU-11 · Tabla 24 | ✅ |
+| PI-01 | Esquema remoto: observación de la salida y una sola salida vigente (verificaciones 16 y 17) | 5.2 | CU-13 3b · Tabla 24 | ✅ |
+| PE-35 | Salida y venta en el navegador real | 5.2 | CU-13 · HU-11 · Tabla 27 | ✅ |
+| PU-32 | Recordatorios derivados y posponer | 5.3 | RF-22 · RF-23 · CU-15 · HU-14 | ✅ |
+| PE-36 | Recordatorios en el navegador real | 5.3 | CU-15 · HU-14 · Tabla 27 | ✅ |
+| PU-33 | Costos por animal y consolidado económico | 5.4 | RF-20 · RF-21 · CU-14 · HU-16 · apartado 3.8.12 | ✅ |
+| PI-01 | Esquema remoto: una sola compra vigente por animal (verificación 18) | 5.4 | RF-20 · Tabla 24 | ✅ |
+| PE-37 | Costos y consolidado económico en el navegador real | 5.4 | CU-14 · HU-16 · Tabla 27 | ✅ |
+
+---
+
+## PU-30 · Comparación de la producción entre vacas
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar el periodo (día, semana de lunes a domingo, mes calendario, en curso hasta hoy, navegación más allá de una ventana), las vacas incluidas según su historial de destino y sus ordeños, el orden por promedio por día registrado con sus desempates, el promedio del hato como promedio de promedios, el orden inverso, los registros insuficientes y el flujo 5a, el valor vigente y los permisos |
+| Requerimiento | RF-12 · RF-28 · CU-07 (pasos 5 y 6, flujo 5a) · HU-10.1 a 10.4 · apartado 3.8.6 · Tabla 27 |
+| Tipo | Unitaria, automática |
+| Código | [`src/modulos/leche/comparacion.ts`](../../src/modulos/leche/comparacion.ts) · prueba [`comparacion.test.ts`](../../src/modulos/leche/comparacion.test.ts) · especificación [documento técnico 28](../tecnica/28-comparacion-entre-vacas.md), sección 11 |
+| Resultado obtenido | **15 de 15 aprobadas**, más el caso de la consulta en vivo agregado a PU-27.9 (14 de 14). Total del conjunto automático: **839 de 839** ([informe](resultados/2026-10-20_215949_890fdf2.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+**Mutaciones.** Diecisiete. Quince detectadas a la primera: periodo sin pasar de una ventana, cambios de
+destino dentro del periodo ignorados o contados después de su fin, solo el destino vigente actual, sin las
+vacas con ordeños y sin destino de leche, todas las hembras incluidas, machos incluidos, orden por total, sin
+desempate por días, sin invertir, «pocos registros» nunca, comparación posible con una sola vaca, promedio del
+hato como total entre días, sin retiradas y ordeños sin valor vigente. **Dos sobrevivieron y señalaron bordes
+sin probar:** un destino que empieza justo el primer día del periodo (para entrar y para salir de leche) y la
+mitad exacta de los días, que no es «pocos registros»; se agregaron sus casos y quedaron 17 de 17.
+
+## PU-24 · Producción por vaca: un periodo a la vez (apartados 9 y 10)
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar los ajustes del autor en PE-34: la vista diaria es un día con sus litros, el cero como registro, la comparación con el promedio de los días anteriores y el ordeño anterior y siguiente; la semana y el mes son uno a la vez, con su resumen, cada día hasta hoy y los ordeños fuera del periodo; y el salto al periodo que contiene una fecha |
+| Requerimiento | RF-11 · CU-07 (pasos 1 a 4, flujo 3a) · HU-04.2 · apartado 3.8.6 |
+| Tipo | Unitaria, automática |
+| Código | `diaDeVaca`, `periodoDeVaca` y `desplazamientoHasta` en [`produccion.ts`](../../src/modulos/leche/produccion.ts) · prueba [`produccion.test.ts`](../../src/modulos/leche/produccion.test.ts), apartados 9 y 10 · especificación [documento técnico 23](../tecnica/23-consulta-de-produccion.md), «Ajustes del autor en PE-34» |
+| Resultado obtenido | **8 pruebas nuevas, aprobadas** (19 de 19 en el archivo) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+**Mutaciones.** Trece. Del día, cinco: «anterior» y «siguiente» podían ser el mismo día cuando este tenía
+registro (sobrevivieron; se agregó la comprobación). De la semana y el mes, ocho: «siguiente» podía caer dentro
+del mismo periodo (sobrevivió; se agregó). Al cierre, 13 de 13.
+
+## PE-34 · Comparación entre vacas y producción por vaca en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario la comparación entre vacas (periodo, orden, marcas, flujo 5a, acceso a la producción de cada vaca) y la producción por vaca; y como trabajador que no tiene acceso |
+| Requerimiento | CU-07 (pasos 1 a 6, flujos 3a y 5a) · HU-10 · HU-04.2 · Tabla 27 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-5` (commits 17ad8aa a 890fdf2) |
+| Resultado obtenido | Aprobada en la cuarta ronda. Las rondas anteriores llevaron a tres ajustes del autor sobre el diseño y a un defecto corregido (observaciones) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+| # | Ronda | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 | 1 | Propietario | **Comparar con las demás vacas**, mes en curso | Promedio del hato y Z920 (10,5), Z921 (10), Z926 y Z927 (0), todas con «Pocos registros»; Z931 y Z970 bajo «Sin registros en el periodo» | [botón](evidencias/iteracion-5/PE-34-r1-01-boton-comparar.png) · [mes](evidencias/iteracion-5/PE-34-r1-02-mes-mayor-a-menor.png) |
+| 2 | 1 | Propietario | **De menor a mayor** | Se invierte; las sin registros siguen al final | [invertido](evidencias/iteracion-5/PE-34-r1-03-mes-menor-a-mayor.png) · [al final](evidencias/iteracion-5/PE-34-r1-04-sin-registros-al-final.png) |
+| 3 | 1 | Propietario | Septiembre y la semana del 5 al 11 | «No hubo vacas en producción»: los destinos de leche de prueba empiezan el 15 de octubre | [septiembre](evidencias/iteracion-5/PE-34-r1-05-septiembre-sin-vacas.png) · [semana](evidencias/iteracion-5/PE-34-r1-06-semana-sin-vacas.png) |
+| 4 | 1 | Propietario | Ordeño de Z920 el 10 de octubre y semana del 5 al 11 | «La comparación no es posible: solo Z920 tiene registros en este periodo» (CU-07, 5a) | [captura](evidencias/iteracion-5/PE-34-r1-07-semana-solo-z920.png) |
+| 5 | 2 | Propietario | Comparación con **Día** | Abre en «19 de octubre de 2026 (hoy)» con **Ver el día anterior**; el 13 de octubre: Z921 12, Z920 10, Z926 y Z927 0, promedio del hato 5,5 litros | [hoy](evidencias/iteracion-5/PE-34-r2-01-comparacion-hoy.png) · [día anterior](evidencias/iteracion-5/PE-34-r2-02-dia-anterior.png) · [13 de octubre](evidencias/iteracion-5/PE-34-r2-03-13-octubre.png) |
+| 6 | 3 | Propietario | Producción de Z921, **Diaria** | Hoy sin registro con **Ir al ordeño anterior: 14 oct**; el 14: 8 litros, «Muy por debajo de su promedio: 4 litros menos»; **← Anterior**: el 13 con 12 litros | [hoy](evidencias/iteracion-5/PE-34-r3-01-diaria-hoy.png) · [14 de octubre](evidencias/iteracion-5/PE-34-r3-02-ir-al-14-octubre.png) · [13 de octubre](evidencias/iteracion-5/PE-34-r3-03-anterior-13-octubre.png) |
+| 7 | 3 | Trabajador | Escribir la dirección `/produccion/comparar` | Vuelve a Inicio; Inicio no tiene **Producción de leche** | [sin acceso](evidencias/iteracion-5/PE-34-r1-09-trabajador-sin-produccion.png) · [vuelve a Inicio](evidencias/iteracion-5/PE-34-r3-04-trabajador-vuelve-a-inicio.jpg) |
+| 8 | 4 | Propietario | Producción de Z921, **Semanal** | «19 – 25 oct (en curso)» sin registro con **Ir a la semana del ordeño anterior: 14 oct**; «12 – 18 oct»: 20 litros, 10 por día registrado, 2 de 7 días, y sus 7 días con el 13 y el 14 | [en curso](evidencias/iteracion-5/PE-34-r4-01-semana-en-curso.png) · [semana](evidencias/iteracion-5/PE-34-r4-02-semana-del-ordeno.png) · [días](evidencias/iteracion-5/PE-34-r4-03-dias-de-la-semana.png) |
+| 9 | 4 | Propietario | Producción de Z921, **Mensual** | «Octubre de 2026 (en curso)»: 20 litros, 2 de 20 días, con los días hasta hoy; septiembre sin registro con **Ir al mes del siguiente: 13 oct** | [octubre](evidencias/iteracion-5/PE-34-r4-04-mes-en-curso.png) · [septiembre](evidencias/iteracion-5/PE-34-r4-05-septiembre.png) |
+
+**Observaciones.**
+
+1. **Ajuste del autor: la comparación abre en el día** (ronda 1, commit d2f8fa2). El diseño aprobado
+   comparaba semana o mes y descartaba el día; el autor indicó que el propietario compara a diario. Se agregó
+   **Día**, que abre en hoy, y al tocar una vaca se abre su producción diaria (documento 28, secciones 3 y 8).
+2. **La captura de la ronda 2 mostraba la versión anterior**: la aplicación guardada en el navegador no se
+   actualiza sola mientras se usa; aparece el aviso «Hay una versión nueva» con **Actualizar ahora**. No fue un
+   defecto.
+3. **Defecto: no se sabía qué días se estaban viendo** (ronda 2). El rango de la ventana solo aparecía en el
+   resumen, oculto cuando no había registros (commit 6b76563).
+4. **Ajuste del autor: un periodo a la vez** (rondas 2 y 3, commits 033f123, e30a057 y 890fdf2). Los rangos
+   («20 sep a 19 oct», «25 oct a 3 ago», «octubre de 2025 a noviembre de 2024») confundían: el ordeño ocurre en
+   un día concreto. La vista diaria pasó a un día, con su comparación frente al promedio, y la semanal y la
+   mensual a una semana o un mes con cada uno de sus días; sin registros se ofrece ir al ordeño más cercano
+   (documento 23, «Ajustes del autor en PE-34»).
+5. Inicio seguía rotulado «Iteración 4»; se actualizó a la Iteración 5 (commit 890fdf2).
+6. Las capturas de la ronda 1 (PE-34-r1-08) muestran la producción semanal con la ventana de 12 semanas, que
+   quedó reemplazada; se conservan como evidencia del hallazgo.
+
+## PU-31 · Registro de la salida y venta del animal
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las validaciones por motivo (venta con peso y valor, muerte con causa, pérdida o robo con observación opcional, campos de otro motivo descartados, fecha), el último peso y el aviso de pesaje no reciente, el registro con su cola y la unicidad de la salida vigente, el retiro del animal en todas las pantallas y su regreso al anular, el texto de la ficha, los campos corregibles y los permisos |
+| Requerimiento | RF-15 · RF-27 · RF-28 · CU-13 (pasos 2 a 7, flujos 2a, 3a y 3b) · HU-11 · Tabla 24 · Tabla 27 · RD-05 |
+| Tipo | Unitaria, automática |
+| Código | [`src/dominio/salida.ts`](../../src/dominio/salida.ts) · [`src/modulos/salida/salidas.ts`](../../src/modulos/salida/salidas.ts) · `salidasVigentes` y `contarSalidasVigentes` en [`vigentes.ts`](../../src/datos/vigentes.ts) · prueba [`salidas.test.ts`](../../src/modulos/salida/salidas.test.ts) · especificación [documento técnico 29](../tecnica/29-salida-y-venta.md), sección 11 |
+| Resultado obtenido | **18 de 18 aprobadas**, más el caso de la salida agregado a PU-27.9 (15 de 15). Total del conjunto automático: **858 de 858** ([informe](resultados/2026-10-20_233749_6a53d49.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+**Mutaciones.** Veintiséis. Veinticuatro detectadas a la primera: sin exigir peso, valor o causa, sin límite
+de observación o de comprador, sin descartar la causa de otro motivo, fecha futura o anterior a la llegada,
+sin motivo, valor cero o sin quitar los puntos de miles, pesaje reciente con «mayor o igual», sin aviso para un
+animal nunca pesado, género fijo, sin comprador en el texto, segunda salida admitida, sin permiso, parámetro
+ignorado, retirado con cualquier salida, salidas vigentes sin filtrar las anuladas, todas las salidas contadas,
+valor corregible por todos y peso de venta sin la lectura del pesaje. **Dos sobrevivieron:** «sin descartar el
+peso de otro motivo» era equivalente, porque el peso solo se lee en la venta (la condición sobrante se quitó), y
+«la ficha prefiere la anulada» no se probaba porque normalmente hay una sola salida (se agregó el caso de una
+anulada y una vigente). Tras el cambio de la unicidad, la mutación «una anulada cuenta como vigente» también se
+detecta. Al cierre, 26 de 26.
+
+## PI-01 · Salida: observación y una sola salida vigente (verificaciones 16 y 17)
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las dos migraciones del paso: la columna `salida.observacion` (opcional, hasta 300 caracteres) y la unicidad de la salida vigente por disparador (la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra) |
+| Código | Migraciones [`20261020000100_salida_observacion.sql`](../../supabase/migrations/20261020000100_salida_observacion.sql) y [`20261021000100_salida_vigente_unica.sql`](../../supabase/migrations/20261021000100_salida_vigente_unica.sql) · [`supabase/pruebas/pi-01-esquema.sql`](../../supabase/pruebas/pi-01-esquema.sql), verificaciones 16 y 17 |
+| Resultado obtenido | **16 de 16** tras la primera migración y **17 de 17** tras la segunda ([evidencia 16](evidencias/iteracion-5/PI-01-9-salida-observacion.txt) · [evidencia 17](evidencias/iteracion-5/PI-01-10-salida-vigente-unica.txt)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+## PE-35 · Salida y venta en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario la venta con el aviso de pesaje, las validaciones y la confirmación, la muerte y la pérdida o robo, el animal retirado en la ficha y en el listado, la corrección de la venta y la anulación con una salida nueva; y como trabajador que ve la salida sin poder registrarla ni corregirla |
+| Requerimiento | CU-13 (pasos 1 a 7, flujos 2a, 3a y 3b) · HU-11.1 a 11.4 · Tabla 27 · RD-05 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-5` (commits ba442ab a 6a53d49) |
+| Resultado obtenido | Aprobada en la tercera ronda. La primera reveló que un animal con la salida anulada no podía volver a salir; el autor aprobó el cambio a una sola salida vigente (observación 1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-20 |
+
+| # | Ronda | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 | 1 | Propietario | Venta de Z971, nunca pesado | «⚠ Nunca se ha pesado. Conviene pesarlo antes de venderlo» con **Registrar pesaje**; tras pesarlo (430 kg) el formulario muestra ese último peso; confirmación «Vendido el 20 de octubre de 2026 · 432 kg · $4.500.000 · comprador Finca Alquitania» | [aviso](evidencias/iteracion-5/PE-35-r1-01-aviso-nunca-pesado.png) · [pesaje](evidencias/iteracion-5/PE-35-r1-02-pesaje-antes-de-vender.png) · [formulario](evidencias/iteracion-5/PE-35-r1-03-formulario-venta.png) · [confirmación](evidencias/iteracion-5/PE-35-r1-04-confirmacion.png) |
+| 2 | 1 | Propietario | Anular la venta de Z971 | La salida queda tachada con su anulación, pero el animal ya no admitía otra (hallazgo, observación 1) | [captura](evidencias/iteracion-5/PE-35-r1-05-salida-anulada-sin-otra.png) |
+| 3 | 2 | Propietario | Venta de Z982 | Aviso de nunca pesado; sin peso ni valor, «Escriba el peso de venta» y «Escriba el valor recibido, en pesos»; confirmación y ficha «Vendida el 20 de octubre de 2026 · 510 kg · $5.100.000 · comprador Finca la alquitania» con «RETIRADA DEL PREDIO» y sin acciones de registro; en **Retirados** | [aviso](evidencias/iteracion-5/PE-35-r2-01-z982-aviso-nunca-pesado.png) · [errores](evidencias/iteracion-5/PE-35-r2-02-z982-errores-sin-peso-ni-valor.png) · [confirmación](evidencias/iteracion-5/PE-35-r2-03-z982-confirmacion.png) · [ficha](evidencias/iteracion-5/PE-35-r2-04-z982-ficha-vendida.png) · [retirados](evidencias/iteracion-5/PE-35-r2-05-listado-retirados.png) |
+| 4 | 2 | Propietario | Muerte de Z980 | La causa aparece obligatoria; «Murió el 20 de octubre de 2026 · causa: De viejo»; Z980 sale de los activos | [antes](evidencias/iteracion-5/PE-35-r2-06-listado-activos-antes.png) · [formulario](evidencias/iteracion-5/PE-35-r2-07-z980-muerte-sin-causa.png) · [confirmación](evidencias/iteracion-5/PE-35-r2-08-z980-confirmacion.png) |
+| 5 | 2 | Propietario | Pérdida o robo de Z981 con observación | «Perdida o robada el 20 de octubre de 2026 · Robo» | [formulario](evidencias/iteracion-5/PE-35-r2-09-z981-perdida-con-observacion.png) · [confirmación](evidencias/iteracion-5/PE-35-r2-10-z981-confirmacion.png) |
+| 6 | 2 | Propietario | Corregir el valor de la venta de Z982 | $6.900.000 con la marca **Corregido** y «Valor recibido: antes 5.100.000, ahora 6.900.000» | [captura](evidencias/iteracion-5/PE-35-r2-11-z982-valor-corregido.png) |
+| 7 | 2 | Propietario | Anular la salida de Z981 y registrar otra | El aviso nuevo («El animal volverá al inventario activo…»); Z981 vuelve a los activos con la salida tachada y **Registrar salida**; la venta nueva se acepta | [aviso](evidencias/iteracion-5/PE-35-r2-12-z981-anular-aviso.png) · [anulada](evidencias/iteracion-5/PE-35-r2-13-z981-anulada-registrar-salida.png) · [activos](evidencias/iteracion-5/PE-35-r2-14-listado-activos-con-z981-sin-z980.png) · [ficha](evidencias/iteracion-5/PE-35-r2-15-z981-anulada-ficha.png) · [nueva](evidencias/iteracion-5/PE-35-r2-16-z981-nueva-salida.png) |
+| 8 | 3 | Propietario | Z971, con la venta anulada en la ronda 1, registra una salida nueva | «Murió el 20 de octubre de 2026 · causa: natural»; el servicio la acepta | [formulario](evidencias/iteracion-5/PE-35-r3-01-z971-nueva-salida-muerte.png) · [confirmación](evidencias/iteracion-5/PE-35-r3-02-z971-confirmacion.png) · [ficha](evidencias/iteracion-5/PE-35-r3-03-z971-ficha-retirado.png) |
+| 9 | 3 | Trabajador | Z983 activo, Z982 retirada y el listado | Z983 sin **Registrar salida**; Z982 con la venta corregida, «Fotos: 3 de 3» y **Ver fotos**, sin **Corregir o anular**; «4 animales retirados» | [Z983](evidencias/iteracion-5/PE-35-r3-04-trabajador-z983-activo.png) · [acciones](evidencias/iteracion-5/PE-35-r3-05-trabajador-z983-sin-salida.png) · [pie](evidencias/iteracion-5/PE-35-r3-06-trabajador-z983-pie.png) · [Z982](evidencias/iteracion-5/PE-35-r3-07-trabajador-z982-sin-corregir.png) · [fotos](evidencias/iteracion-5/PE-35-r3-08-trabajador-z982-ver-fotos.webp) · [retirados](evidencias/iteracion-5/PE-35-r3-09-trabajador-retirados.png) |
+
+**Observaciones.**
+
+1. **Hallazgo: un animal con la salida anulada no podía volver a salir** (ronda 1). La restricción única de
+   `salida.animal_id` contaba también las anuladas, y lo anulado no admite correcciones. El autor aprobó el
+   cambio a **una sola salida vigente** por animal: migración `20261021000100_salida_vigente_unica.sql`, PI-01
+   verificación 17 y ajuste de la aplicación (documento 29, sección 8; commit 3017ff5). En la ronda 3, Z971 —el
+   animal del hallazgo— registró su salida nueva.
+2. **El animal retirado pedía completar fotos** (ronda 2): «⚠ Registro fotográfico incompleto» y **Ver y
+   completar fotos**, aunque ya no se pueden agregar. Se corrigió, y el texto alternativo pasó de «Fotos: 3 de
+   3» fijo al número real (commit 6a53d49). La captura de Z971 de la ronda 3 se tomó antes de publicar el
+   arreglo; en el teléfono del trabajador ya se ve «Fotos: 3 de 3 · Ver fotos» en Z982.
+3. Las salidas de prueba quedan en Z971, Z980, Z981 y Z982 (serie Z9xx), que se borrarán con los demás datos de
+   prueba antes de la evaluación.
+
+## PU-32 · Recordatorios derivados y posponer
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las seis reglas con sus bordes (el día exacto del umbral), la fecha desde la que se cuenta cuando no hay registros, las exclusiones (retirados, anulados), los parámetros del teléfono, posponer (plazo, vencimiento, el más lejano, por tipo y animal, solo el propietario), el orden de los grupos y la desaparición en vivo al registrar el dato o al posponer |
+| Requerimiento | RF-22 · RF-23 · RF-28 · CU-15 (pasos 1 a 7, flujos 6a y 6b) · HU-14.1 a 14.4 · apartado 3.8.11 · Tablas 27 y 30 |
+| Tipo | Unitaria, automática; la consulta en vivo se observa como en Inicio |
+| Código | [`src/modulos/recordatorios/recordatorios.ts`](../../src/modulos/recordatorios/recordatorios.ts) · prueba [`recordatorios.test.ts`](../../src/modulos/recordatorios/recordatorios.test.ts) · especificación [documento técnico 30](../tecnica/30-recordatorios.md), sección 10 |
+| Resultado obtenido | **20 de 20 aprobadas**. Total del conjunto automático: **878 de 878** ([informe](resultados/2026-10-21_001402_5537268.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+**Mutaciones.** Treinta. Veinticinco detectadas a la primera: pesaje en cualquier destino, umbrales con «mayor
+o igual» en las cinco reglas, sin la llegada para el nunca pesado, ordeño en machos, sin la fecha en que pasó a
+leche, producción baja con un ordeño viejo o con cualquier diferencia, cada clase de registro que no reinicia la
+regla 4, retirados incluidos, posponer sin tipo, sin animal, con «mayor o igual» o sin filtrar, orden inverso,
+ordeños anulados contados, posponer sin permiso o un día menos y la chapeta posponible. **Cinco sobrevivieron y
+señalaron casos sin probar:** con varios pesajes debe contar el más reciente; con registros viejos y recientes,
+el reciente; una salida anulada devuelve el animal a los recordatorios; el parámetro guardado en el teléfono; y el
+registro más antiguo de la cola. Se agregaron sus pruebas y quedaron 30 de 30.
+
+## PE-36 · Recordatorios en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario los recordatorios de Inicio con los animales de prueba, su resolución al registrar el dato, el cambio de grupo cuando el ordeño queda bajo el promedio, posponer y el acceso a la ronda; y como trabajador que los ve sin poder posponer y que recibe la decisión de posponer |
+| Requerimiento | CU-15 (pasos 1 a 7, flujos 6a y 6b) · HU-14.1 a 14.4 · RF-22 · RF-23 · Tabla 27 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-5` (commits d9588f1 y 5537268) |
+| Resultado obtenido | Aprobada en la segunda ronda, tras un ajuste: el recordatorio de ordeño abría la ronda en la primera vaca pendiente y no en la del recordatorio (observación 1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+| # | Ronda | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 | 1 | Propietario | Inicio | **Recordatorios** arriba: «Sin registro de ordeño · 5», con Z931 («Sin ordeños desde que pasó a leche, el 12 de octubre de 2026») y Z926, Z927, Z920 y Z921, del más antiguo al más reciente | [Inicio](evidencias/iteracion-5/PE-36-r1-01-inicio-recordatorios.png) · [grupo](evidencias/iteracion-5/PE-36-r1-02-sin-ordeno-5.png) |
+| 2 | 1 | Propietario | Registrar 5 litros de Z921 desde la ronda | Z921 sale de «Sin registro de ordeño» y aparece en «Producción bajo el promedio · 1»: «5 litros el 21 de octubre de 2026: muy por debajo de su promedio (8 litros)» | [ronda](evidencias/iteracion-5/PE-36-r1-03-ronda-abre-en-z920.png) · [5 litros](evidencias/iteracion-5/PE-36-r1-04-z921-5-litros.png) · [bajo promedio](evidencias/iteracion-5/PE-36-r1-05-bajo-promedio.png) |
+| 3 | 1 | Trabajador | Inicio en el iPhone | Los mismos recordatorios, sin **Posponer** | [bajo promedio](evidencias/iteracion-5/PE-36-r1-06-trabajador-bajo-promedio.png) · [sin posponer](evidencias/iteracion-5/PE-36-r1-07-trabajador-sin-posponer.png) · [Inicio](evidencias/iteracion-5/PE-36-r1-08-trabajador-inicio.png) |
+| 4 | 2 | Propietario | **Posponer** Z926 por 1 día | Desaparece: «Sin registro de ordeño · 3» | [captura](evidencias/iteracion-5/PE-36-r2-01-z926-pospuesta.png) |
+| 5 | 2 | Propietario | Tocar el recordatorio de Z927 | La ronda abre en **Vaca Z927** (`/ordeno?vaca=…`) | [captura](evidencias/iteracion-5/PE-36-r2-02-ronda-abre-en-z927.png) |
+| 6 | 2 | Trabajador | Inicio en el iPhone | Sin Z926: la decisión de posponer llegó con la sincronización | [captura](evidencias/iteracion-5/PE-36-r2-03-trabajador-sin-z926.jpg) |
+
+**Observaciones.**
+
+1. **Ajuste: el recordatorio de ordeño abre la ronda en esa vaca** (ronda 1). Al tocar Z921 la ronda abría en la
+   primera vaca pendiente (Z920). La ronda acepta ahora la vaca en la dirección (`?vaca=`) y el recordatorio la
+   usa (commit 5537268; documento 30, sección 5).
+2. No aparecieron recordatorios de pesaje ni de «sin registros recientes»: los animales de prueba son de octubre
+   y ninguno de ceba superó los 30 días. Esas reglas, la de sincronización y la de chapeta las cubre PU-32. La
+   chapeta pendiente tampoco salió porque los terneros que la tenían (Z980, Z981, Z982) quedaron retirados en
+   PE-35.
+3. En la ronda 2 la aplicación mostró primero la versión anterior (abría en Z920) hasta que se publicó y se
+   actualizó el commit 5537268.
+
+## PU-33 · Costos por animal y consolidado económico
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las validaciones del costo (concepto, fecha entre la llegada y la salida o hoy, valor en pesos enteros, descripción), la compra solo para un comprado y una sola vigente (también con dos registros a la vez), lo invertido con los medicamentos de los eventos, lo generado (leche al precio del parámetro o de ejemplo, venta solo si salió por venta), el resultado, los avisos y su rótulo, el detalle, el valor vigente (correcciones y anulaciones de costos, eventos, ordeños y salida), los campos corregibles y los permisos |
+| Requerimiento | RF-20 · RF-21 · RF-27 · RF-28 · CU-14 (pasos 1 a 5, flujos 2a, 3a, 4a y 4b) · HU-16.1 a 16.4 · apartado 3.8.12 · Tablas 24, 27 y 30 |
+| Tipo | Unitaria, automática; la consulta en vivo se observa como en la pantalla |
+| Código | [`src/dominio/economia.ts`](../../src/dominio/economia.ts) · [`src/modulos/economia/costos.ts`](../../src/modulos/economia/costos.ts) · [`src/modulos/economia/consolidado.ts`](../../src/modulos/economia/consolidado.ts) · prueba [`economia.test.ts`](../../src/modulos/economia/economia.test.ts) · especificación [documento técnico 31](../tecnica/31-consolidado-economico.md), sección 9 |
+| Resultado obtenido | **18 de 18 aprobadas** (17 iniciales y la del rótulo, agregada en PE-37), más el caso del consolidado agregado a PU-27.9 (16 de 16). Total del conjunto automático: **897 de 897** ([informe](resultados/2026-10-21_175258_e1e46be.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+**Mutaciones.** Cuarenta y cinco. Cuarenta detectadas a la primera: cada validación quitada o con el borde
+cambiado, compra para un nacido o con otra vigente, compra anulada contada, salida ignorada, sin permiso, sin
+validar, anulados en lo invertido o en el detalle, medicamentos fuera, líneas vacías, sin precio de ejemplo,
+venta fuera de lo generado, resultado al revés, cada aviso quitado o con el texto fijo, detalle sin ordenar o al
+revés, y eventos, ordeños, salida, parámetro y correcciones leídos sin el valor vigente. **Cinco sobrevivieron y
+señalaron casos sin probar:** la fecha de hoy se admite; la comprobación de la compra dentro de la transacción
+(se prueba con dos registros a la vez: queda uno y el otro recibe «Este animal ya tiene registrada su compra»);
+un evento con costo cero no cuenta; el valor de la leche se redondea al peso; y una muerte no suma venta aunque
+traiga un valor. Se agregaron sus pruebas y quedaron 45 de 45. Con el rótulo del resultado (PE-37, observación 1)
+se agregaron cuatro más: 49 de 49.
+
+**Consulta en vivo.** La pantalla del consolidado leía el animal y el consolidado con dos esperas seguidas, el
+patrón que causó el defecto de PE-32 (documento 26, sección 10.7); se cambió a una sola espera antes de la prueba
+manual. El caso de PU-27.9 comprueba que el consolidado se actualiza con una venta, con el precio del litro y con
+la anulación de un costo.
+
+## PI-01 · Una sola compra vigente por animal (verificación 18)
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar la migración del paso: la unicidad de la compra vigente por disparador (la segunda se rechaza con 23505, el reenvío se ignora y, anulada la primera, se admite otra), en lugar del índice único que impedía registrar de nuevo una compra anulada |
+| Código | Migración [`20261021000200_compra_vigente_unica.sql`](../../supabase/migrations/20261021000200_compra_vigente_unica.sql) · [`supabase/pruebas/pi-01-esquema.sql`](../../supabase/pruebas/pi-01-esquema.sql), verificación 18 (la 9 sigue aprobada) |
+| Resultado obtenido | **18 de 18** ([evidencia](evidencias/iteracion-5/PI-01-11-compra-vigente-unica.txt)). El primer intento de `db:push` se detuvo porque el índice `movimiento_economico_animal` ya existía desde el esquema inicial; se quitó esa línea de la migración y se aplicó completa |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+## PE-37 · Costos y consolidado económico en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario el registro de la compra, un servicio veterinario y una alimentación de un animal comprado, las validaciones, el consolidado de una vaca de leche, de una nacida en el predio, de un vendido y de un muerto, la corrección de un costo y la anulación de la compra para registrarla de nuevo; y como trabajador que no aparecen las opciones |
+| Requerimiento | CU-14 (pasos 1 a 5, flujos 2a, 3a, 4a y 4b) · HU-16.1 a 16.4 · RF-20 · RF-21 · RF-28 · Tabla 27 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-5` (commits 3970b61 y e1e46be) |
+| Resultado obtenido | Aprobada en la segunda ronda, tras un ajuste: un animal muerto sin costos se presentaba como «Ganancia: $0» (observación 1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+| # | Ronda | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 | 1 | Propietario | Ficha de Z960 (comprado el 1 de octubre de 2026) | Aparecen **Consolidado económico** y **Registrar costo** | [captura](evidencias/iteracion-5/PE-37-r1-01-z960-ficha-botones.png) |
+| 2 | 1 | Propietario | Registrar la **Compra**: $3.500.000, «Reproductor» | La fecha llega con la de ingreso (1/10/2026); al guardar abre el consolidado: invertido $3.500.000, «Resultado parcial», «Pérdida: $3.500.000» | [formulario](evidencias/iteracion-5/PE-37-r1-02-z960-compra.png) · [consolidado](evidencias/iteracion-5/PE-37-r1-03-z960-consolidado-compra.png) |
+| 3 | 1 | Propietario | Registrar un servicio veterinario ($350.000) y una alimentación ($250.000) | Invertido $3.850.000 y luego $4.100.000, con una línea por concepto | [servicio](evidencias/iteracion-5/PE-37-r1-04-z960-servicio-veterinario.png) · [alimentación](evidencias/iteracion-5/PE-37-r1-05-z960-alimentacion.png) |
+| 4 | 1 | Propietario | Volver a **Registrar costo** | Ya no se ofrece **Compra**; la fecha llega con hoy | [captura](evidencias/iteracion-5/PE-37-r1-06-z960-sin-compra.png) |
+| 5 | 1 | Propietario | Fecha 10/09/2026 sin valor; luego valor «1,123123» | «El animal llegó al predio el 1 de octubre de 2026» · «Escriba el valor, en pesos» · «Escriba el valor en pesos, sin decimales, hasta 100.000.000» | [llegada y valor](evidencias/iteracion-5/PE-37-r1-07-z960-errores-llegada-valor.png) · [decimales](evidencias/iteracion-5/PE-37-r1-08-z960-error-decimales.png) |
+| 6 | 1 | Propietario | Consolidado de Z920 (vaca de leche) | Medicamentos $3.000 (1); «Leche: 46 litros a $1.950» $89.700; avisos de un evento sin costo y de la leche al precio del parámetro; «Ganancia: $86.700» | [captura](evidencias/iteracion-5/PE-37-r1-09-z920-leche.png) |
+| 7 | 1 | Propietario | Consolidado y **Registrar costo** de Z921 (nacida en el predio) | Aviso «Nació en el predio…»; dos eventos sin costo, en plural; sin **Compra** entre los conceptos | [consolidado](evidencias/iteracion-5/PE-37-r1-10-z921-nacida.png) · [sin compra](evidencias/iteracion-5/PE-37-r1-11-z921-sin-compra.png) |
+| 8 | 1 | Propietario | Consolidado de Z981 (vendido en PE-35) | Venta $1.000.000 en lo generado; aviso «No tiene costos registrados…»; sin «Resultado parcial» | [captura](evidencias/iteracion-5/PE-37-r1-12-z981-vendido.png) |
+| 9 | 1 | Propietario | Consolidado de Z980 (muerto en PE-35, sin costos) | Aviso «Salió por muerte…», pero el resultado decía **«Ganancia: $0»** en verde: defecto (observación 1) | [captura](evidencias/iteracion-5/PE-37-r1-13-z980-muerte-ganancia-cero.png) |
+| 10 | 1 | Propietario | **Ver el detalle** y corregir el valor de la alimentación: 250.000 → 200.000 | Confirmación «Valor pasará de 250.000 a 200.000»; en el detalle, marca **Corregido** y «Pérdida: $4.050.000» | [corregir](evidencias/iteracion-5/PE-37-r1-14-z960-corregir-valor.png) · [detalle](evidencias/iteracion-5/PE-37-r1-15-z960-detalle-corregido.png) |
+| 11 | 1 | Propietario | Anular la compra | Confirmación de anulación del costo «Z960 · Compra · $3.500.000 · 1 de octubre de 2026»; **Compra** vuelve a ofrecerse | [anular](evidencias/iteracion-5/PE-37-r1-16-z960-anular-compra.png) · [compra ofrecida](evidencias/iteracion-5/PE-37-r1-17-z960-compra-de-nuevo-ofrecida.png) |
+| 12 | 2 | Propietario | Consolidado de Z980 tras el ajuste | **«Pérdida por muerte: $0»**, en rojo | [captura](evidencias/iteracion-5/PE-37-r2-01-z980-perdida-por-muerte.png) |
+| 13 | 2 | Propietario | Registrar de nuevo la compra de Z960 | Compra (1) $3.500.000; invertido $4.050.000 | [captura](evidencias/iteracion-5/PE-37-r2-02-z960-compra-registrada-de-nuevo.png) |
+| 14 | 2 | Trabajador | Ficha de Z960 en el iPhone | Sin **Consolidado económico** ni **Registrar costo** (ni **Registrar salida**) | [ficha](evidencias/iteracion-5/PE-37-r2-05-trabajador-z960-ficha.png) · [botones](evidencias/iteracion-5/PE-37-r2-04-trabajador-z960-botones.png) · [pie](evidencias/iteracion-5/PE-37-r2-03-trabajador-z960-pie.png) |
+
+**Observaciones.**
+
+1. **Ajuste: una muerte o una pérdida se presenta siempre como pérdida** (ronda 1). Z980, muerto y sin costos,
+   mostraba «Ganancia: $0» en verde, contrario al aviso «lo invertido se presenta como pérdida». El rótulo se
+   decide ahora en `rotuloResultado`: muerte → «Pérdida por muerte», pérdida o robo → «Pérdida por pérdida o
+   robo», aunque el valor sea $0; un resultado de $0 en los demás casos → «Sin ganancia ni pérdida», sin color
+   (commit e1e46be; prueba agregada a PU-33).
+2. El precio de la leche fue el del parámetro (1.950, igual al de ejemplo), por eso el aviso dice «del parámetro».
+   El caso sin parámetro lo cubre PU-33.
+3. Ningún costo se registró sin conexión; la sincronización de `movimiento_economico` y la unicidad en el
+   servidor las cubren PI-01 (verificaciones 9 y 18).
+
+## Acta de cierre de la Iteración 5
+
+| Campo | Contenido |
+|---|---|
+| Iteración | 5 · Consultas, alertas y economía (Tabla 13) |
+| Historias | HU-10 (3 puntos) · HU-11 (3 puntos) · HU-14 (5 puntos) · HU-16 (5 puntos) · **16 puntos** |
+| Periodo | 19 al 21 de octubre de 2026 (3 días calendario; estimado: 20 al 26 de octubre) |
+| Rama | `iteracion-5` · se fusiona con `main` y se etiqueta `v0.5` |
+| Pasos | 5.1, 5.2, 5.3, 5.4 y 5.5 |
+| Casos de prueba | 11 casos (PU-30 a PU-33, los apartados 9 y 10 de PU-24, PI-01 verificaciones 16 a 18, PE-34 a PE-37): 11 aprobados; 4 defectos encontrados en pantalla y corregidos (PE-34, PE-35 dos, PE-37) y 3 ajustes del diseño pedidos por el autor (PE-34 dos, PE-36) |
+| Pruebas automáticas | 897 de 897 aprobadas (815 al empezar la iteración); 135 mutaciones en los grupos nuevos, todas detectadas al cierre |
+| Documentación técnica | Documentos 28 a 31, nuevos; el 23 actualizado (un periodo a la vez, PE-34); el 26 y el 09 ampliados al cierre de la Iteración 4 |
+| Base de datos remota | Migraciones `20261020000100_salida_observacion.sql`, `20261021000100_salida_vigente_unica.sql` y `20261021000200_compra_vigente_unica.sql`; PI-01 en 18 de 18 |
+| Publicación | Dirección de la rama `iteracion-5`; al fusionar, https://desarrollo-pwa-ganadera.vercel.app |
+
+### Criterios de aceptación
+
+Fuente: tarjetas del Anexo B. ✅ verificado de extremo a extremo · ⚙️ verificado a nivel técnico, con la
+verificación en pantalla en una etapa posterior.
+
+**HU-10 · Comparación de la producción de leche entre vacas (Tabla B10)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | La comparación se realiza sobre un periodo seleccionado por el usuario | ✅ | PU-30; PE-34 (día, semana o mes, con anterior y siguiente; abre en hoy, ajuste del autor) |
+| 2 | Se presentan únicamente las vacas cuyo destino productivo es la producción de leche | ✅ | PU-30 (según el historial del destino durante el periodo); PE-34 |
+| 3 | El resultado permite ordenar las vacas según su producción en el periodo | ✅ | PU-30; PE-34 (de mayor a menor y de menor a mayor) |
+| 4 | La consulta advierte cuando el periodo seleccionado carece de registros suficientes | ✅ | PU-30; PE-34 (marca de pocos registros y flujo 5a, menos de dos vacas) |
+
+**HU-11 · Registro de la salida y venta del animal (Tabla B11)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | El registro de salida exige la fecha, el peso de venta y el valor recibido | ✅ | PU-31; PE-35 (en la venta; la muerte exige la causa y la pérdida o robo admite una observación, CU-13 3a y 3b) |
+| 2 | Permite consignar de manera opcional los datos del comprador | ✅ | PU-31; PE-35 |
+| 3 | Una vez registrada la salida, el animal deja de figurar en el inventario activo | ✅ | PU-31; PE-35 (fuera de los activos, en **Retirados**; vuelve al anular la salida); PE-36 (sin recordatorios) |
+| 4 | El historial del animal permanece consultable después de su salida | ✅ | PU-31; PE-35 (ficha con la salida y su historial, ambos perfiles); PE-37 (consolidado de un vendido y un muerto) |
+
+**HU-14 · Recordatorios derivados de la información registrada (Tabla B14)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | El sistema deriva los recordatorios de la información registrada cada vez que la aplicación se abre, sin depender de un proceso remoto ni de la conexión | ⚙️ | PU-32 (seis reglas calculadas en el teléfono, solo con la base local); PE-36 (calculados en ambos perfiles). En pantalla no se abrieron sin señal: queda para el paso 6.4 |
+| 2 | Los recordatorios vigentes se presentan al iniciar la aplicación | ✅ | PU-32; PE-36 (arriba en Inicio, con el animal, el motivo y desde cuándo) |
+| 3 | Un recordatorio desaparece en cuanto se registra el dato que lo origina, sin que el usuario deba cerrarlo | ✅ | PU-32 (consulta en vivo); PE-36 (Z921 sale de «Sin registro de ordeño» al registrar el ordeño) |
+| 4 | El usuario puede posponer un recordatorio, que no vuelve a presentarse hasta la fecha indicada aunque la condición persista | ✅ | PU-32 (plazo y vencimiento); PE-36 (Z926 pospuesta, también en el teléfono del trabajador) |
+
+**HU-16 · Consolidado económico por animal (Tabla B16)**
+
+| # | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| 1 | Se registran costos de compra, servicios veterinarios y alimentación; el de los medicamentos proviene del evento sanitario | ✅ | PU-33; PE-37 (los tres conceptos en Z960; medicamentos desde los eventos en Z920 y Z921) |
+| 2 | La consulta presenta, por animal, el total invertido y el total generado | ✅ | PU-33; PE-37 |
+| 3 | El consolidado cuenta como ingreso la leche registrada y, si salió por venta, el valor recibido | ✅ | PU-33 (al precio del parámetro o de ejemplo; sin venta en una muerte); PE-37 (Z920 con 46 litros, Z981 vendido) |
+| 4 | La consulta advierte cuando el animal carece de costos y señala qué conceptos quedan fuera | ✅ | PU-33; PE-37 (sin costos, nacido, parcial, muerte, eventos sin costo y «No incluye costos por lote…») |
+
+### Criterios heredados de iteraciones anteriores
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| HU-04.2 · Consulta de la producción por vaca | ✅ | PU-24, apartados 9 y 10; PE-34 (un día, una semana o un mes a la vez, ajuste del autor) |
+| HU-05.4 · El pesaje se completa sin conexión | ⚙️ | Sigue para el paso 6.4 |
+| HU-17.4 · Lo anulado deja de contar en los cálculos | ✅ | PU-31, PU-32 y PU-33 (salidas, ordeños, costos, eventos y salidas anuladas fuera); PE-35 (la salida anulada devuelve el animal); PE-37 (compra anulada y otra registrada) |
+
+### Decisión de cierre
+
+La Iteración 5 se cierra con **16 de 16 criterios de sus historias cumplidos**: 15 verificados de extremo
+a extremo y 1 a nivel técnico (los recordatorios sin conexión, HU-14.1, calculados solo con la base del
+teléfono; se probará en pantalla sin señal en el paso 6.4). Los heredados quedan cumplidos, salvo el pesaje sin
+señal, que sigue para el 6.4.
+
+**Pasan a etapas posteriores:** los recordatorios y el pesaje en pantalla sin señal (paso 6.4); el ordeño
+anulado que impide otro ordeño de la vaca ese día (pendiente de diseño; el mismo arreglo que la salida y la
+compra, una sola fila vigente por disparador).
+
+**Pendientes que siguen abiertos:** el catálogo real de medicamentos, que registrará el propietario; la
+limpieza de los datos de prueba (Z900 a Z999, medicamentos de prueba) y de la cuenta de prueba antes de la
+evaluación; las fotos desde iPhone, fuera del alcance (el predio usa Android); y los pendientes para el documento
+anotados en el PLAN, entre ellos la unicidad de la salida y de la compra **vigentes** (Tabla 24).
+
+### Velocidad
+
+16 puntos en 3 días calendario. Acumulado: **76 de 76 puntos (100 %)** en 16 días, del 6 al 21 de octubre.
+El calendario estimado ponía el cierre de esta iteración el 26 de octubre. Termina la Fase 3; sigue el cierre
+(evaluación del prototipo, pasos 6.1 a 6.7).
+
+### Hallazgos de la iteración que cambiaron el diseño o el código
+
+| Hallazgo | Prueba | Cambio |
+|---|---|---|
+| El propietario compara la producción a diario, no por semana o mes | Pedido del autor (PE-34) | **Día** en la comparación, que abre en hoy; cada vaca abre su producción diaria (documento 28) |
+| Los rangos de varios periodos confundían y no se sabía qué días se veían | PE-34 | Un día, una semana o un mes a la vez, con sus días y el rango siempre visible (documento 23) |
+| Un animal con la salida anulada no podía volver a salir: la unicidad contaba las anuladas | PE-35 | Una sola salida **vigente**, por disparador; lo mismo para la compra en el paso 5.4 (documentos 29 y 31; PI-01 verificaciones 17 y 18) |
+| El animal retirado pedía completar fotos | PE-35 | Sin el aviso en un retirado y con el número real de fotos |
+| El recordatorio de ordeño abría la ronda en la primera vaca pendiente | PE-36 | La ronda acepta la vaca en la dirección (`?vaca=`) |
+| La comprobación de la compra dentro de la transacción no estaba probada | PU-33 (mutaciones) | Prueba de dos compras registradas a la vez |
+| La pantalla del consolidado leía con dos esperas seguidas, el patrón del defecto de PE-32 | Revisión al programar 5.4 | Una sola espera, vigilada por PU-27.9 |
+| Un animal muerto sin costos aparecía como «Ganancia: $0» | PE-37 | Muerte o pérdida siempre como pérdida; $0 en los demás casos, «Sin ganancia ni pérdida» (documento 31, sección 6) |

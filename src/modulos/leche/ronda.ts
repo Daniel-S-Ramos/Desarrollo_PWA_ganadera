@@ -5,7 +5,7 @@
  */
 import { leerParametro } from '../../datos/parametros';
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
-import { animalVigente, animalesVigentes, leerVigentes, vigentes } from '../../datos/vigentes';
+import { animalVigente, animalesVigentes, contarSalidasVigentes, leerVigentes, salidasVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { DIAS_PROMEDIO_POR_DEFECTO, promedioReciente, validarOrdeno, type ErroresOrdeno } from '../../dominio/leche';
@@ -37,7 +37,7 @@ async function enProduccion(animalId: Uuid): Promise<boolean> {
   const [animal, destinos, salidas] = await Promise.all([
     animalVigente(animalId),
     consulta.destino_productivo.where('animal_id').equals(animalId).toArray().then((r) => vigentes('destino_productivo', r)),
-    consulta.salida.where('animal_id').equals(animalId).count(),
+    contarSalidasVigentes(animalId),
   ]);
   return !!animal && animal.sexo === 'hembra' && salidas === 0 && destinoVigente(destinos)?.destino === 'leche';
 }
@@ -47,7 +47,7 @@ export async function cargarRonda(fecha: FechaPredio): Promise<VacaRonda[]> {
   const [animales, destinos, salidas, registros, usuarios] = await Promise.all([
     animalesVigentes(),
     consulta.destino_productivo.toArray().then((r) => vigentes('destino_productivo', r)),
-    consulta.salida.toArray(),
+    salidasVigentes(),
     consulta.produccion_leche.where('fecha').equals(fecha).toArray().then((r) => leerVigentes('produccion_leche', r)),
     consulta.usuario.toArray(),
   ]);

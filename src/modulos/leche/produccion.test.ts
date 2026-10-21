@@ -5,7 +5,8 @@ import { uuidv7 } from '../../datos/uuidv7';
 import { agregar, inicioDeSemana, periodosDeVentana, resumir } from '../../dominio/periodos';
 import type { DatosNuevos, Sexo } from '../../dominio/tipos';
 import { puedeUsar } from '../../sesion/permisos';
-import { registrosDe, vacasConsultables } from './produccion';
+import { periodoComparado } from './comparacion';
+import { desplazamientoHasta, diaDeVaca, periodoDeVaca, registrosDe, vacasConsultables } from './produccion';
 
 /**
  * PU-24 · Consulta de producción diaria, semanal y mensual (RF-11, CU-07 pasos 1 a 4, HU-04.2).
@@ -159,5 +160,91 @@ describe('PU-24 · 8. Permisos (sección 2, Tabla 27)', () => {
   it('solo el propietario consulta la producción (CU-07)', () => {
     expect(puedeUsar('propietario', 'CU-07')).toBe(true);
     expect(puedeUsar('trabajador', 'CU-07')).toBe(false);
+  });
+});
+
+describe('PU-24 · 9. Vista diaria: un día a la vez (ajuste de PE-34)', () => {
+  const registros = [
+    { fecha: '2026-10-10', litros: 10 },
+    { fecha: '2026-10-12', litros: 10 },
+    { fecha: '2026-10-13', litros: 6 },
+    { fecha: '2026-10-14', litros: 0 },
+  ];
+
+  it('un día con registro: sus litros y la comparación con el promedio de los días anteriores', () => {
+    const dia = diaDeVaca(registros, '2026-10-13', 7);
+    expect(dia).toMatchObject({ fecha: '2026-10-13', litros: 6, promedio: { promedio: 10, registros: 2 } });
+    // El anterior y el siguiente son otros días, no el mismo.
+    expect(dia).toMatchObject({ anterior: { fecha: '2026-10-12' }, siguiente: { fecha: '2026-10-14' } });
+    expect(dia.comparacion).toMatchObject({ palabras: 'Muy por debajo de su promedio', diferencia: '4 litros menos que su promedio', atencion: true });
+  });
+
+  it('un cero registrado es un día con registro, no un día sin registro (3.8.6)', () => {
+    expect(diaDeVaca(registros, '2026-10-14', 7).litros).toBe(0);
+  });
+
+  it('un día sin registro ofrece el ordeño anterior y el siguiente', () => {
+    const dia = diaDeVaca(registros, '2026-10-11', 7);
+    expect(dia).toMatchObject({ litros: null, comparacion: null, anterior: { fecha: '2026-10-10', litros: 10 }, siguiente: { fecha: '2026-10-12', litros: 10 } });
+    expect(diaDeVaca(registros, '2026-10-19', 7)).toMatchObject({ anterior: { fecha: '2026-10-14' }, siguiente: null });
+    expect(diaDeVaca(registros, '2026-10-01', 7)).toMatchObject({ anterior: null, siguiente: { fecha: '2026-10-10' } });
+  });
+
+  it('sin días anteriores en la ventana no hay comparación', () => {
+    expect(diaDeVaca(registros, '2026-10-10', 7)).toMatchObject({ litros: 10, promedio: null, comparacion: null });
+  });
+});
+
+describe('PU-24 · 10. Semana y mes: uno a la vez, con todos sus días (ajuste de PE-34)', () => {
+  // Martes 20 de octubre de 2026: la semana en curso es del 19 al 25; el mes, octubre.
+  const HOY_PE34 = '2026-10-20';
+  const registros = [
+    { fecha: '2026-10-13', litros: 12 },
+    { fecha: '2026-10-14', litros: 8 },
+    { fecha: '2026-09-02', litros: 9 },
+  ];
+
+  it('la semana anterior: su resumen y sus 7 días, del más reciente al más antiguo', () => {
+    const semana = periodoDeVaca(registros, periodoComparado('semanal', HOY_PE34, -1), HOY_PE34);
+    expect(semana.periodo).toMatchObject({ inicio: '2026-10-12', fin: '2026-10-18' });
+    expect(semana.resumen).toMatchObject({ total: 20, promedio: 10, diasRegistrados: 2, diasDelPeriodo: 7 });
+    // El anterior y el siguiente están fuera de la semana, no dentro.
+    expect(semana).toMatchObject({ anterior: { fecha: '2026-09-02' }, siguiente: null });
+    expect(semana.dias.map((d) => [d.fecha, d.litros])).toEqual([
+      ['2026-10-18', null],
+      ['2026-10-17', null],
+      ['2026-10-16', null],
+      ['2026-10-15', null],
+      ['2026-10-14', 8],
+      ['2026-10-13', 12],
+      ['2026-10-12', null],
+    ]);
+  });
+
+  it('la semana en curso solo lista los días hasta hoy; sin registros, ofrece el ordeño anterior', () => {
+    const semana = periodoDeVaca(registros, periodoComparado('semanal', HOY_PE34, 0), HOY_PE34);
+    expect(semana.dias.map((d) => d.fecha)).toEqual(['2026-10-20', '2026-10-19']);
+    expect(semana.resumen.total).toBeNull();
+    expect(semana).toMatchObject({ anterior: { fecha: '2026-10-14' }, siguiente: null });
+  });
+
+  it('el mes: sus días hasta hoy y los ordeños de otros meses para ir a ellos', () => {
+    const octubre = periodoDeVaca(registros, periodoComparado('mensual', HOY_PE34, 0), HOY_PE34);
+    expect(octubre.dias).toHaveLength(20);
+    expect(octubre.resumen).toMatchObject({ total: 20, diasRegistrados: 2, diasDelPeriodo: 20 });
+    expect(octubre.anterior).toMatchObject({ fecha: '2026-09-02' });
+    const agosto = periodoDeVaca(registros, periodoComparado('mensual', HOY_PE34, -2), HOY_PE34);
+    expect(agosto).toMatchObject({ anterior: null, siguiente: { fecha: '2026-09-02' } });
+    expect(agosto.dias).toHaveLength(31);
+  });
+
+  it('ir al periodo que contiene una fecha', () => {
+    expect(desplazamientoHasta('diaria', '2026-10-14', HOY_PE34)).toBe(-6);
+    expect(desplazamientoHasta('diaria', HOY_PE34, HOY_PE34)).toBe(0);
+    expect(desplazamientoHasta('semanal', '2026-10-14', HOY_PE34)).toBe(-1);
+    expect(desplazamientoHasta('semanal', '2026-10-19', HOY_PE34)).toBe(0);
+    expect(desplazamientoHasta('semanal', '2026-09-02', HOY_PE34)).toBe(-7);
+    expect(desplazamientoHasta('mensual', '2026-09-02', HOY_PE34)).toBe(-1);
+    expect(desplazamientoHasta('mensual', '2025-12-31', HOY_PE34)).toBe(-10);
   });
 });

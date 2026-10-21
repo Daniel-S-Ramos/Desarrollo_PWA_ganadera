@@ -60,12 +60,16 @@ repite, y las siguientes tienen más pantallas. Se recalibra al cierre de cada i
 | 2 · Identificación y ficha | 15 | 2026-10-12 | 2026-10-19 | 2026-10-13 | 15 puntos / 2 días |
 | 3 · Sanidad, leche y destino | 16 | 2026-10-13 | 2026-10-26 | 2026-10-15 | 16 puntos / 3 días |
 | 4 · Peso, partos y correcciones | 13 | 2026-10-15 | 2026-11-02 | 2026-10-19 | 13 puntos / 5 días |
-| 5 · Consultas, alertas y economía | 16 | 2026-10-20 | 2026-10-26 | | |
-| Cierre · Evaluación del prototipo | — | 2026-10-27 | 2026-11-09 | | |
+| 5 · Consultas, alertas y economía | 16 | 2026-10-19 | 2026-10-26 | 2026-10-21 | 16 puntos / 3 días |
+| Cierre · Evaluación del prototipo | — | 2026-10-22 | 2026-11-04 | | |
 
 Recalibrado al cierre de la Iteración 4: con 13 a 16 puntos en 3 a 5 días, la Iteración 5 se estima en una
 semana y el cierre en dos, que dependen también del tiempo que puedan dedicar el propietario y los
 trabajadores a la evaluación.
+
+Al cierre de la Iteración 5: los 76 puntos de la Fase 3 en 16 días (6 al 21 de octubre). El cierre se mantiene
+en dos semanas, del 22 de octubre al 4 de noviembre, porque depende sobre todo de la evaluación con el
+propietario y los trabajadores.
 
 ## Iteración 2 — Identificación animal y ficha (HU-01, HU-02, HU-15 · 15 puntos) · cerrada el 2026-10-13 · `v0.2`
 
@@ -109,15 +113,15 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 4.4 | Consulta de correcciones (CU-18) | ✅ |
 | 4.5 | Pruebas y cierre de iteración | ✅ |
 
-## Iteración 5 — Consultas, alertas y economía (HU-10, HU-11, HU-14, HU-16 · 16 puntos)
+## Iteración 5 — Consultas, alertas y economía (HU-10, HU-11, HU-14, HU-16 · 16 puntos) · cerrada el 2026-10-21 · `v0.5`
 
 | Paso | Contenido | Estado |
 |---|---|---|
-| 5.1 | Comparación de producción entre vacas (CU-07) | ⬜ |
-| 5.2 | Registro de salida y venta (CU-13) | ⬜ |
-| 5.3 | Recordatorios derivados y posponer (CU-15) | ⬜ |
-| 5.4 | Consolidado económico por animal (CU-14) | ⬜ |
-| 5.5 | Pruebas y cierre de iteración | ⬜ |
+| 5.1 | Comparación de producción entre vacas (CU-07) | ✅ |
+| 5.2 | Registro de salida y venta (CU-13) | ✅ |
+| 5.3 | Recordatorios derivados y posponer (CU-15) | ✅ |
+| 5.4 | Consolidado económico por animal (CU-14) | ✅ |
+| 5.5 | Pruebas y cierre de iteración | ✅ |
 
 ## Cierre — Evaluación del prototipo (apartados 1.6.3.7 – 1.6.3.11)
 
@@ -197,6 +201,14 @@ Registro para justificarlas en el capítulo 4.
 | 2026-10-12 | Los dispositivos del predio son Android; iPhone queda fuera del alcance de la evaluación | El propietario y los trabajadores usan Android. Las fotos dependen de que el navegador genere WebP, que Chrome para Android sí hace (PE-18) |
 | 2026-10-13 | El peso inicial se nombra según el origen: «peso de compra» (comprado) o «peso al nacer» (nacido en el predio), en la ficha y en el formulario | A pedido del autor: «peso inicial» no le dice al propietario qué peso es; el campo sigue siendo uno solo (documento técnico 16, sección 3.1) |
 | 2026-10-13 | La ficha se construye con su lógica completa (último peso, vacuna, leche, destino) aunque esos registros lleguen en las Iteraciones 3 y 4 | Cuando se guarden, la ficha los mostrará sin cambios; mientras tanto dice que no hay datos (CU-03, 4a) |
+| 2026-10-21 | Costos y consolidado (CU-14): registrar compra (solo comprados, una vigente), servicio veterinario y alimentación, también en un retirado con fecha hasta su salida; consolidado con invertido (incluye el costo de los eventos sanitarios), generado (leche al precio del parámetro y venta), resultado y los avisos de CU-14 y HU-16.4; una sola compra vigente por disparador, como la salida | Decisiones A–I aprobadas por el autor (documento técnico 31; migración 20261021000200) |
+| 2026-10-21 | Recordatorios (CU-15): sección en Inicio para ambos perfiles, solo el propietario pospone; cinco reglas de 3.8.11 con los parámetros de la Tabla 30 («más de N días»), valores vigentes y sin retirados; la chapeta del paso 4.2 como sexto tipo, sin posponer; agrupados por tipo, del más antiguo al más reciente, de 5 en 5; posponer 1, 3 o 7 días, decisión del predio | Decisiones A–H aprobadas por el autor (documento técnico 30) |
+| 2026-10-20 | Salida: **una sola salida vigente** por animal (disparador en el servicio en lugar de la restricción única); con la anterior anulada se admite otra | Cambio del autor en PE-35: con la restricción única, un animal con la salida anulada no podía volver a salir (documento técnico 29, sección 8; migración 20261021000100) |
+| 2026-10-20 | Salida y venta (CU-13): botón en la ficha del animal activo, solo el propietario; motivo venta (peso y valor obligatorios, comprador opcional), muerte (causa) o pérdida o robo (observación, columna nueva); último peso sin precargar y aviso de pesaje no reciente que no bloquea; confirmación; retirado = salida vigente, con las acciones de registro ocultas; la salida se corrige y se anula (una sola por animal); el valor lo lee el consolidado desde salida | Decisiones A–I aprobadas por el autor (documento técnico 29) |
+| 2026-10-20 | Producción por vaca, semanal y mensual: **una semana o un mes a la vez**, con su resumen y cada día hasta hoy; sin registros, ir al periodo del ordeño anterior o siguiente | Ajuste del autor en PE-34: los rangos de 12 semanas o 12 meses no se entendían (documento técnico 23) |
+| 2026-10-19 | Producción por vaca, vista diaria: **un día a la vez** (abre en hoy; Anterior y Siguiente se mueven de a un día), con la comparación frente a su promedio y accesos al ordeño anterior y al siguiente; semanal y mensual conservan su ventana, con el rango siempre visible | Ajuste del autor en PE-34: un rango de días confundía al ganadero (documento técnico 23) |
+| 2026-10-19 | Comparación entre vacas: abre en el **día de hoy** (se agrega Día a Semana y Mes) y al tocar una vaca abre su producción **diaria** | Ajuste del autor en PE-34: el propietario compara a diario (documento técnico 28, secciones 3 y 8) |
+| 2026-10-19 | Comparación entre vacas (CU-07, pasos 5 y 6): semana o mes con navegación; vacas en leche en algún momento del periodo según su historial, más las que tienen ordeños; orden por promedio por día registrado (no por total), de mayor a menor o al revés; promedio del hato como promedio de promedios; «Pocos registros» con menos de la mitad de los días; sin comparación con menos de dos vacas | Decisiones A–I aprobadas por el autor (documento técnico 28) |
 | 2026-10-18 | Consulta de correcciones (CU-18): botón en Inicio solo para el propietario; cada entrada con animal y registro (valor vigente), cambio legible o «Anulado», motivo, nota, autor, fecha y estado; de la más reciente a la más antigua, por día, de 30 en 30; filtro por autor; abre la sección del registro; las resoluciones de conflictos no aparecen | Decisiones A–I aprobadas por el autor (documento técnico 27) |
 | 2026-10-18 | Conflictos por unicidad: el propietario resuelve cualquiera y el trabajador los de los registros que él creó, en su teléfono, con las mismas opciones (cambiar el número, unir, usar el medicamento existente, descartar la chapeta puesta) | El registro rechazado solo existe en el teléfono donde se creó; el propietario no lo ve, y entrar con su cuenta en el teléfono del trabajador descartaría los pendientes que esperan por él. Opción 1 aprobada por el autor (documento técnico 26, sección 10) |
 | 2026-10-18 | Corrección y anulación: qué campos se corrigen por tabla (la chapeta no; un resultado de parto o un destino se anulan); valor vigente por orden de recepción con la anulación siempre prevaleciente, aplicado en todas las pantallas y cálculos; un ordeño anulado impide otro de esa vaca ese día (limitación); conflictos de chapeta y de medicamento resueltos en el teléfono por el propietario porque nunca llegaron al servicio. El paso se divide en 4.3a y 4.3b | Decisiones A–I aprobadas por el autor (documento técnico 26) |
@@ -227,6 +239,7 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 | ~~2.6~~ | **Hecho:** capturas del teléfono en PE-20 (listado, fichas, fotos sin señal) y PE-22. Tomar capturas de la aplicación en el teléfono (registro con fotos, barra sin señal, ficha) para la sustentación; PE-18 parte 2 se evidenció con datos del servicio | PE-18, observación 1 |
 | ~~2.x~~ | ~~iPhone: respaldo en JPEG si Safari no genera WebP~~ **Fuera de alcance (2026-10-12): el propietario y los trabajadores usan Android.** En PE-22 el registro de datos sin conexión funcionó en Chrome para iOS. **Confirmado en PE-32 (2026-10-18): en iPhone la foto no se guarda en ningún navegador**, porque todos usan el motor de Safari, que no genera WebP; el mensaje ahora lo dice en lugar de sugerir Chrome. Si en el futuro se usara un iPhone, probarlo y agregar el respaldo | PE-18, observación 4 |
 | 6.4 | Riesgo: el plan gratuito de Supabase pausa el proyecto tras días sin actividad (ocurrió el 2026-10-12). Durante la evaluación el uso diario lo mantiene activo; si no, configurar una tarea que lo despierte o reactivarlo desde el panel | Incidente del 2026-10-12 |
+| 6.x | El ordeño anulado impide otro ordeño de esa vaca ese día (restricción única de `produccion_leche`, documento técnico 26, sección 7). Evaluar el mismo arreglo que la salida: unicidad del ordeño vigente con un disparador | PE-35, cambio de la salida (documento técnico 29, sección 8) |
 | 6.x | Eliminar la cuenta de prueba (`pruebas@ganaderiajr.test`) al cerrar la evaluación | Decisión del 2026-10-08 |
 | 6.x | Antes de la evaluación, borrar del servicio los animales de la serie de pruebas Z900–Z999 y sus registros (fotos, destinos, eventos sanitarios), y los medicamentos de prueba: los que empiezan por «Prueba» y además «Otro mas» (PE-25) y «pp prueba» (PE-26) | Documento técnico 13, sección 2.4 · PE-25, observación 4 |
 | 6.x | Opcional: dividir el código por pantallas (el paquete pesa 633 kB, 188 kB comprimido) para aligerar la primera carga | Aviso de Vite en la compilación del paso 2.1 |
@@ -251,6 +264,8 @@ Decisiones que el documento no resuelve y que deben acordarse antes del paso ind
 - Tabla 24 y apartado 3.8.11: el animal registra si ya tiene la chapeta puesta y la tabla `colocacion_chapeta` la fecha en que se puso; los recordatorios pasan de cinco a seis tipos con el de chapeta pendiente (plazo de 90 días, parámetro `dias_recordar_chapeta`). Decisión del propietario del 2026-10-18 (documento técnico 25, sección 7).
 - Tabla 21 (y apartado 3.7.3, tercera regla): un conflicto por unicidad no se «presenta al propietario», porque el registro rechazado solo existe en el teléfono donde se creó; lo resuelve allí el propietario o quien lo registró (documento técnico 26, sección 10, decisión del 2026-10-18). Es un hallazgo del desarrollo que conviene explicar en el documento.
 - RF-32 y apartado 3.9.5: las resoluciones de conflictos (cambiar el número, unir un animal o un medicamento, descartar una chapeta puesta) no dejan constancia en `correccion`, porque el registro rechazado nunca llegó al servicio; la consulta de correcciones no las muestra (documento técnico 27, sección 8). Declararlo como límite de la trazabilidad.
+- Tabla 24, fila `salida`: agregar la columna `observacion` (opcional, hasta 300 caracteres) que exige CU-13, 3b, y precisar que el estado retirado se deduce de la salida **vigente** (no anulada); la unicidad es de la salida **vigente**: con la anterior anulada se admite otra, y la restricción única pasó a un disparador (documento técnico 29, secciones 4, 7 y 8). Explicar por qué: con solo inserciones, una unicidad que cuente los registros anulados deja sin salida al animal.
+- Tabla 24, fila `movimiento_economico`: la unicidad es de la compra **vigente** (disparador en lugar del índice único parcial), por la misma razón que la salida (documento técnico 31, sección 4).
 - Unificar qué casos de uso extiende CU-15 (2.8.6.3 dice CU-04 y CU-08; 2.8.6.5 dice CU-06 y CU-08).
 
 ## Temas de estudio para la sustentación

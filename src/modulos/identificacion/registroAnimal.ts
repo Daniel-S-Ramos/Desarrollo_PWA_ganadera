@@ -7,7 +7,7 @@
  * chapeta dentro de la misma transacción que crea el animal (sección 2.2).
  */
 import { consulta, unidadDeTrabajo, type Transaccion } from '../../datos/repositorio';
-import { animalVigente, animalesVigentes, vigentes } from '../../datos/vigentes';
+import { animalVigente, animalesVigentes, contarSalidasVigentes, salidasVigentes, vigentes } from '../../datos/vigentes';
 import { validarCambioDestino } from '../../dominio/destino';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { TIPOS_FOTOGRAFIA, type DatosNuevos, type Destino, type FechaPredio, type RegistroLocal, type Sexo, type TipoFotografia, type Uuid } from '../../dominio/tipos';
@@ -359,7 +359,7 @@ export async function buscarPorChapeta(chapeta: string): Promise<AnimalConChapet
   const [animal] = await vigentes('animal', [original]);
   if (!animal) return null;
   const [salidas, autor] = await Promise.all([
-    consulta.salida.where('animal_id').equals(animal.id).count(),
+    contarSalidasVigentes(animal.id),
     consulta.usuario.get(animal.autor_id),
   ]);
   return { animal, autor: autor?.nombre ?? null, retirado: salidas > 0 };
@@ -388,7 +388,7 @@ export interface Progenitor {
 /** Hembras y machos que pueden elegirse como madre o padre, ordenados por chapeta (sección 4). */
 export async function listarProgenitores(): Promise<{ hembras: Progenitor[]; machos: Progenitor[] }> {
   // El sexo vigente decide si puede ser madre o padre (documento técnico 26, sección 6.3).
-  const [animales, salidas] = await Promise.all([animalesVigentes(), consulta.salida.toArray()]);
+  const [animales, salidas] = await Promise.all([animalesVigentes(), salidasVigentes()]);
   // Orden numérico y no alfabético: 9 antes que 10, y A2 antes que A10. Los números van antes que las letras.
   animales.sort((a, b) => a.codigo_chapeta.localeCompare(b.codigo_chapeta, 'es', { numeric: true }));
   const retirados = new Set(salidas.map((s) => s.animal_id));

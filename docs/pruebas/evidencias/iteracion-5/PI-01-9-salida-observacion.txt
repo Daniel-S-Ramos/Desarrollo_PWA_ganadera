@@ -1,0 +1,24 @@
+PI-01 · Esquema remoto · verificación 16 (paso 5.2)
+Fecha: 2026-10-20 · migración 20261020000100_salida_observacion.sql aplicada con npm run db:push
+Comando: npm run prueba:pi-01
+
+ n  | verificacion                                                                 | resultado | detalle
+----+------------------------------------------------------------------------------+-----------+------------------------------------------
+ 1  | Existen las 15 tablas con RLS activada                                       | APROBADA  | 15 de 15 tablas con RLS
+ 2  | authenticated: solo SELECT e INSERT (predio) o SELECT (referencia); ...      | APROBADA  | 15 tablas verificadas
+ 3  | recibido_en la fija el servicio aunque el dispositivo envíe otra             | APROBADA  | enviado 2000-01-01, guardado 2026-10-21 03:18:54.450711+00
+ 4  | Mismo id: se rechaza; con ON CONFLICT DO NOTHING se ignora sin error         | APROBADA  | inserción repetida: 23505 · con ON CONFLICT: OK · filas con ese id: 1
+ 5  | Un segundo animal con la misma chapeta se rechaza                            | APROBADA  | código: 23505
+ 6  | Un segundo ordeño de la misma vaca en la misma fecha se rechaza              | APROBADA  | código: 23505
+ 7  | Se rechazan valores fuera del dominio (8 casos de la Tabla 24)               | APROBADA  | códigos: 23514 ×8
+ 8  | «pi01 ivermectina» se rechaza si ya existe «PI01 Ivermectina»                | APROBADA  | código: 23505
+ 9  | Segunda compra del mismo animal se rechaza; segunda alimentación se admite   | APROBADA  | compra: 23505 · alimentación: OK
+ 10 | Están cargados los seis parámetros de la Tabla 30                            | APROBADA  | 6 de 6
+ 11 | Ninguna función SECURITY DEFINER de public es ejecutable por anon ni auth.   | APROBADA  | ninguna expuesta
+ 12 | Chapeta: formatos inválidos se rechazan; Z905 se admite                      | APROBADA  | 23514 ×8, OK
+ 13 | Madre del predio y externa a la vez se rechaza; solo externa se admite       | APROBADA  | ambas: 23514 · solo externa: OK
+ 14 | Medicamento con tilde o espacios repetidos se rechaza; otro nombre se admite | APROBADA  | 23505, 23505, OK
+ 15 | Animal sin chapeta puesta se admite; su colocación, una sola vez; 90 días    | APROBADA  | OK, OK, 23505 · parámetro: 1
+ 16 | La salida admite una observación opcional de hasta 300 caracteres            | APROBADA  | códigos: OK, 23514 · columna: 1
+
+Resultado: 16 de 16 aprobadas.

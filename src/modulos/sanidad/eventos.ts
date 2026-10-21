@@ -4,7 +4,7 @@
  * Especificación: docs/tecnica/20-registro-sanitario.md · docs/tecnica/21-advertencia-por-repeticion.md
  */
 import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
-import { animalVigente, leerVigentes, vigentes } from '../../datos/vigentes';
+import { animalVigente, contarSalidasVigentes, leerVigentes, vigentes } from '../../datos/vigentes';
 import type { Vigente } from '../../dominio/vigente';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { evaluarRepeticion, type Repeticion } from '../../dominio/repeticion';
@@ -29,7 +29,7 @@ async function medicamentoVigente(id: Uuid): Promise<RegistroLocal<'medicamento'
 async function contextoDe(animalId: Uuid, medicamentoId: Uuid | null): Promise<ContextoEvento | null> {
   const [animal, salidas, medicamento] = await Promise.all([
     animalVigente(animalId),
-    consulta.salida.where('animal_id').equals(animalId).count(),
+    contarSalidasVigentes(animalId),
     medicamentoId ? medicamentoVigente(medicamentoId) : Promise.resolve(undefined),
   ]);
   if (!animal) return null;

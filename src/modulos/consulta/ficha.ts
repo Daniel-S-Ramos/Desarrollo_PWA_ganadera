@@ -6,7 +6,7 @@
  * Todo con valores vigentes y sin anulados (documento técnico 26, sección 6.3).
  */
 import { consulta, reducidasLocales } from '../../datos/repositorio';
-import { animalVigente, vigentes as soloVigentes } from '../../datos/vigentes';
+import { animalVigente, contarSalidasVigentes, vigentes as soloVigentes } from '../../datos/vigentes';
 import { fotografiasVigentes } from '../../dominio/fotografias';
 import {
   TIPOS_FOTOGRAFIA,
@@ -131,7 +131,7 @@ export async function consolidarFicha(animalId: Uuid): Promise<FichaAnimal | und
     consulta.produccion_leche.where('animal_id').equals(animalId).toArray().then((r) => soloVigentes('produccion_leche', r)),
     consulta.destino_productivo.where('animal_id').equals(animalId).toArray().then((r) => soloVigentes('destino_productivo', r)),
     consulta.fotografia.where('animal_id').equals(animalId).toArray(),
-    consulta.salida.where('animal_id').equals(animalId).count(),
+    contarSalidasVigentes(animalId),
     consulta.usuario.toArray(),
     reducidasLocales(),
     consulta.medicamento.toArray(),
