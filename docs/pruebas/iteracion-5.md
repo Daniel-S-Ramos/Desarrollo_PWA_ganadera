@@ -17,6 +17,8 @@ Historias de usuario: HU-10 (comparación de la producción entre vacas), HU-11 
 | PU-31 | Registro de la salida y venta del animal | 5.2 | RF-15 · CU-13 · HU-11 · Tabla 24 | ✅ |
 | PI-01 | Esquema remoto: observación de la salida y una sola salida vigente (verificaciones 16 y 17) | 5.2 | CU-13 3b · Tabla 24 | ✅ |
 | PE-35 | Salida y venta en el navegador real | 5.2 | CU-13 · HU-11 · Tabla 27 | ✅ |
+| PU-32 | Recordatorios derivados y posponer | 5.3 | RF-22 · RF-23 · CU-15 · HU-14 | ✅ |
+| PE-36 | Recordatorios en el navegador real | 5.3 | CU-15 · HU-14 · Tabla 27 | ✅ |
 
 ---
 
@@ -167,3 +169,56 @@ detecta. Al cierre, 26 de 26.
    arreglo; en el teléfono del trabajador ya se ve «Fotos: 3 de 3 · Ver fotos» en Z982.
 3. Las salidas de prueba quedan en Z971, Z980, Z981 y Z982 (serie Z9xx), que se borrarán con los demás datos de
    prueba antes de la evaluación.
+
+## PU-32 · Recordatorios derivados y posponer
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar las seis reglas con sus bordes (el día exacto del umbral), la fecha desde la que se cuenta cuando no hay registros, las exclusiones (retirados, anulados), los parámetros del teléfono, posponer (plazo, vencimiento, el más lejano, por tipo y animal, solo el propietario), el orden de los grupos y la desaparición en vivo al registrar el dato o al posponer |
+| Requerimiento | RF-22 · RF-23 · RF-28 · CU-15 (pasos 1 a 7, flujos 6a y 6b) · HU-14.1 a 14.4 · apartado 3.8.11 · Tablas 27 y 30 |
+| Tipo | Unitaria, automática; la consulta en vivo se observa como en Inicio |
+| Código | [`src/modulos/recordatorios/recordatorios.ts`](../../src/modulos/recordatorios/recordatorios.ts) · prueba [`recordatorios.test.ts`](../../src/modulos/recordatorios/recordatorios.test.ts) · especificación [documento técnico 30](../tecnica/30-recordatorios.md), sección 10 |
+| Resultado obtenido | **20 de 20 aprobadas**. Total del conjunto automático: **878 de 878** ([informe](resultados/2026-10-21_001402_5537268.md)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+**Mutaciones.** Treinta. Veinticinco detectadas a la primera: pesaje en cualquier destino, umbrales con «mayor
+o igual» en las cinco reglas, sin la llegada para el nunca pesado, ordeño en machos, sin la fecha en que pasó a
+leche, producción baja con un ordeño viejo o con cualquier diferencia, cada clase de registro que no reinicia la
+regla 4, retirados incluidos, posponer sin tipo, sin animal, con «mayor o igual» o sin filtrar, orden inverso,
+ordeños anulados contados, posponer sin permiso o un día menos y la chapeta posponible. **Cinco sobrevivieron y
+señalaron casos sin probar:** con varios pesajes debe contar el más reciente; con registros viejos y recientes,
+el reciente; una salida anulada devuelve el animal a los recordatorios; el parámetro guardado en el teléfono; y el
+registro más antiguo de la cola. Se agregaron sus pruebas y quedaron 30 de 30.
+
+## PE-36 · Recordatorios en el navegador real
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar como propietario los recordatorios de Inicio con los animales de prueba, su resolución al registrar el dato, el cambio de grupo cuando el ordeño queda bajo el promedio, posponer y el acceso a la ronda; y como trabajador que los ve sin poder posponer y que recibe la decisión de posponer |
+| Requerimiento | CU-15 (pasos 1 a 7, flujos 6a y 6b) · HU-14.1 a 14.4 · RF-22 · RF-23 · Tabla 27 |
+| Tipo | Manual: propietario en Chrome del computador; trabajador en Chrome de un iPhone. Dirección de la rama `iteracion-5` (commits d9588f1 y 5537268) |
+| Resultado obtenido | Aprobada en la segunda ronda, tras un ajuste: el recordatorio de ordeño abría la ronda en la primera vaca pendiente y no en la del recordatorio (observación 1) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-21 |
+
+| # | Ronda | Perfil | Acción | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 | 1 | Propietario | Inicio | **Recordatorios** arriba: «Sin registro de ordeño · 5», con Z931 («Sin ordeños desde que pasó a leche, el 12 de octubre de 2026») y Z926, Z927, Z920 y Z921, del más antiguo al más reciente | [Inicio](evidencias/iteracion-5/PE-36-r1-01-inicio-recordatorios.png) · [grupo](evidencias/iteracion-5/PE-36-r1-02-sin-ordeno-5.png) |
+| 2 | 1 | Propietario | Registrar 5 litros de Z921 desde la ronda | Z921 sale de «Sin registro de ordeño» y aparece en «Producción bajo el promedio · 1»: «5 litros el 21 de octubre de 2026: muy por debajo de su promedio (8 litros)» | [ronda](evidencias/iteracion-5/PE-36-r1-03-ronda-abre-en-z920.png) · [5 litros](evidencias/iteracion-5/PE-36-r1-04-z921-5-litros.png) · [bajo promedio](evidencias/iteracion-5/PE-36-r1-05-bajo-promedio.png) |
+| 3 | 1 | Trabajador | Inicio en el iPhone | Los mismos recordatorios, sin **Posponer** | [bajo promedio](evidencias/iteracion-5/PE-36-r1-06-trabajador-bajo-promedio.png) · [sin posponer](evidencias/iteracion-5/PE-36-r1-07-trabajador-sin-posponer.png) · [Inicio](evidencias/iteracion-5/PE-36-r1-08-trabajador-inicio.png) |
+| 4 | 2 | Propietario | **Posponer** Z926 por 1 día | Desaparece: «Sin registro de ordeño · 3» | [captura](evidencias/iteracion-5/PE-36-r2-01-z926-pospuesta.png) |
+| 5 | 2 | Propietario | Tocar el recordatorio de Z927 | La ronda abre en **Vaca Z927** (`/ordeno?vaca=…`) | [captura](evidencias/iteracion-5/PE-36-r2-02-ronda-abre-en-z927.png) |
+| 6 | 2 | Trabajador | Inicio en el iPhone | Sin Z926: la decisión de posponer llegó con la sincronización | [captura](evidencias/iteracion-5/PE-36-r2-03-trabajador-sin-z926.jpg) |
+
+**Observaciones.**
+
+1. **Ajuste: el recordatorio de ordeño abre la ronda en esa vaca** (ronda 1). Al tocar Z921 la ronda abría en la
+   primera vaca pendiente (Z920). La ronda acepta ahora la vaca en la dirección (`?vaca=`) y el recordatorio la
+   usa (commit 5537268; documento 30, sección 5).
+2. No aparecieron recordatorios de pesaje ni de «sin registros recientes»: los animales de prueba son de octubre
+   y ninguno de ceba superó los 30 días. Esas reglas, la de sincronización y la de chapeta las cubre PU-32. La
+   chapeta pendiente tampoco salió porque los terneros que la tenían (Z980, Z981, Z982) quedaron retirados en
+   PE-35.
+3. En la ronda 2 la aplicación mostró primero la versión anterior (abría en Z920) hasta que se publicó y se
+   actualizó el commit 5537268.
