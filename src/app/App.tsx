@@ -5,7 +5,7 @@ import { PantallaConflictos } from '../modulos/correcciones/PantallaConflictos';
 import { PantallaCorreccionesRecientes } from '../modulos/correcciones/PantallaCorreccionesRecientes';
 import { PantallaCorregir } from '../modulos/correcciones/PantallaCorregir';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
-import { TernerosSinChapeta } from '../modulos/identificacion/AvisoChapeta';
+import { Recordatorios } from '../modulos/recordatorios/SeccionRecordatorios';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
 import { PantallaComparacion } from '../modulos/leche/PantallaComparacion';
 import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
@@ -204,8 +204,8 @@ function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; 
 
       {cargaCompleta === false && <PreparandoTelefono />}
 
-      {/* Documento técnico 25, sección 7.3: el recordatorio de la chapeta, para ambos perfiles. */}
-      {cargaCompleta !== false && <TernerosSinChapeta />}
+      {/* Documento técnico 30: los recordatorios derivados, arriba y para ambos perfiles (incluye la chapeta del 4.2). */}
+      {cargaCompleta !== false && <Recordatorios identidad={identidad} />}
 
       {puedeUsar(identidad.perfil, 'CU-03') && cargaCompleta !== false && (
         <Link className="boton boton--principal boton--ancho" to="/animales">

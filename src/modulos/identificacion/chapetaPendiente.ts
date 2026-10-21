@@ -64,6 +64,14 @@ export function ternerosSinChapeta(
     .sort(prioridad);
 }
 
+/** «nació hace 25 días · quedan 65 días del plazo», «… plazo vencido hace 3 días» (sección 7.3). */
+export function describirPlazo(t: Pick<TerneroSinChapeta, 'dias' | 'quedan' | 'vencido'>): string {
+  if (t.dias === null) return 'sin fecha de nacimiento';
+  const nacio = t.dias === 0 ? 'nació hoy' : t.dias === 1 ? 'nació hace 1 día' : `nació hace ${t.dias} días`;
+  if (t.vencido) return `${nacio} · plazo vencido hace ${-t.quedan!} ${-t.quedan! === 1 ? 'día' : 'días'}`;
+  return `${nacio} · ${t.quedan === 1 ? 'queda 1 día' : `quedan ${t.quedan} días`} del plazo`;
+}
+
 export async function plazoDeChapeta(): Promise<number> {
   return (await leerParametro('dias_recordar_chapeta')) ?? DIAS_CHAPETA_POR_DEFECTO;
 }

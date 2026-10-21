@@ -1,18 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
-import { Link } from 'react-router';
 import { fechaDelPredio, formatearFecha, formatearInstante } from '../../dominio/fechas';
 import type { Uuid } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { ResolverConflictoColocacion } from '../correcciones/ResolverConflicto';
-import { cargarTernerosSinChapeta, confirmarChapetaPuesta, errorDeFechaColocacion, estadoDeChapeta, type TerneroSinChapeta } from './chapetaPendiente';
-
-function describirPlazo(t: Pick<TerneroSinChapeta, 'dias' | 'quedan' | 'vencido'>): string {
-  if (t.dias === null) return 'sin fecha de nacimiento';
-  const nacio = t.dias === 0 ? 'nació hoy' : t.dias === 1 ? 'nació hace 1 día' : `nació hace ${t.dias} días`;
-  if (t.vencido) return `${nacio} · plazo vencido hace ${-t.quedan!} ${-t.quedan! === 1 ? 'día' : 'días'}`;
-  return `${nacio} · ${t.quedan === 1 ? 'queda 1 día' : `quedan ${t.quedan} días`} del plazo`;
-}
+import { confirmarChapetaPuesta, describirPlazo, errorDeFechaColocacion, estadoDeChapeta } from './chapetaPendiente';
 
 /**
  * La chapeta en la ficha: pendiente, con el botón para confirmarla, o puesta, con su autor (documento
@@ -96,26 +88,5 @@ export function AvisoChapeta({ animalId, numero, nacimiento, identidad }: { anim
         </button>
       )}
     </div>
-  );
-}
-
-/** El recordatorio de Inicio: los terneros sin chapeta puesta, los vencidos primero (sección 7.3). */
-export function TernerosSinChapeta() {
-  const terneros = useLiveQuery(() => cargarTernerosSinChapeta(), []);
-  if (!terneros || terneros.length === 0) return null;
-  return (
-    <section className="tarjeta separado">
-      <h2>Terneros sin chapeta puesta</h2>
-      <ul className="ronda__lista">
-        {terneros.map((t) => (
-          <li key={t.id}>
-            <Link className={`ternero${t.vencido ? ' ternero--vencido' : ''}`} to={`/animales/${t.id}`}>
-              <span className="ronda__chapeta">{t.codigo_chapeta}</span>
-              <span>{describirPlazo(t)}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
