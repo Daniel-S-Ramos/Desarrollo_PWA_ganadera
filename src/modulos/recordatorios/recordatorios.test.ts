@@ -113,7 +113,7 @@ describe('PU-32 · 2. Sin registro de ordeño (regla 2)', () => {
     const r = delTipo(derivarRecordatorios(datos({ ...base, ordenos: [{ animal_id: vaca.id, fecha: '2026-10-17', litros: 10 }] }), HOY), 'sin_registro_ordeno');
     expect(r).toMatchObject([{ codigo_chapeta: 'Z1', desde: '2026-10-17', dias: 4 }]);
     expect(textoRecordatorio(r[0]!)).toBe('Sin ordeño registrado desde el 17 de octubre de 2026 (4 días)');
-    expect(destinoRecordatorio(r[0]!)).toBe('/ordeno');
+    expect(destinoRecordatorio(r[0]!)).toBe(`/ordeno?vaca=${vaca.id}`);
   });
 
   it('sin ordeños: desde que pasó a leche; un macho en leche no cuenta', () => {

@@ -275,7 +275,7 @@ export function destinoRecordatorio(r: Recordatorio): string | null {
     case 'sin_pesaje_reciente':
       return `/animales/${r.animal_id}/pesaje`;
     case 'sin_registro_ordeno':
-      return '/ordeno';
+      return `/ordeno?vaca=${r.animal_id}`;
     case 'produccion_bajo_promedio':
       return `/produccion?vaca=${r.animal_id}`;
     case 'sincronizacion_pendiente':

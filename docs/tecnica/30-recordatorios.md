@@ -70,7 +70,7 @@ admite ese tipo en `recordatorio` sin otra migración. Desaparece al confirmar l
 | Tipo | Texto | Al tocarlo |
 |---|---|---|
 | Sin pesaje reciente | «**Z925** · Sin pesaje desde el 17 de septiembre (33 días)» o «… nunca se ha pesado (llegó el …)» | Registrar pesaje del animal |
-| Sin registro de ordeño | «**Z921** · Sin ordeño registrado desde el 14 de octubre (6 días)» | Ronda de ordeño de hoy |
+| Sin registro de ordeño | «**Z921** · Sin ordeño registrado desde el 14 de octubre (6 días)» | Ronda de ordeño de hoy, abierta en esa vaca (`/ordeno?vaca=<id>`, ajuste de PE-36) |
 | Producción bajo el promedio | «**Z921** · 8 litros el 14 de octubre: muy por debajo de su promedio (12 litros)» | Producción de esa vaca |
 | Sin registros recientes | «**Z933** · Sin ningún registro desde el 15 de julio (97 días)» | Ficha del animal |
 | Sincronización pendiente | «Hay registros sin enviar desde el 16 de octubre (4 días). Conéctese a una red con señal.» | Sin destino: es una instrucción |
