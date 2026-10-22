@@ -32,6 +32,7 @@ declare
   becerro   uuid := gen_random_uuid();
   salida1   uuid := gen_random_uuid();
   compra1   uuid := gen_random_uuid();
+  ordeno1   uuid := gen_random_uuid();
   codigos   text[];
   ok        boolean;
   valor     text;
@@ -232,6 +233,21 @@ begin
       pg_temp.intentar(format('insert into public.movimiento_economico (id, autor_id, creado_en, animal_id, concepto, fecha, valor) values (%L,%L,%s,%L,%L,current_date,50000)', gen_random_uuid(), usuario, ahora, becerro, 'alimentacion'))];
     r := r || jsonb_build_object('n',18,'v','Una sola compra vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra',
            'ok', codigos = array['OK','23505','OK','OK','OK','OK'],
+           'd', 'códigos: ' || array_to_string(codigos, ', '));
+
+    -- -------------------------------------------------------------- 19. Un solo ordeño vigente
+    -- Un segundo ordeño de la vaca ese día se rechaza mientras el primero esté vigente; el reenvío se ignora;
+    -- anulado el primero, se admite otro; y un tercero, con el segundo vigente, se rechaza
+    -- (docs/tecnica/32-ordeno-vigente-unico.md, sección 2).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,8)', ordeno1, usuario, ahora, vaca, '2026-10-08')),
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,9)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-08')),
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,8) on conflict (id) do nothing', ordeno1, usuario, ahora, vaca, '2026-10-08')),
+      pg_temp.intentar(format('insert into public.correccion (id, autor_id, creado_en, entidad_afectada, registro_id, tipo, motivo) values (%L,%L,%s,%L,%L,%L,%L)', gen_random_uuid(), usuario, ahora, 'produccion_leche', ordeno1, 'anulacion', 'animal_equivocado')),
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,9)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-08')),
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,10)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-08'))];
+    r := r || jsonb_build_object('n',19,'v','Un solo ordeño vigente por vaca y día: el segundo se rechaza, el reenvío se ignora y, anulado el primero, se admite otro',
+           'ok', codigos = array['OK','23505','OK','OK','OK','23505'],
            'd', 'códigos: ' || array_to_string(codigos, ', '));
 
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.

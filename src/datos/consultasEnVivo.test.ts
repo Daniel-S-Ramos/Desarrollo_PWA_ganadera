@@ -9,6 +9,7 @@ import { cargarHistorialDestino } from '../modulos/destino/destino';
 import { cargarConsolidado } from '../modulos/economia/consolidado';
 import { cargarTernerosSinChapeta, confirmarChapetaPuesta, estadoDeChapeta } from '../modulos/identificacion/chapetaPendiente';
 import { cargarComparacion } from '../modulos/leche/comparacion';
+import { cargarRonda } from '../modulos/leche/ronda';
 import { cargarEvolucion } from '../modulos/peso/pesajes';
 import { salidaDelAnimal } from '../modulos/salida/salidas';
 import { cargarControlReproductivo } from '../modulos/reproduccion/partos';
@@ -182,6 +183,17 @@ describe('PU-27 · 9. Las pantallas se enteran de los cambios (PE-32)', () => {
     await db.animal.update(dup.id, { estado_sync: 'conflicto' });
     const vistos = await trasCambiar(() => cargarConflictoDeChapeta(dup.id), () => resolverCambiandoNumero(dup.id, 'Z10', YO));
     expect(ultimo(vistos)).toBeUndefined();
+  });
+
+  it('ronda de ordeño: al anular el ordeño del día, la vaca vuelve a quedar pendiente', async () => {
+    const vaca = await crear('animal', datosAnimal('Z1', { fecha_nacimiento: '2020-01-01' }), YO.usuario_id);
+    await crear('destino_productivo', { animal_id: vaca.id, destino: 'leche', desde: '2026-10-01' }, YO.usuario_id);
+    const o = await crear('produccion_leche', { animal_id: vaca.id, fecha: HOY, litros: 10 }, YO.usuario_id);
+    const vistos = await trasCambiar(() => cargarRonda(HOY), () =>
+      crear('correccion', { entidad_afectada: 'produccion_leche', registro_id: o.id, tipo: 'anulacion', campo: null, valor_anterior: null, valor_nuevo: null, motivo: 'animal_equivocado', nota: null }, YO.usuario_id),
+    );
+    expect(vistos[0]?.[0]?.existente).not.toBeNull();
+    expect(ultimo(vistos)?.[0]?.existente).toBeNull();
   });
 
   it('consolidado económico: la venta, el precio del litro y una anulación aparecen', async () => {

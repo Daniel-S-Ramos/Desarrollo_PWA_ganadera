@@ -110,6 +110,9 @@ tendrá su propia regla.
 | Con registro y el valor nuevo es **igual** al vigente | «Ya tiene ese valor» | No se guarda nada; la ronda pasa a la siguiente |
 | Con registro y **no puede reemplazarlo** (CU-06, 3b) | «No puede reemplazar este registro: la enmienda corresponde al propietario» | No se guarda; Guardar inhabilitado |
 
+**Registro de esa fecha** es el ordeño **vigente** de la vaca ese día: un ordeño anulado no cuenta, y con él la
+vaca vuelve a aparecer **Sin registro** (documento técnico 32, paso 6.0).
+
 **Quién puede reemplazar** es la regla de corrección del apartado 3.9.5 (`puedeCorregir`, documento
 08, sección 4): el propietario, cualquier registro; el trabajador, solo los creados por un trabajador en
 la misma fecha del predio. Si el autor no está en el teléfono, el trabajador no puede reemplazarlo.

@@ -104,7 +104,7 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
                 }}
               >
                 <span className="ronda__chapeta">{v.codigo_chapeta}</span>
-                <span>{v.existente ? (v.existente.anulado ? 'Anulado' : `✓ ${formatearLitros(v.existente.litros)} litros`) : 'Sin registro'}</span>
+                <span>{v.existente ? `✓ ${formatearLitros(v.existente.litros)} litros` : 'Sin registro'}</span>
               </button>
             </li>
           ))}
@@ -135,19 +135,6 @@ function FormularioVaca({
   const promedio = useLiveQuery(() => promedioDe(vaca.animal_id, fecha), [vaca.animal_id, fecha]);
 
   const { existente } = vaca;
-  // Documento técnico 26, sección 7: un ordeño anulado impide otro de esa vaca ese día.
-  if (existente?.anulado) {
-    return (
-      <div className="tarjeta formulario">
-        <h2 className="ronda__titulo">
-          Vaca <span className="registrado__chapeta">{vaca.codigo_chapeta}</span>
-        </h2>
-        <p className="aviso aviso--atencion aviso--en-contenido">
-          El ordeño de {vaca.codigo_chapeta} del {formatearFecha(fecha)} fue anulado: no admite otro registro ese día.
-        </p>
-      </div>
-    );
-  }
   const permitido = !existente || puedeReemplazar(identidad, existente);
   const validacion = validarOrdeno(texto, fecha, hoy);
   const errores = intentado && !validacion.ok ? validacion.errores : {};

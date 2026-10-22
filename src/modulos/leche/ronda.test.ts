@@ -281,3 +281,40 @@ describe('PU-23 · 9. Un registro que llega entre la vista y el guardado (secci�
     expect(await db.correccion.count()).toBe(0);
   });
 });
+
+/** Anula un ordeño, como desde Corregir o anular. */
+const anularOrdeno = (id: string) =>
+  crear('correccion', { entidad_afectada: 'produccion_leche', registro_id: id, tipo: 'anulacion', campo: null, valor_anterior: null, valor_nuevo: null, motivo: 'animal_equivocado', nota: null }, PROPIETARIO.usuario_id);
+
+describe('PU-23 · 10. Un solo ordeño vigente por vaca y día (documento técnico 32)', () => {
+  it('con el ordeño del día anulado, la vaca queda sin registro y es la siguiente pendiente', async () => {
+    const a = await animal('Z1');
+    const b = await animal('Z2');
+    await ordeno(b.id, HOY, 9);
+    await anularOrdeno((await ordeno(a.id, HOY, 10)).id);
+    const vacas = await cargarRonda(HOY);
+    expect(vacas.find((v) => v.animal_id === a.id)?.existente).toBeNull();
+    expect(siguienteVaca(vacas)?.animal_id).toBe(a.id);
+  });
+
+  it('con el anterior anulado se registra un ordeño nuevo, que la ronda muestra', async () => {
+    const a = await animal('Z1');
+    await anularOrdeno((await ordeno(a.id, HOY, 10)).id);
+    expect(await registrarOrdeno(a.id, HOY, '12', TRABAJADOR, false, HOY, AHORA)).toEqual({ ok: true, resultado: 'registrado' });
+    expect(await db.produccion_leche.count()).toBe(2);
+    const [vaca] = await cargarRonda(HOY);
+    expect(vaca?.existente).toMatchObject({ litros: 12, autor: 'Daniel Ramos' });
+  });
+
+  it('con un anulado y uno vigente, la ronda muestra el vigente y el reemplazo se hace sobre él', async () => {
+    const a = await animal('Z1');
+    const viejo = await ordeno(a.id, HOY, 10);
+    await anularOrdeno(viejo.id);
+    const nuevo = await ordeno(a.id, HOY, 12);
+    expect((await cargarRonda(HOY))[0]?.existente).toMatchObject({ litros: 12, registro: { id: nuevo.id } });
+    expect(await registrarOrdeno(a.id, HOY, '13', PROPIETARIO, false, HOY, AHORA)).toEqual({ ok: false, requiereConfirmacion: true });
+    expect(await registrarOrdeno(a.id, HOY, '13', PROPIETARIO, true, HOY, AHORA)).toEqual({ ok: true, resultado: 'reemplazado' });
+    expect((await db.correccion.toArray()).filter((c) => c.tipo === 'correccion')).toEqual([expect.objectContaining({ registro_id: nuevo.id, valor_anterior: '12', valor_nuevo: '13' })]);
+    expect(await db.produccion_leche.count()).toBe(2);
+  });
+});

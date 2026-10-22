@@ -213,10 +213,10 @@ function Corregir({ entidad, id, identidad }: { entidad: EntidadConCorreccion; i
       )}
 
       {f.operacion === 'anular' && entidad === 'produccion_leche' && (
-        // Sección 7: el ordeño anulado impide otro de esa vaca ese día.
+        // Documento técnico 32, sección 5: anulado, la vaca vuelve a quedar pendiente ese día en la ronda.
         <p className="aviso aviso--atencion aviso--en-contenido">
-          Esta vaca no podrá tener otro ordeño el {formatearFecha(String((v.registro as RegistroLocal<'produccion_leche'>).fecha))}. Si el error es la cantidad, corrija los litros en
-          lugar de anular.
+          La vaca volverá a quedar pendiente en la ronda del {formatearFecha(String((v.registro as RegistroLocal<'produccion_leche'>).fecha))}. Si el error es la cantidad, corrija los
+          litros en lugar de anular.
         </p>
       )}
 

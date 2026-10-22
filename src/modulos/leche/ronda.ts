@@ -22,8 +22,6 @@ export interface RegistroExistente {
   litros: number;
   autor: string;
   perfilAutor: Perfil | undefined;
-  /** El ordeño de ese día fue anulado: la vaca no admite otro registro esa fecha (documento técnico 26, sección 7). */
-  anulado: boolean;
 }
 
 export interface VacaRonda {
@@ -54,7 +52,8 @@ export async function cargarRonda(fecha: FechaPredio): Promise<VacaRonda[]> {
   const retirados = new Set(salidas.map((s) => s.animal_id));
   const destinosPorAnimal = new Map<Uuid, typeof destinos>();
   for (const d of destinos) destinosPorAnimal.set(d.animal_id, [...(destinosPorAnimal.get(d.animal_id) ?? []), d]);
-  const porAnimal = new Map(registros.map((v) => [v.original.animal_id, v]));
+  // Documento técnico 32: el ordeño vigente del día; uno anulado deja la vaca pendiente.
+  const porAnimal = new Map(registros.filter((v) => v.anulacion === null).map((v) => [v.original.animal_id, v]));
   const personas = new Map(usuarios.map((u) => [u.id, u]));
 
   return animales
@@ -72,7 +71,6 @@ export async function cargarRonda(fecha: FechaPredio): Promise<VacaRonda[]> {
               litros: vigente.registro.litros,
               autor: autor?.nombre ?? 'un usuario que ya no está en el predio',
               perfilAutor: autor?.perfil,
-              anulado: vigente.anulacion !== null,
             }
           : null,
       };
@@ -142,17 +140,16 @@ export async function registrarOrdeno(
   try {
     return await unidadDeTrabajo(usuario.usuario_id, async (tx): Promise<ResultadoOrdeno> => {
       if (!(await enProduccion(animalId))) throw new Detener({ ok: false, errores: { animal: 'Esta vaca ya no está en producción' } });
-      const registro = await consulta.produccion_leche.where('[animal_id+fecha]').equals([animalId, fecha]).first();
-      if (!registro) {
+      // Documento técnico 32: solo cuenta el ordeño vigente del día; con los anteriores anulados se registra otro.
+      const delDia = await consulta.produccion_leche.where('[animal_id+fecha]').equals([animalId, fecha]).toArray();
+      const actual = (await leerVigentes('produccion_leche', delDia)).find((v) => v.anulacion === null);
+      if (!actual) {
         await tx.crear('produccion_leche', { animal_id: animalId, fecha, litros });
         return { ok: true, resultado: 'registrado' };
       }
-      const [actual] = await leerVigentes('produccion_leche', [registro]);
-      if (actual!.anulacion) {
-        throw new Detener({ ok: false, errores: { animal: 'El ordeño de esta vaca en esta fecha fue anulado: no admite otro registro ese día' } });
-      }
+      const registro = actual.original;
       if (!puedeCorregir(usuario, registro, perfiles.get(registro.autor_id), ahora)) throw new Detener({ ok: false, sinPermiso: true });
-      const vigente = actual!.registro.litros;
+      const vigente = actual.registro.litros;
       if (vigente === litros) return { ok: true, resultado: 'sin_cambios' };
       if (!confirmado) throw new Detener({ ok: false, requiereConfirmacion: true });
       await tx.crear('correccion', {

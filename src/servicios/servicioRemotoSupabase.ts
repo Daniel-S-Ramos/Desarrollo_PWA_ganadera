@@ -55,15 +55,21 @@ export function crearServicioRemoto(cliente: SupabaseClient): ServicioRemoto {
       return (data ?? []) as FilaRemota[];
     },
 
+    // Documento técnico 32, sección 4: el ordeño vigente; los anulados de ese día no cuentan.
     async buscarOrdeno(animalId: Uuid, fecha: string) {
-      const { data, error } = await cliente
-        .from('produccion_leche')
-        .select('id, litros')
-        .eq('animal_id', animalId)
-        .eq('fecha', fecha)
-        .maybeSingle();
-      if (error || !data) return null;
-      return { id: data.id as Uuid, litros: Number(data.litros) };
+      const { data, error } = await cliente.from('produccion_leche').select('id, litros').eq('animal_id', animalId).eq('fecha', fecha);
+      if (error || !data || data.length === 0) return null;
+      const ids = data.map((o) => o.id as Uuid);
+      const anulaciones = await cliente
+        .from('correccion')
+        .select('registro_id')
+        .eq('entidad_afectada', 'produccion_leche')
+        .eq('tipo', 'anulacion')
+        .in('registro_id', ids);
+      if (anulaciones.error) return null;
+      const anulados = new Set((anulaciones.data ?? []).map((c) => c.registro_id as Uuid));
+      const vigente = data.find((o) => !anulados.has(o.id as Uuid));
+      return vigente ? { id: vigente.id as Uuid, litros: Number(vigente.litros) } : null;
     },
 
     async subirImagen(ruta: string, imagen: Blob): Promise<ResultadoEnvio> {
