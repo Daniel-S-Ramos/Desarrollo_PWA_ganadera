@@ -57,7 +57,8 @@ se editan a mano.
 | [iteracion-2.md](iteracion-2.md) | Iteración 2: identificación animal y ficha (cerrada, `v0.2`) | 15 | 15 aprobadas (6 con observaciones o tras corrección) · 12 criterios de aceptación: 10 de extremo a extremo, 1 técnico, 1 trasladado |
 | [iteracion-3.md](iteracion-3.md) | Iteración 3: sanidad, leche y destino (cerrada, `v0.3`) | 13 | 13 aprobadas (1 defecto encontrado en pantalla y corregido) · 17 criterios de aceptación: 14 de extremo a extremo, 3 técnicos |
 | [iteracion-4.md](iteracion-4.md) | Iteración 4: peso, partos y correcciones (cerrada, `v0.4`) | 11 | 11 aprobadas (5 defectos encontrados en pantalla y corregidos) · 13 criterios de aceptación: 12 de extremo a extremo, 1 técnico |
-| [iteracion-5.md](iteracion-5.md) | Iteración 5: consultas, alertas y economía (en curso) | 8 | 8 aprobadas |
+| [iteracion-5.md](iteracion-5.md) | Iteración 5: consultas, alertas y economía (cerrada, `v0.5`) | 11 | 11 aprobadas (4 defectos encontrados en pantalla y corregidos) · 16 criterios de aceptación: 15 de extremo a extremo, 1 técnico |
+| [cierre.md](cierre.md) | Fase de cierre: evaluación del prototipo (en curso) | 4 | 4 aprobadas |
 
 ## Matriz de trazabilidad entre requerimientos y pruebas
 

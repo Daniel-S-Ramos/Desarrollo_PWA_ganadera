@@ -127,7 +127,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 
 | Paso | Contenido | Estado |
 |---|---|---|
-| 6.0 | Un solo ordeño vigente por vaca y día (pendiente del acta de la Iteración 5) | 🔄 |
+| 6.0 | Un solo ordeño vigente por vaca y día (pendiente del acta de la Iteración 5) | ✅ |
 | 6.1 | Conjunto de datos simulados con el volumen de la Ganadería JR | ⬜ |
 | 6.2 | Documento de casos de prueba | ⬜ |
 | 6.3 | Pruebas funcionales de flujos completos | ⬜ |
