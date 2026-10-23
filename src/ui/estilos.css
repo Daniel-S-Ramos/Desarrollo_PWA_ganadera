@@ -1310,3 +1310,109 @@ a.boton {
 .consolidado__ingreso {
   color: var(--verde-oscuro);
 }
+
+/* Inicio de sesión: la vaca y el nombre arriba, el formulario en una tarjeta y el paisaje abajo. */
+.ingreso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  /* El paisaje llega a los bordes de la pantalla y toca la barra inferior. */
+  margin: 0 calc(-1 * var(--separacion)) calc(-1 * var(--separacion));
+  padding: 8px var(--separacion) 0;
+}
+.ingreso__vaca {
+  display: block;
+  width: min(78%, 300px);
+  height: auto;
+}
+.ingreso__marca {
+  margin: 12px 0 0;
+  font-size: clamp(2rem, 9vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--verde-oscuro);
+}
+.ingreso__lema {
+  margin: 4px 0 20px;
+  color: var(--texto-secundario);
+}
+.ingreso__tarjeta {
+  width: 100%;
+  margin: 0;
+  padding: 20px 16px;
+  text-align: left;
+}
+.ingreso__tarjeta .ingreso__titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.25;
+}
+.ingreso__ayuda {
+  margin-bottom: 0;
+}
+.ingreso__paisaje {
+  display: block;
+  width: calc(100% + 2 * var(--separacion));
+  max-width: none;
+  height: auto;
+  margin: 24px calc(-1 * var(--separacion)) 0;
+}
+
+/* Campo con ícono a la izquierda y, si hace falta, un botón a la derecha (mostrar la contraseña). */
+.campo__grupo {
+  display: flex;
+  align-items: stretch;
+  min-height: var(--alto-control);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  overflow: hidden;
+}
+.campo__grupo:focus-within {
+  outline: 3px solid var(--amarillo);
+  border-color: var(--verde-oscuro);
+}
+.campo__grupo input {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+}
+.campo__grupo input:focus {
+  outline: none;
+}
+.campo__grupo input {
+  padding: 0 12px;
+}
+.campo__grupo input::placeholder {
+  color: var(--texto-secundario);
+  opacity: 0.8;
+  font-size: 0.95em;
+}
+.campo__icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  flex: none;
+  background: var(--fondo);
+  border-right: 2px solid var(--borde);
+  color: var(--texto-secundario);
+}
+.campo__accion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: var(--texto);
+  cursor: pointer;
+}
+.campo__accion:focus-visible {
+  outline: 3px solid var(--amarillo);
+  outline-offset: -4px;
+}

@@ -72,7 +72,8 @@ automática porque usa el cliente real; la regla la fija el disparador (PI-01) y
 
 1. **Las instrucciones de la prueba estaban mal, no la aplicación.** Se pidió anular desde la producción diaria,
    que no tiene **Corregir o anular**; el enlace está en la ronda, dentro del aviso de la vaca con registro
-   (documento 26). Queda como posible mejora ofrecerlo también en la producción diaria.
+   (documento 26). Se consideró ofrecerlo también en la producción diaria; el autor decidió dejarlo como está
+   (2026-10-21).
 2. Se registraron 20 litros en lugar de los 12 sugeridos; no cambia el resultado.
 3. No se probó un ordeño duplicado desde dos teléfonos con un anulado de por medio (la búsqueda real del ordeño
    vigente): lo cubren PU-10.12 con el servicio simulado y la regla del disparador en PI-01.

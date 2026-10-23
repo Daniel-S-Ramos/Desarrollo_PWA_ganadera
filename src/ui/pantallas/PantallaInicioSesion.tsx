@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { iniciarSesion, type ResultadoIngreso } from '../../sesion/autenticacion';
 import { describirPendientes } from '../../dominio/pendientes';
 import type { Identidad } from '../../sesion/token';
+import paisaje from '../imagenes/paisaje.webp';
+import vaca from '../imagenes/vaca.webp';
 
 type Falla = Extract<ResultadoIngreso, { ok: false }>;
 type MotivoSimple = Exclude<Falla['motivo'], 'otro_usuario_con_pendientes'>;
@@ -29,6 +31,7 @@ export function mensajeDeFalla(falla: Falla): string {
 export function PantallaInicioSesion({ alIngresar }: { alIngresar: (identidad: Identidad) => void }) {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [verContrasena, setVerContrasena] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,35 +46,105 @@ export function PantallaInicioSesion({ alIngresar }: { alIngresar: (identidad: I
   }
 
   return (
-    <form className="formulario" onSubmit={enviar}>
-      <p className="titulo-seccion">Iniciar sesión</p>
-      <p className="texto-secundario">Ingrese con el correo y la contraseña de su cuenta.</p>
+    <div className="ingreso">
+      {/* Imágenes decorativas: el texto ya nombra la aplicación. */}
+      <img className="ingreso__vaca" src={vaca} alt="" width={475} height={259} />
+      <p className="ingreso__marca">Ganadería JR</p>
+      <p className="ingreso__lema">Control y registro de tu ganadería</p>
 
-      <label className="campo">
-        <span>Correo</span>
-        <input type="email" autoComplete="username" required value={correo} onChange={(e) => setCorreo(e.target.value)} />
-      </label>
-
-      <label className="campo">
-        <span>Contraseña</span>
-        <input
-          type="password"
-          autoComplete="current-password"
-          required
-          value={contrasena}
-          onChange={(e) => setContrasena(e.target.value)}
-        />
-      </label>
-
-      {error && (
-        <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
-          <p>⚠ {error}</p>
+      <form className="formulario tarjeta ingreso__tarjeta" onSubmit={enviar}>
+        <div>
+          <h2 className="ingreso__titulo">Iniciar sesión</h2>
+          <p className="texto-secundario ingreso__ayuda">Ingrese con el correo y la contraseña de su cuenta.</p>
         </div>
-      )}
 
-      <button className="boton boton--principal boton--ancho" type="submit" disabled={enviando}>
-        {enviando ? 'Verificando…' : 'Ingresar'}
-      </button>
-    </form>
+        <label className="campo">
+          <span>Correo</span>
+          <span className="campo__grupo">
+            <span className="campo__icono" aria-hidden="true">
+              <IconoCorreo />
+            </span>
+            <input
+              type="email"
+              autoComplete="username"
+              placeholder="ejemplo@correo.com"
+              required
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+            />
+          </span>
+        </label>
+
+        <label className="campo">
+          <span>Contraseña</span>
+          <span className="campo__grupo">
+            <span className="campo__icono" aria-hidden="true">
+              <IconoCandado />
+            </span>
+            <input
+              type={verContrasena ? 'text' : 'password'}
+              autoComplete="current-password"
+              placeholder="Ingrese su contraseña"
+              required
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
+            />
+            <button
+              type="button"
+              className="campo__accion"
+              aria-label={verContrasena ? 'Ocultar la contraseña' : 'Mostrar la contraseña'}
+              aria-pressed={verContrasena}
+              onClick={() => setVerContrasena((v) => !v)}
+            >
+              <IconoOjo tachado={!verContrasena} />
+            </button>
+          </span>
+        </label>
+
+        {error && (
+          <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
+            <p>⚠ {error}</p>
+          </div>
+        )}
+
+        <button className="boton boton--principal boton--ancho" type="submit" disabled={enviando}>
+          {enviando ? 'Verificando…' : 'Ingresar'}
+        </button>
+      </form>
+
+      <img className="ingreso__paisaje" src={paisaje} alt="" width={1024} height={281} />
+    </div>
+  );
+}
+
+/* Íconos de trazo, del color del texto que los rodea. */
+const trazo = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+
+function IconoCorreo() {
+  return (
+    <svg viewBox="0 0 24 24" width="26" height="26" {...trazo}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+    </svg>
+  );
+}
+
+function IconoCandado() {
+  return (
+    <svg viewBox="0 0 24 24" width="26" height="26" {...trazo}>
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+      <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+      <path d="M12 14.5v2.5" />
+    </svg>
+  );
+}
+
+function IconoOjo({ tachado }: { tachado: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="28" height="28" {...trazo}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+      {tachado && <path d="m4 4 16 16" />}
+    </svg>
   );
 }
