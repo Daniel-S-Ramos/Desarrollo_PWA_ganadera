@@ -25,6 +25,7 @@
     "prueba:pi-05": "node scripts/prueba-pi-05.mjs"
   },
   "dependencies": {
+    "@fontsource/nunito": "5.3.0",
     "@supabase/supabase-js": "2.116.0",
     "dexie": "4.4.5",
     "dexie-react-hooks": "4.4.0",

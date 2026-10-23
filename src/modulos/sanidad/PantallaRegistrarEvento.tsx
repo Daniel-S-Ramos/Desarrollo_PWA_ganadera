@@ -23,6 +23,8 @@ import { useCargaInicialCompleta } from '../../ui/useEstadoMotor';
 import { AvisoRepeticion } from './AvisoRepeticion';
 import { cargarContextoEvento, formularioComo, puedeVerCosto, registrarEvento, ultimaDosisDe, verificarRepeticion, type EventoLocal } from './eventos';
 import { FormularioMedicamento } from './FormularioMedicamento';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { JeringaFrasco } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Registrar un evento sanitario (CU-04, HU-03). Especificación: docs/tecnica/20-registro-sanitario.md.
@@ -141,9 +143,9 @@ function Formulario({ animal, identidad, como, ronda }: { animal: RegistroLocal<
       <Link className="enlace" to={`/animales/${animal.id}`}>
         ← Volver a la ficha
       </Link>
-      <p className="titulo-seccion">Registrar evento sanitario</p>
+      <TituloPantalla dibujo={<JeringaFrasco tamano={34} />}>Registrar evento sanitario</TituloPantalla>
       <p className="evento__animal">
-        Animal <strong className="registrado__chapeta">{animal.codigo_chapeta}</strong> · {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'}
+        Animal <strong className="registrado__chapeta chapeta">{animal.codigo_chapeta}</strong> · {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'}
       </p>
       {ronda.length > 0 && <p className="texto-secundario">Ya se aplicó en esta ronda a: {ronda.join(', ')}</p>}
       {errores.animal && (
@@ -351,7 +353,7 @@ function EventoRegistrado({
     <div className="formulario">
       <div className="aviso aviso--correcto aviso--en-contenido" role="status">
         <p>
-          ✓ Evento registrado al animal <span className="registrado__chapeta">{animal.codigo_chapeta}</span>
+          ✓ Evento registrado al animal <span className="registrado__chapeta chapeta">{animal.codigo_chapeta}</span>
         </p>
         {actual && <DistintivoSync estado={actual.estado_sync} {...(actual.detalle_conflicto ? { detalle: actual.detalle_conflicto } : {})} />}
       </div>

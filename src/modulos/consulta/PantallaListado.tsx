@@ -6,9 +6,11 @@ import { describirEdad } from '../../dominio/edad';
 import { DESTINOS } from '../../dominio/tipos';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
+import { CaraVaca, pelajeDe } from '../../ui/componentes/Ilustraciones';
 import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
 import { normalizarChapeta } from '../identificacion/registroAnimal';
 import { buscar, cargarListado, type AnimalListado, type FiltroDestino, type FiltroEstado, type FiltroSalida } from './listado';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
 
 const FILTROS: [FiltroEstado, string][] = [
   ['activos', 'Activos'],
@@ -59,7 +61,7 @@ export function PantallaListado({ puedeRegistrar, informacionIncompleta = false 
 
   return (
     <div className="listado">
-      <p className="titulo-seccion">Animales</p>
+      <TituloPantalla dibujo={<CaraVaca tamano={40} conFondo={false} />}>Animales</TituloPantalla>
       {informacionIncompleta && (
         // Carga inicial (documento técnico 17, sección 5): la lista todavía no tiene todos los animales.
         <p className="aviso aviso--atencion aviso--en-contenido">La información del predio todavía está llegando a este teléfono.</p>
@@ -156,10 +158,12 @@ function FilaAnimal({ animal, hoy, exacta, alAbrir }: { animal: AnimalListado; h
         {foto ? (
           <img className="fila-animal__foto" src={foto} alt="" />
         ) : (
-          <span className="fila-animal__foto fila-animal__sin-foto">Sin foto</span>
+          <span className="fila-animal__foto fila-animal__foto--ilustrada" role="img" aria-label="Sin foto">
+            <CaraVaca tamano={64} pelaje={pelajeDe(animal.id)} />
+          </span>
         )}
         <span className="fila-animal__datos">
-          <span className="fila-animal__chapeta">{animal.codigo_chapeta}</span>
+          <span className="fila-animal__chapeta chapeta">{animal.codigo_chapeta}</span>
           <span className="fila-animal__detalle">
             {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'} · {describirEdad(animal.fecha_nacimiento, animal.fecha_nacimiento_exacta, hoy)}
             {animal.destino ? ` · ${NOMBRE_DESTINO[animal.destino]}` : ''}

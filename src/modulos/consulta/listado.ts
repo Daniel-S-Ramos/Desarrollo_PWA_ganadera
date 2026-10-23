@@ -134,3 +134,10 @@ export async function cargarListado(): Promise<AnimalListado[]> {
     foto: elegirFoto(fotosPorAnimal.get(a.id) ?? [], reducidas),
   }));
 }
+
+/** La foto reducida de un animal, con la misma elección que el listado; null si no hay ninguna en el teléfono. */
+export function cargarFotoDeAnimal(animalId: Uuid): Promise<Blob | null> {
+  return Promise.all([consulta.fotografia.where('animal_id').equals(animalId).toArray(), reducidasLocales()]).then(([fotografias, reducidas]) =>
+    elegirFoto(fotografias, reducidas),
+  );
+}

@@ -35,7 +35,7 @@ export default defineConfig({
       workbox: {
         // Todos los recursos de la aplicación quedan en caché: tras la primera descarga
         // las jornadas siguientes no necesitan red para abrir la aplicación.
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2,ico,webmanifest}'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
       },

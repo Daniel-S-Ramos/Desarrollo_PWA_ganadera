@@ -4,8 +4,29 @@ import { Link } from 'react-router';
 import type { TipoRecordatorio } from '../../dominio/tipos';
 import { puedeCrear } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
-import { IconoAdvertencia } from '../../ui/componentes/Iconos';
-import { cargarRecordatorios, destinoRecordatorio, PLAZOS_POSPONER, posponerRecordatorio, textoRecordatorio, type GrupoRecordatorios, type Recordatorio } from './recordatorios';
+import { CaraVaca, pelajeDe, Senal4G } from '../../ui/componentes/Ilustraciones';
+import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
+import { cargarFotoDeAnimal } from '../consulta/listado';
+import {
+  cargarRecordatorios,
+  destinoRecordatorio,
+  PLAZOS_POSPONER,
+  posponerRecordatorio,
+  textoRecordatorio,
+  type GrupoRecordatorios,
+  type Recordatorio,
+  type TipoDeRecordatorio,
+} from './recordatorios';
+
+/** El título corto de cada tarjeta, junto a la chapeta del animal (rediseño del 2026-10-23). */
+const TITULO_CORTO: Record<TipoDeRecordatorio, string> = {
+  sin_pesaje_reciente: 'Sin pesaje',
+  sin_registro_ordeno: 'Sin ordeño',
+  produccion_bajo_promedio: 'Leche baja',
+  sin_registros_recientes: 'Sin registros',
+  sincronizacion_pendiente: 'Registros sin enviar',
+  chapeta_pendiente: 'Chapeta sin poner',
+};
 
 /** Cuántos se muestran por grupo antes de «Ver todos» (sección 6). */
 const POR_GRUPO = 5;
@@ -97,11 +118,19 @@ function Item({ r, titulo, puedePosponer, identidad }: { r: Recordatorio; titulo
   return (
     <li className={vencido ? 'recordatorio recordatorio--vencido' : 'recordatorio'}>
       <div className="recordatorio__cabeza">
-        <span className="recordatorio__icono">
-          <IconoAdvertencia />
-        </span>
-        <div>
-          <p className="recordatorio__titulo">{r.codigo_chapeta ? `${r.codigo_chapeta} · ${titulo}` : titulo}</p>
+        {r.animal_id ? <FotoRecordatorio animalId={r.animal_id} /> : (
+          <span className="recordatorio__icono">
+            {/* El único recordatorio sin animal: los registros sin enviar. */}
+            <Senal4G tamano={30} />
+          </span>
+        )}
+        <div className="recordatorio__texto">
+          {/* El título del grupo queda para los lectores de pantalla; a la vista, la chapeta y el título corto. */}
+          <p className="recordatorio__titulo">
+            {r.codigo_chapeta && <span className="chapeta">{r.codigo_chapeta}</span>}
+            <span>{TITULO_CORTO[r.tipo]}</span>
+            <span className="solo-lector"> · {titulo}</span>
+          </p>
           <p className="recordatorio__detalle">{textoRecordatorio(r)}</p>
         </div>
       </div>
@@ -141,4 +170,11 @@ function Item({ r, titulo, puedePosponer, identidad }: { r: Recordatorio; titulo
       )}
     </li>
   );
+}
+
+/** La foto reducida del animal; sin foto, su cara ilustrada. */
+function FotoRecordatorio({ animalId }: { animalId: string }) {
+  const foto = useLiveQuery(() => cargarFotoDeAnimal(animalId), [animalId]);
+  const url = useUrlDeImagen(foto ?? null);
+  return <span className="recordatorio__foto">{url ? <img src={url} alt="" /> : <CaraVaca tamano={58} pelaje={pelajeDe(animalId)} />}</span>;
 }

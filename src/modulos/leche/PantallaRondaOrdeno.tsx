@@ -6,6 +6,8 @@ import { compararConPromedio, formatearLitros, leerLitros, validarOrdeno } from 
 import type { Identidad } from '../../sesion/token';
 import { EnlaceCorregir } from '../correcciones/MarcaCorreccion';
 import { cargarRonda, promedioDe, puedeReemplazar, registrarOrdeno, siguienteVaca, type VacaRonda } from './ronda';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Cantina } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Ronda de ordeño (CU-06, HU-04). Especificación: docs/tecnica/22-ronda-de-ordeno.md, secciones 4 a 7.
@@ -46,7 +48,7 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
       <Link className="enlace" to="/">
         ← Volver al inicio
       </Link>
-      <p className="titulo-seccion">Ronda de ordeño</p>
+      <TituloPantalla dibujo={<Cantina tamano={34} />}>Ronda de ordeño</TituloPantalla>
 
       <label className="campo">
         <span>Fecha del ordeño</span>
@@ -103,7 +105,7 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
                   setUltimo(null);
                 }}
               >
-                <span className="ronda__chapeta">{v.codigo_chapeta}</span>
+                <span className="ronda__chapeta chapeta">{v.codigo_chapeta}</span>
                 <span>{v.existente ? `✓ ${formatearLitros(v.existente.litros)} litros` : 'Sin registro'}</span>
               </button>
             </li>
@@ -173,7 +175,7 @@ function FormularioVaca({
   return (
     <form className="tarjeta formulario" onSubmit={guardar} noValidate>
       <h2 className="ronda__titulo">
-        Vaca <span className="registrado__chapeta">{vaca.codigo_chapeta}</span>
+        Vaca <span className="registrado__chapeta chapeta chapeta--grande">{vaca.codigo_chapeta}</span>
       </h2>
 
       {/* Sección 6.2: el promedio reciente, para comparar durante el ordeño. */}

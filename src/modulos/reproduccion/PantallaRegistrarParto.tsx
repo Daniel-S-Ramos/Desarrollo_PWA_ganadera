@@ -9,6 +9,8 @@ import type { Identidad } from '../../sesion/token';
 import { describirAnimalConChapeta, normalizarChapeta, type ErroresFormulario, type FotosCapturadas } from '../identificacion/registroAnimal';
 import { SeccionFotografias } from '../identificacion/SeccionFotografias';
 import { cargarParaParto, criaVacia, registrarParto, reproductorDe, type FormularioCria } from './partos';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { CaraVaca } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Registrar un parto con la cría (CU-10, HU-12). Especificación: docs/tecnica/25-parto-y-control-reproductivo.md,
@@ -99,9 +101,9 @@ function Formulario({ vaca, identidad }: { vaca: RegistroLocal<'animal'>; identi
       <Link className="enlace" to={`/animales/${vaca.id}`}>
         ← Volver a la ficha
       </Link>
-      <p className="titulo-seccion">Registrar parto</p>
+      <TituloPantalla dibujo={<CaraVaca tamano={40} pelaje="parda" conFondo={false} />}>Registrar parto</TituloPantalla>
       <p className="evento__animal">
-        Vaca <strong className="registrado__chapeta">{vaca.codigo_chapeta}</strong>
+        Vaca <strong className="registrado__chapeta chapeta">{vaca.codigo_chapeta}</strong>
       </p>
       {errores.vaca && (
         <p className="campo__error" role="alert">

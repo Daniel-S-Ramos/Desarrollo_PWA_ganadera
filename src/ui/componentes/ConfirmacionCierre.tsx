@@ -11,6 +11,7 @@ import {
 } from '../../sesion/cierre';
 import { crearServicioRemoto } from '../../servicios/servicioRemotoSupabase';
 import { supabase } from '../../servicios/supabase';
+import { Puerta } from './Ilustraciones';
 
 type Paso =
   | { tipo: 'inicial' }
@@ -61,12 +62,8 @@ export function ConfirmacionCierre({ alCerrar }: { alCerrar: () => void }) {
   switch (paso.tipo) {
     case 'inicial':
       return (
-        <button className="boton boton--secundario boton--ancho boton--con-icono separado" onClick={() => void iniciar()}>
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M14 4.5H6.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2H14" />
-            <path d="M10.5 12h10" />
-            <path d="m17 8.5 3.5 3.5-3.5 3.5" />
-          </svg>
+        <button className="boton boton--secundario boton--ancho boton--ilustrado separado" onClick={() => void iniciar()}>
+          <span className="boton__ilustracion"><Puerta /></span>
           <span>Cerrar sesión</span>
         </button>
       );

@@ -1,6 +1,8 @@
 import type { Identidad } from '../../sesion/token';
 import { ConfirmacionCierre } from '../../ui/componentes/ConfirmacionCierre';
 import { IconoPersona } from '../../ui/componentes/Iconos';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { NavPersona } from '../../ui/componentes/Ilustraciones';
 
 /** La sesión abierta en este teléfono: quién y con qué perfil. */
 export function TarjetaSesion({ identidad }: { identidad: Identidad }) {
@@ -23,7 +25,7 @@ export function TarjetaSesion({ identidad }: { identidad: Identidad }) {
 export function PantallaCuenta({ identidad, alCerrar }: { identidad: Identidad; alCerrar: () => void }) {
   return (
     <>
-      <p className="titulo-seccion">Cuenta</p>
+      <TituloPantalla dibujo={<NavPersona activo />}>Cuenta</TituloPantalla>
       <TarjetaSesion identidad={identidad} />
       <ConfirmacionCierre alCerrar={alCerrar} />
     </>

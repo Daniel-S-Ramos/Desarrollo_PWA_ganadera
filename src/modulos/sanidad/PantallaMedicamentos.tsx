@@ -9,6 +9,8 @@ import { NOMBRE_TIPO } from '../../dominio/medicamentos';
 import { FormularioMedicamento } from './FormularioMedicamento';
 import { EnlaceCorregir } from '../correcciones/MarcaCorreccion';
 import { ResolverConflictoMedicamento } from '../correcciones/ResolverConflicto';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { JeringaFrasco } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Catálogo de medicamentos del predio (docs/tecnica/18-catalogo-de-medicamentos.md, sección 6).
@@ -26,7 +28,7 @@ export function PantallaMedicamentos({ identidad, puedeAgregar }: { identidad: I
       <Link className="enlace" to="/">
         ← Volver al inicio
       </Link>
-      <p className="titulo-seccion">Medicamentos</p>
+      <TituloPantalla dibujo={<JeringaFrasco tamano={34} />}>Medicamentos</TituloPantalla>
       <p className="texto-secundario">
         {catalogo.length === 1 ? '1 medicamento' : `${catalogo.length} medicamentos`} en el catálogo del predio.
       </p>

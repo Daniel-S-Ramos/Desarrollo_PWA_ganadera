@@ -27,6 +27,8 @@ import {
   type FotosCapturadas,
   type Progenitor,
 } from './registroAnimal';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { CaraVaca } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Registrar un animal (CU-02). Especificación: docs/tecnica/13-registro-de-animal.md, sección 7.
@@ -130,7 +132,7 @@ export function PantallaRegistrarAnimal({ identidad }: { identidad: Identidad })
 
   return (
     <form className="formulario" onSubmit={guardar} noValidate>
-      <p className="titulo-seccion">Registrar animal</p>
+      <TituloPantalla dibujo={<CaraVaca tamano={40} conFondo={false} />}>Registrar animal</TituloPantalla>
 
       {/* 1. Chapeta */}
       <label className="campo">
@@ -462,7 +464,7 @@ function AnimalRegistrado({
     <div className="formulario">
       <div className="aviso aviso--correcto aviso--en-contenido" role="status">
         <p>
-          ✓ Animal <span className="registrado__chapeta">{animal.codigo_chapeta}</span> registrado
+          ✓ Animal <span className="registrado__chapeta chapeta">{animal.codigo_chapeta}</span> registrado
         </p>
         {actual && <DistintivoSync estado={actual.estado_sync} detalle={actual.detalle_conflicto} />}
       </div>

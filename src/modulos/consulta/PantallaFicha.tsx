@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { Bascula, Billete, Calendario, Camara, Camion, Cantinas, CaraVaca, Curva, JeringaFrasco, Libreta, LibretaSanitaria, Monedas, pelajeDe, Senal } from '../../ui/componentes/Ilustraciones';
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { imagenCompletaLocal } from '../../datos/repositorio';
@@ -90,11 +91,13 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
       {/* Documento técnico 31: costos y consolidado, solo el propietario; también en un retirado (sección 3, decisión C). */}
       {puedeUsar(identidad.perfil, 'CU-14') && (
         <div className="acciones-formulario">
-          <Link className="boton boton--secundario boton--ancho" to={`/animales/${ficha.id}/consolidado`}>
-            Consolidado económico
+          <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${ficha.id}/consolidado`}>
+            <span className="boton__ilustracion"><Monedas /></span>
+            <span>Consolidado económico</span>
           </Link>
-          <Link className="boton boton--secundario boton--ancho" to={`/animales/${ficha.id}/costo`}>
-            Registrar costo
+          <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${ficha.id}/costo`}>
+            <span className="boton__ilustracion"><Billete /></span>
+            <span>Registrar costo</span>
           </Link>
         </div>
       )}
@@ -117,8 +120,9 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
 
       {/* Documento técnico 23, sección 2: la producción de la vaca, solo para el propietario (CU-07). */}
       {ficha.sexo === 'hembra' && puedeUsar(identidad.perfil, 'CU-07') && (
-        <Link className="boton boton--secundario boton--ancho" to={`/produccion?vaca=${ficha.id}`}>
-          Ver producción
+        <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/produccion?vaca=${ficha.id}`}>
+          <span className="boton__ilustracion"><Cantinas tamano={30} /></span>
+          <span>Ver producción</span>
         </Link>
       )}
 
@@ -203,13 +207,15 @@ function SeccionReproduccion({ animalId, identidad, retirado }: { animalId: stri
     <>
       <div className="acciones-formulario">
         {puedeRegistrar && (
-          <Link className="boton boton--secundario boton--ancho" to={`/animales/${animalId}/parto`}>
-            Registrar parto
+          <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${animalId}/parto`}>
+            <span className="boton__ilustracion"><CaraVaca tamano={34} pelaje="parda" conFondo={false} /></span>
+            <span>Registrar parto</span>
           </Link>
         )}
         {puedeVerControl && (
-          <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={verControl} onClick={() => setVerControl((v) => !v)}>
-            {verControl ? 'Ocultar control reproductivo' : 'Control reproductivo'}
+          <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={verControl} onClick={() => setVerControl((v) => !v)}>
+            <span className="boton__ilustracion"><Calendario /></span>
+            <span>{verControl ? 'Ocultar control reproductivo' : 'Control reproductivo'}</span>
           </button>
         )}
       </div>
@@ -227,13 +233,15 @@ function SeccionPeso({ animalId, identidad, retirado }: { animalId: string; iden
     <>
       <div className="acciones-formulario">
         {puedeRegistrar && (
-          <Link className="boton boton--secundario boton--ancho" to={`/animales/${animalId}/pesaje`}>
-            Registrar pesaje
+          <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${animalId}/pesaje`}>
+            <span className="boton__ilustracion"><Bascula /></span>
+            <span>Registrar pesaje</span>
           </Link>
         )}
         {puedeUsar(identidad.perfil, 'CU-09') && (
-          <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={verEvolucion} onClick={() => setVerEvolucion((v) => !v)}>
-            {verEvolucion ? 'Ocultar evolución del peso' : 'Evolución del peso'}
+          <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={verEvolucion} onClick={() => setVerEvolucion((v) => !v)}>
+            <span className="boton__ilustracion"><Curva /></span>
+            <span>{verEvolucion ? 'Ocultar evolución del peso' : 'Evolución del peso'}</span>
           </button>
         )}
       </div>
@@ -252,13 +260,15 @@ function SeccionSanidad({ animalId, identidad, retirado }: { animalId: string; i
     <>
       <div className="acciones-formulario">
         {puedeRegistrar && (
-          <Link className="boton boton--principal boton--ancho" to={`/animales/${animalId}/evento-sanitario`}>
-            Registrar evento sanitario
+          <Link className="boton boton--principal boton--ancho boton--ilustrado" to={`/animales/${animalId}/evento-sanitario`}>
+            <span className="boton__ilustracion"><JeringaFrasco tamano={34} /></span>
+            <span>Registrar evento sanitario</span>
           </Link>
         )}
         {puedeUsar(identidad.perfil, 'CU-05') && (
-          <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={verHistorial} onClick={() => setVerHistorial((v) => !v)}>
-            {verHistorial ? 'Ocultar historial sanitario' : 'Historial sanitario'}
+          <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={verHistorial} onClick={() => setVerHistorial((v) => !v)}>
+            <span className="boton__ilustracion"><LibretaSanitaria /></span>
+            <span>{verHistorial ? 'Ocultar historial sanitario' : 'Historial sanitario'}</span>
           </button>
         )}
       </div>
@@ -279,12 +289,14 @@ function SeccionDestino({ animalId, identidad, hoy, retirado }: { animalId: stri
     <>
       <div className="acciones-formulario">
         {!retirado && (
-          <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={abierto === 'cambiar'} onClick={() => alternar('cambiar')}>
-            Cambiar destino
+          <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={abierto === 'cambiar'} onClick={() => alternar('cambiar')}>
+            <span className="boton__ilustracion"><Senal /></span>
+            <span>Cambiar destino</span>
           </button>
         )}
-        <button type="button" className="boton boton--secundario boton--ancho" aria-expanded={abierto === 'historial'} onClick={() => alternar('historial')}>
-          {abierto === 'historial' ? 'Ocultar historial del destino' : 'Historial del destino'}
+        <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={abierto === 'historial'} onClick={() => alternar('historial')}>
+          <span className="boton__ilustracion"><Libreta /></span>
+          <span>{abierto === 'historial' ? 'Ocultar historial del destino' : 'Historial del destino'}</span>
         </button>
       </div>
       {abierto === 'cambiar' && contexto && (
@@ -300,9 +312,15 @@ function Encabezado({ ficha, hoy, verFotos, alAlternarFotos }: { ficha: FichaAni
   const hembra = ficha.sexo === 'hembra';
   return (
     <header className="ficha__encabezado">
-      {foto ? <img className="ficha__foto" src={foto} alt={`Animal ${ficha.codigo_chapeta}`} /> : <div className="ficha__foto fila-animal__sin-foto">Sin foto</div>}
+      {foto ? (
+        <img className="ficha__foto" src={foto} alt={`Animal ${ficha.codigo_chapeta}`} />
+      ) : (
+        <div className="ficha__foto ficha__foto--ilustrada" role="img" aria-label="Sin foto">
+          <CaraVaca tamano={112} pelaje={pelajeDe(ficha.id)} />
+        </div>
+      )}
       <div className="ficha__identidad">
-        <span className="ficha__chapeta">{ficha.codigo_chapeta}</span>
+        <span className="ficha__chapeta chapeta chapeta--grande">{ficha.codigo_chapeta}</span>
         <span className="fila-animal__detalle">
           {hembra ? 'Hembra' : 'Macho'} · {describirEdad(ficha.fecha_nacimiento, ficha.fecha_nacimiento_exacta, hoy)}
         </span>
@@ -316,8 +334,9 @@ function Encabezado({ ficha, hoy, verFotos, alAlternarFotos }: { ficha: FichaAni
         ) : (
           <p className="texto-secundario">Fotos: {ficha.fotos.length} de 3</p>
         )}
-        <button type="button" className="boton boton--secundario boton--ancho" onClick={alAlternarFotos}>
-          {verFotos ? 'Ocultar fotos' : ficha.fotos.length < 3 && !ficha.retirado ? 'Ver y completar fotos' : 'Ver fotos'}
+        <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" onClick={alAlternarFotos}>
+          <span className="boton__ilustracion"><Camara /></span>
+          <span>{verFotos ? 'Ocultar fotos' : ficha.fotos.length < 3 && !ficha.retirado ? 'Ver y completar fotos' : 'Ver fotos'}</span>
         </button>
       </div>
     </header>
@@ -327,8 +346,9 @@ function Encabezado({ ficha, hoy, verFotos, alAlternarFotos }: { ficha: FichaAni
 /** El acceso a registrar la salida (documento técnico 29, sección 2). Con la salida anterior anulada, se admite otra. */
 function BotonSalida({ animalId }: { animalId: string }) {
   return (
-    <Link className="boton boton--secundario boton--ancho" to={`/animales/${animalId}/salida`}>
-      Registrar salida
+    <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${animalId}/salida`}>
+      <span className="boton__ilustracion"><Camion /></span>
+      <span>Registrar salida</span>
     </Link>
   );
 }

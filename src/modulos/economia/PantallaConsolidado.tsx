@@ -9,6 +9,8 @@ import { formatearPesos } from '../../dominio/salida';
 import type { Identidad } from '../../sesion/token';
 import { EnlaceCorregir, MarcaCorreccion } from '../correcciones/MarcaCorreccion';
 import { cargarConsolidado, rotuloResultado, type ConceptoInvertido } from './consolidado';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Monedas } from '../../ui/componentes/Ilustraciones';
 
 const NOMBRE_INVERTIDO: Record<ConceptoInvertido, string> = { ...NOMBRE_CONCEPTO, servicio_veterinario: 'Servicios veterinarios', medicamentos: 'Medicamentos' };
 
@@ -39,9 +41,9 @@ export function PantallaConsolidado({ identidad }: { identidad: Identidad }) {
       <Link className="enlace" to={`/animales/${animal.id}`}>
         ← Volver a la ficha
       </Link>
-      <p className="titulo-seccion">Consolidado económico</p>
+      <TituloPantalla dibujo={<Monedas />}>Consolidado económico</TituloPantalla>
       <p className="evento__animal">
-        Animal <strong className="registrado__chapeta">{animal.codigo_chapeta}</strong>
+        Animal <strong className="registrado__chapeta chapeta">{animal.codigo_chapeta}</strong>
       </p>
 
       <section className="tarjeta">

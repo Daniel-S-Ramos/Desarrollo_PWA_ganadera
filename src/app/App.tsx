@@ -32,6 +32,7 @@ import { useCargaInicialCompleta } from '../ui/useEstadoMotor';
 import { PantallaDefinirCodigo } from '../ui/pantallas/PantallaDefinirCodigo';
 import { PantallaDesbloqueo } from '../ui/pantallas/PantallaDesbloqueo';
 import { IconoPersona } from '../ui/componentes/Iconos';
+import { Montanas } from '../ui/componentes/Ilustraciones';
 import { NavegacionInferior } from '../ui/componentes/NavegacionInferior';
 import { PantallaAlertas } from '../modulos/inicio/PantallaAlertas';
 import { PantallaCuenta } from '../modulos/inicio/PantallaCuenta';
@@ -62,9 +63,13 @@ export function App() {
   return (
     <div className="marco">
       <header className="encabezado">
-        <div>
-          <h1>Ganadería JR</h1>
-          {identidad && cerradura === 'abierta' && enInicio && <span className="encabezado__subtitulo">Panel principal</span>}
+        <div className="encabezado__marca">
+          {/* El logo oficial: el mismo ícono de la aplicación instalada (public/favicon.svg). Decorativo: el nombre va al lado. */}
+          <img className="encabezado__logo" src="/pwa-192x192.png" alt="" width={192} height={192} />
+          <div>
+            <h1>Ganadería JR</h1>
+            {identidad && cerradura === 'abierta' && enInicio && <span className="encabezado__subtitulo">Panel principal</span>}
+          </div>
         </div>
         {identidad && cerradura === 'abierta' && (
           <span className="encabezado__usuario">
@@ -78,6 +83,7 @@ export function App() {
             </span>
           </span>
         )}
+        <Montanas />
       </header>
 
       <main className="contenido">

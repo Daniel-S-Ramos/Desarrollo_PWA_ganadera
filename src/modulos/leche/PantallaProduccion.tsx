@@ -7,6 +7,8 @@ import { DIAS_PROMEDIO_POR_DEFECTO, formatearLitros } from '../../dominio/leche'
 import { etiquetaDia, sumarDias, type Agregacion } from '../../dominio/periodos';
 import { periodoComparado } from './comparacion';
 import { desplazamientoHasta, diaDeVaca, periodoDeVaca, registrosDe, vacasConsultables, type DiaDeVaca, type PeriodoDeVaca } from './produccion';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Cantinas } from '../../ui/componentes/Ilustraciones';
 
 const AGREGACIONES: [Agregacion, string][] = [
   ['diaria', 'Diaria'],
@@ -57,7 +59,7 @@ export function PantallaProduccion() {
       <Link className="enlace" to="/">
         ← Volver al inicio
       </Link>
-      <p className="titulo-seccion">Producción de leche</p>
+      <TituloPantalla dibujo={<Cantinas tamano={32} />}>Producción de leche</TituloPantalla>
 
       {/* CU-07, paso 5 (documento técnico 28). */}
       <Link className="boton boton--secundario boton--ancho" to="/produccion/comparar">

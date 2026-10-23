@@ -1873,3 +1873,428 @@ a.boton {
 .acceso strong {
   margin-top: 10px;
 }
+
+/* ===================================================================================================
+ * Sistema visual (rediseño del 2026-10-23): Nunito en títulos y números, ilustraciones planas, la
+ * chapeta solo para el número de los animales y el logo oficial en el encabezado. Colores de la
+ * Tabla 29 (PU-01) y controles de al menos 64 px (3.10.4.2) sin cambios.
+ * ================================================================================================= */
+:root {
+  --letra-titulo: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --radio: 14px;
+}
+
+h1,
+h2,
+h3,
+.titulo-seccion,
+.ingreso__marca,
+.ingreso__tarjeta .ingreso__titulo,
+.pantalla-ilustrada__titulo,
+.tarjeta .preparando__titulo,
+.inicio__saludo,
+.inicio__pregunta,
+.resumen__valor,
+.acceso strong,
+.acceso-ancho__texto strong,
+.recordatorio__titulo,
+.sesion h2 {
+  font-family: var(--letra-titulo);
+}
+.titulo-seccion {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.tarjeta h2 {
+  font-weight: 800;
+}
+.inicio__saludo {
+  font-size: 1.65rem;
+  font-weight: 900;
+}
+.inicio__pregunta {
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+/* Encabezado: logo oficial, nombre y montañas al pie. */
+.encabezado {
+  position: relative;
+  padding-bottom: 38px;
+}
+.encabezado__marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.encabezado__logo {
+  display: block;
+  width: 50px;
+  height: 50px;
+  flex: none;
+  /* El logo es dorado sobre transparente: una sombra suave lo separa del verde. */
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+.encabezado h1 {
+  font-weight: 900;
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+.encabezado__usuario {
+  position: relative;
+  z-index: 1;
+}
+.encabezado__montanas {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 34px;
+  display: block;
+}
+
+/* La chapeta: el número del animal, como la chapeta amarilla de la oreja. Solo para los animales. */
+.chapeta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  height: 36px;
+  margin-top: 10px;
+  padding: 6px 10px 0;
+  background: var(--amarillo);
+  color: var(--texto);
+  font-family: var(--letra-titulo);
+  font-weight: 900;
+  font-size: 1.1rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  vertical-align: middle;
+  border-radius: 8px 8px 12px 12px;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+.chapeta::before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 14px;
+  background: var(--amarillo);
+  border-radius: 11px 11px 0 0;
+}
+.chapeta::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fondo);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+.chapeta--grande {
+  min-width: 84px;
+  height: 50px;
+  margin-top: 14px;
+  padding: 8px 14px 0;
+  font-size: 1.75rem;
+  border-radius: 10px 10px 16px 16px;
+}
+.chapeta--grande::before {
+  top: -12px;
+  width: 30px;
+  height: 18px;
+  border-radius: 15px 15px 0 0;
+}
+.chapeta--grande::after {
+  top: -7px;
+  width: 9px;
+  height: 9px;
+}
+/* Dentro de una tarjeta blanca el agujero muestra el blanco. */
+.tarjeta .chapeta::after,
+.fila-animal .chapeta::after,
+.ronda__vaca .chapeta::after,
+.produccion__fila .chapeta::after {
+  background: var(--blanco);
+}
+
+/* Ilustraciones en un círculo verde claro (accesos, botones). */
+.ilustracion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--verde-claro);
+}
+.ilustracion--chica {
+  width: 48px;
+  height: 48px;
+}
+
+/* Botón ilustrado: el dibujo a la izquierda y el texto al lado, con la misma altura de 64 px. */
+.boton--ilustrado {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 8px 16px 8px 10px;
+  text-align: left;
+}
+.boton__ilustracion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--verde-claro);
+}
+.boton--principal .boton__ilustracion {
+  background: var(--blanco);
+}
+
+/* Tarjetas de resumen del inicio. */
+.resumen {
+  min-height: 136px;
+}
+.resumen__etiqueta {
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.resumen__campana {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.resumen__valor {
+  font-weight: 900;
+  font-size: 2rem;
+}
+.resumen__cantinas {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 30px;
+  margin: 8px 0 4px;
+}
+.resumen__cantinas i {
+  display: block;
+  width: 12px;
+  border-radius: 3px 3px 2px 2px;
+  background: var(--verde-claro);
+  border: 1.5px solid var(--verde-oscuro);
+}
+.resumen__cantinas i:last-child {
+  background: var(--verde-oscuro);
+}
+.resumen__sube {
+  color: var(--verde-oscuro);
+}
+.resumen__baja {
+  color: var(--rojo-oscuro);
+}
+
+/* Accesos del inicio: ilustración o fotos, título y detalle. */
+.acceso {
+  min-height: 142px;
+}
+.acceso strong {
+  font-weight: 800;
+  font-size: 1.12rem;
+}
+.acceso__fotos {
+  display: flex;
+  align-items: center;
+}
+.foto-mini {
+  display: block;
+  width: 46px;
+  height: 46px;
+  margin-left: -12px;
+  overflow: hidden;
+  border: 3px solid var(--blanco);
+  border-radius: 50%;
+  background: var(--verde-claro);
+  flex: none;
+}
+.foto-mini:first-child {
+  margin-left: 0;
+}
+.foto-mini img,
+.foto-mini svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.acceso-ancho__texto strong {
+  font-weight: 800;
+}
+
+/* Recordatorios: foto del animal, chapeta y título corto. */
+.recordatorio__foto {
+  display: block;
+  width: 58px;
+  height: 58px;
+  flex: none;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--verde-claro);
+}
+.recordatorio__foto img,
+.recordatorio__foto svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.recordatorio__cabeza {
+  align-items: center;
+}
+.recordatorio__texto {
+  min-width: 0;
+}
+.recordatorio__titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.recordatorio__icono {
+  width: 58px;
+  height: 58px;
+  border-radius: 12px;
+  background: var(--verde-claro);
+}
+
+/* Texto solo para lectores de pantalla. */
+.solo-lector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Fila del listado y ficha: la foto, o la cara ilustrada si el animal no tiene. */
+.fila-animal__foto--ilustrada,
+.ficha__foto--ilustrada {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--verde-claro);
+}
+.fila-animal__foto--ilustrada svg,
+.ficha__foto--ilustrada svg {
+  width: 100%;
+  height: 100%;
+}
+.fila-animal__datos .chapeta {
+  align-self: flex-start;
+}
+.ficha__identidad .chapeta--grande {
+  margin-bottom: 4px;
+}
+
+/* Ronda: la vaca con su chapeta, a la altura de un control principal. */
+.ronda__vaca {
+  min-height: var(--alto-control);
+  padding: 4px 16px 8px;
+}
+.ronda__titulo .chapeta--grande {
+  margin-left: 4px;
+}
+
+/* Barra de navegación: inactivos en gris; la vaca, desaturada hasta que se elige. */
+.navegacion__pestana {
+  min-height: 68px;
+  font-weight: 700;
+}
+.nav-vaca {
+  display: flex;
+  filter: grayscale(1) opacity(0.75);
+}
+.nav-vaca--activa {
+  filter: none;
+}
+.navegacion__contador {
+  font-family: var(--letra-titulo);
+  font-weight: 900;
+}
+
+/* Estado de la sincronización sobre la barra de navegación, compacto. */
+.pie-fijo .barra-inferior {
+  padding-top: 10px;
+  font-size: 0.95rem;
+}
+.barra-inferior__linea--correcto {
+  color: var(--verde-oscuro);
+}
+
+/* Ajustes tras la revisión en pantalla (2026-10-23). */
+.encabezado__logo {
+  width: 44px;
+  height: 44px;
+}
+.encabezado h1 {
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+.encabezado__usuario {
+  font-size: 0.8rem;
+}
+.nav-vaca {
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--borde);
+  filter: grayscale(1);
+}
+.nav-vaca--activa {
+  background: var(--verde-claro);
+  filter: none;
+}
+
+/* Los enlaces con aspecto de botón también alinean el dibujo y el texto a la izquierda. */
+.boton.boton--ilustrado {
+  justify-content: flex-start;
+}
+
+/* Título de pantalla con su ilustración. */
+.titulo-ilustrado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+/* En las filas de tres opciones el texto largo («Tratamiento») cabe con menos relleno lateral. */
+.opciones--tres .opcion {
+  padding: 0 6px;
+  overflow-wrap: anywhere;
+}
+.boton__flecha {
+  display: flex;
+}

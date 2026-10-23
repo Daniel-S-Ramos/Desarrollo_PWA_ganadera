@@ -3,7 +3,7 @@ import { db } from '../../datos/db';
 import { crear } from '../../datos/repositorio';
 import { uuidv7 } from '../../datos/uuidv7';
 import type { DatosNuevos } from '../../dominio/tipos';
-import { buscar, cargarListado, compararChapetas, elegirFoto, type AnimalListado } from './listado';
+import { buscar, cargarFotoDeAnimal, cargarListado, compararChapetas, elegirFoto, type AnimalListado } from './listado';
 
 /**
  * PU-16 · Listado (parte 2: búsqueda, filtro y foto de cada fila).
@@ -151,6 +151,17 @@ describe('PU-16 · 5b. Carga del listado desde la base local', () => {
     expect(siete.foto?.size).toBe(30);
     expect(ocho).toMatchObject({ retirado: true, motivoSalida: 'venta', foto: null });
     expect(siete.motivoSalida).toBeNull();
+  });
+
+  it('la foto de un animal, para los recordatorios: la reducida principal, o null si no hay', async () => {
+    const conFoto = await crear('animal', datos('7'), autor);
+    const sinFoto = await crear('animal', datos('8'), autor);
+    const lateral = await crear('fotografia', { animal_id: conFoto.id, tipo: 'izquierdo' }, autor);
+    const frontal = await crear('fotografia', { animal_id: conFoto.id, tipo: 'frontal' }, autor);
+    await db.imagen.add({ fotografia_id: lateral.id, animal_id: conFoto.id, reducida: new Blob([new Uint8Array(10)]), completa: null });
+    await db.imagen.add({ fotografia_id: frontal.id, animal_id: conFoto.id, reducida: new Blob([new Uint8Array(20)]), completa: null });
+    expect((await cargarFotoDeAnimal(conFoto.id))?.size).toBe(elegirFoto([{ id: lateral.id, tipo: 'izquierdo' }, { id: frontal.id, tipo: 'frontal' }], new Map([[lateral.id, new Blob([new Uint8Array(10)])], [frontal.id, new Blob([new Uint8Array(20)])]]))?.size);
+    expect(await cargarFotoDeAnimal(sinFoto.id)).toBeNull();
   });
 });
 
