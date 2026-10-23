@@ -35,6 +35,7 @@ import { PantallaDefinirCodigo } from '../ui/pantallas/PantallaDefinirCodigo';
 import { PantallaDesbloqueo } from '../ui/pantallas/PantallaDesbloqueo';
 import { PantallaInicioSesion } from '../ui/pantallas/PantallaInicioSesion';
 import { useAlmacenamiento } from '../ui/useAlmacenamiento';
+import paisaje from '../ui/imagenes/paisaje.webp';
 
 /**
  * Estructura general de la aplicación: encabezado, contenido y barra inferior. La barra inferior,
@@ -45,6 +46,10 @@ export function App() {
   const { identidad, cerradura, ingresar, desbloquear, salirAlIngreso } = useSesion();
   const [avisoIngreso, setAvisoIngreso] = useState<string | null>(null);
   useSincronizacionAutomatica(cerradura === 'abierta');
+  const cargaCompleta = useCargaInicialCompleta();
+  // El aviso de RNF-15 se da en el inicio de sesión y en el uso diario; no se repite en las pantallas del
+  // código ni mientras se prepara el teléfono (pedido del autor, 2026-10-22).
+  const conAvisoAlmacenamiento = identidad === null || (cerradura === 'abierta' && cargaCompleta !== false);
 
   return (
     <div className="marco">
@@ -52,15 +57,20 @@ export function App() {
         <h1>Ganadería JR</h1>
         {identidad && cerradura === 'abierta' && (
           <span className="encabezado__usuario">
-            {identidad.nombre}
-            <br />
-            {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
+            <span>
+              {identidad.nombre}
+              <br />
+              {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
+            </span>
+            <span className="encabezado__avatar" aria-hidden="true">
+              <IconoPersona />
+            </span>
           </span>
         )}
       </header>
 
       <main className="contenido">
-        <AvisoAlmacenamiento persistencia={almacenamiento.persistencia} />
+        {conAvisoAlmacenamiento && <AvisoAlmacenamiento persistencia={almacenamiento.persistencia} />}
 
         {identidad === undefined && <p className="texto-secundario">Cargando…</p>}
 
@@ -204,8 +214,12 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
 function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; alCerrar: () => void; cargaCompleta: boolean | undefined }) {
   return (
     <>
-      <p className="titulo-seccion">Prototipo en construcción</p>
-      <p className="texto-secundario">Iteración 5 · Consultas, alertas y economía</p>
+      {cargaCompleta !== false && (
+        <>
+          <p className="titulo-seccion">Prototipo en construcción</p>
+          <p className="texto-secundario">Iteración 5 · Consultas, alertas y economía</p>
+        </>
+      )}
 
       {cargaCompleta === false && <PreparandoTelefono />}
 
@@ -248,14 +262,22 @@ function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; 
         </Link>
       )}
 
-      <section className="tarjeta tarjeta--correcto separado">
-        <h2>Sesión</h2>
-        <p>
-          {identidad.nombre} · {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
-        </p>
+      <section className="tarjeta tarjeta--correcto separado sesion">
+        <span className="sesion__icono" aria-hidden="true">
+          <IconoPersona />
+        </span>
+        <div>
+          <h2>Sesión</h2>
+          <p>
+            {identidad.nombre} · {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
+          </p>
+        </div>
       </section>
 
       <ConfirmacionCierre alCerrar={alCerrar} />
+
+      {/* Mientras se prepara el teléfono la pantalla es corta: el paisaje la cierra, como en el ingreso. */}
+      {cargaCompleta === false && <img className="paisaje-pie" src={paisaje} alt="" width={1024} height={281} />}
     </>
   );
 }
@@ -315,4 +337,14 @@ function useSincronizacionAutomatica(activa: boolean): void {
     if (!activa) return;
     return iniciarSincronizacionAutomatica(crearServicioRemoto(supabase));
   }, [activa]);
+}
+
+/** Silueta de una persona, para el usuario en el encabezado y en la sesión. */
+function IconoPersona() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+      <circle cx="12" cy="8" r="4.2" />
+      <path d="M3.8 20.2c.6-4.1 4-6.7 8.2-6.7s7.6 2.6 8.2 6.7c.1.5-.3.8-.8.8H4.6c-.5 0-.9-.3-.8-.8Z" />
+    </svg>
+  );
 }

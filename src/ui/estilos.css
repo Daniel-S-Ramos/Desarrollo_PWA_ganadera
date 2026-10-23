@@ -1416,3 +1416,202 @@ a.boton {
   outline: 3px solid var(--amarillo);
   outline-offset: -4px;
 }
+
+/* Pantallas del código de desbloqueo: candado, título, explicación, formulario y paisaje al pie. */
+.pantalla-ilustrada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 0 calc(-1 * var(--separacion)) calc(-1 * var(--separacion));
+  padding: 8px var(--separacion) 0;
+}
+.pantalla-ilustrada__dibujo {
+  display: block;
+  width: min(100%, 420px);
+  height: auto;
+}
+.pantalla-ilustrada__titulo {
+  margin: 16px 0 0;
+  font-size: 1.6rem;
+  line-height: 1.25;
+}
+.pantalla-ilustrada__explicacion {
+  margin: 8px 0 20px;
+  color: var(--texto-secundario);
+}
+.pantalla-ilustrada__contenido {
+  width: 100%;
+  text-align: left;
+}
+.pantalla-ilustrada__paisaje,
+.paisaje-pie {
+  display: block;
+  width: calc(100% + 2 * var(--separacion));
+  max-width: none;
+  height: auto;
+  margin: 24px calc(-1 * var(--separacion)) calc(-1 * var(--separacion));
+}
+.campo input.campo__codigo::placeholder {
+  color: var(--borde);
+  letter-spacing: 0.4em;
+  opacity: 1;
+}
+
+/* Encabezado: nombre y perfil con la silueta del usuario. */
+.encabezado__usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.encabezado__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--blanco);
+  color: var(--verde-oscuro);
+}
+
+/* Botón con ícono a la izquierda y, si se indica, una flecha a la derecha. */
+.boton--con-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.boton__flecha {
+  margin-left: auto;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+/* Tarjeta de la sesión con la silueta del usuario. */
+.sesion {
+  display: flex;
+  align-items: center;
+  gap: var(--separacion);
+}
+.sesion h2 {
+  margin: 0;
+}
+.sesion p {
+  margin: 0;
+}
+.sesion__icono {
+  display: flex;
+  color: var(--verde-oscuro);
+}
+
+/* Preparando este teléfono (documento técnico 17): ilustración, avance, pasos y conexión. */
+.preparando__dibujo {
+  display: block;
+  width: min(100%, 340px);
+  height: auto;
+  margin: 0 auto;
+}
+.tarjeta .preparando__titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.25;
+}
+.preparando__explicacion {
+  margin: 0;
+}
+.preparando__avance-texto {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.barra-avance {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--borde);
+  overflow: hidden;
+}
+.barra-avance__relleno {
+  height: 100%;
+  border-radius: 7px;
+  background: var(--verde-oscuro);
+  transition: width 0.4s ease;
+}
+.preparando__pasos {
+  padding: 12px 14px;
+  border-radius: var(--radio);
+  background: var(--fondo);
+  gap: 12px;
+}
+.preparando__paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.preparando__estado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+}
+.preparando__estado--hecho {
+  background: var(--verde-claro);
+  color: var(--verde-oscuro);
+}
+.preparando__estado--en_curso {
+  color: var(--verde-oscuro);
+}
+.preparando__estado--pendiente {
+  border: 2px solid var(--texto-secundario);
+}
+.preparando__detalle {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--texto-secundario);
+}
+.preparando__conexion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radio);
+  background: var(--verde-claro);
+}
+.preparando__conexion p {
+  margin: 0;
+}
+.preparando__conexion-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--blanco);
+  color: var(--verde-oscuro);
+}
+
+/* En las pantallas ilustradas el paisaje queda al pie aunque el contenido sea corto. */
+.contenido:has(> .ingreso, > .pantalla-ilustrada) {
+  display: flex;
+  flex-direction: column;
+}
+.ingreso,
+.pantalla-ilustrada {
+  flex: 1;
+}
+.ingreso__paisaje,
+.pantalla-ilustrada__paisaje {
+  margin-top: auto;
+  padding-top: 24px;
+  box-sizing: content-box;
+}
+.pantalla-ilustrada__paisaje {
+  margin-bottom: 0;
+}

@@ -3,7 +3,9 @@
  * 3 y 4). Funciones puras: reciben la situación y devuelven qué mostrar, de modo que cada mensaje se
  * verifica con pruebas automáticas sin necesidad de una pantalla.
  */
+import { TABLAS_SINCRONIZABLES } from '../datos/repositorio';
 import type { EstadoSync } from '../dominio/tipos';
+import type { AvanceDatos } from '../sync/bajada';
 import type { ResultadoSincronizacion } from '../sync/motor';
 
 /** informacion: no exige nada · correcto: todo a salvo · advertencia: exige una acción. */
@@ -161,4 +163,18 @@ export function pasosDeCarga(s: {
     // Mientras la pantalla se muestra, los registros no han terminado de llegar: nunca se dan por hechos.
     registros: despuesDeAnimales ? 'en_curso' : 'pendiente',
   };
+}
+
+/**
+ * Porcentaje de la carga inicial para la barra de «Preparando este teléfono». Se cuenta por etapas: los
+ * datos de referencia y cada tabla del predio, en el orden en que se descargan (documento 17, sección 4).
+ * Una tabla en curso cuenta como empezada, no como terminada, para no llegar al 100 % antes de tiempo.
+ * null fuera de una descarga: sin avance que mostrar.
+ */
+export function porcentajeDeCarga(datos: AvanceDatos | null | undefined, tablas: readonly string[] = TABLAS_SINCRONIZABLES): number | null {
+  if (!datos) return null;
+  if (!datos.referencia) return 0;
+  const etapas = tablas.length + 1;
+  const indice = datos.tabla === null ? -1 : tablas.indexOf(datos.tabla);
+  return Math.round(((1 + Math.max(indice, 0)) / etapas) * 100);
 }

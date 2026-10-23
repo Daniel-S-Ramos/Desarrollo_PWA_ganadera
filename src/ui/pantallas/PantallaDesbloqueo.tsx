@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { cerrarSesionServicio, salirPorBloqueo } from '../../sesion/autenticacion';
 import { verificarCodigo } from '../../sesion/desbloqueo';
 import type { Identidad } from '../../sesion/token';
+import { MarcoCodigo } from '../componentes/MarcoCodigo';
 
 /**
  * Desbloqueo al abrir la aplicación en un dispositivo que ya tiene sesión: solo se pide el código, no
@@ -53,37 +54,37 @@ export function PantallaDesbloqueo({
   }
 
   return (
-    <form className="formulario" onSubmit={enviar}>
-      <p className="titulo-seccion">Hola, {identidad.nombre}</p>
-      <p className="texto-secundario">Ingrese su código de desbloqueo.</p>
+    <MarcoCodigo ilustracion="cerrado" titulo={`Hola, ${identidad.nombre}`} explicacion="Ingrese su código de desbloqueo.">
+      <form className="formulario" onSubmit={enviar}>
+        <label className="campo">
+          <span>Código</span>
+          <input
+            className="campo__codigo"
+            type="password"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={6}
+            placeholder="●●●●●●"
+            required
+            autoFocus
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
+          />
+        </label>
 
-      <label className="campo">
-        <span>Código</span>
-        <input
-          className="campo__codigo"
-          type="password"
-          inputMode="numeric"
-          autoComplete="off"
-          maxLength={6}
-          required
-          autoFocus
-          value={codigo}
-          onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
-        />
-      </label>
+        {error && (
+          <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
+            <p>⚠ {error}</p>
+          </div>
+        )}
 
-      {error && (
-        <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
-          <p>⚠ {error}</p>
-        </div>
-      )}
-
-      <button className="boton boton--principal boton--ancho" type="submit" disabled={verificando || codigo.length < 4}>
-        {verificando ? 'Verificando…' : 'Desbloquear'}
-      </button>
-      <button className="boton boton--secundario boton--ancho" type="button" onClick={() => void olvide()}>
-        Olvidé mi código
-      </button>
-    </form>
+        <button className="boton boton--principal boton--ancho" type="submit" disabled={verificando || codigo.length < 4}>
+          {verificando ? 'Verificando…' : 'Desbloquear'}
+        </button>
+        <button className="boton boton--secundario boton--ancho" type="button" onClick={() => void olvide()}>
+          Olvidé mi código
+        </button>
+      </form>
+    </MarcoCodigo>
   );
 }
