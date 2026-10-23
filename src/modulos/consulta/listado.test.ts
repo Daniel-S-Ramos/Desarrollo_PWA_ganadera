@@ -18,6 +18,7 @@ function animal(codigo: string, retirado = false): AnimalListado {
     fecha_nacimiento: null,
     fecha_nacimiento_exacta: false,
     retirado,
+    motivoSalida: retirado ? 'venta' : null,
     chapetaPendiente: false,
     destino: null,
     estado_sync: 'sincronizado',
@@ -148,6 +149,34 @@ describe('PU-16 · 5b. Carga del listado desde la base local', () => {
     const ocho = listado.find((a) => a.codigo_chapeta === '8')!;
     expect(siete).toMatchObject({ retirado: false, estado_sync: 'pendiente', fecha_nacimiento: '2025-10-13' });
     expect(siete.foto?.size).toBe(30);
-    expect(ocho).toMatchObject({ retirado: true, foto: null });
+    expect(ocho).toMatchObject({ retirado: true, motivoSalida: 'venta', foto: null });
+    expect(siete.motivoSalida).toBeNull();
+  });
+});
+
+describe('PU-16 · 6. Los retirados por motivo de salida (2026-10-22)', () => {
+  const retirado = (codigo: string, motivoSalida: AnimalListado['motivoSalida'], destino: AnimalListado['destino'] = null): AnimalListado => ({
+    ...animal(codigo, true),
+    motivoSalida,
+    destino,
+  });
+  const HATO_SALIDAS = [
+    retirado('1', 'venta', 'leche'),
+    retirado('2', 'muerte', 'venta'),
+    retirado('3', 'perdida_robo'),
+    retirado('4', 'venta'),
+    { ...animal('5'), destino: 'venta' as const },
+  ];
+
+  it('con los retirados se filtra por el motivo, no por el destino', () => {
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'retirados', 'todos', 'venta'))).toEqual(['1', '4']);
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'retirados', 'todos', 'muerte'))).toEqual(['2']);
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'retirados', 'todos', 'perdida_robo'))).toEqual(['3']);
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'retirados', 'venta', 'todos'))).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('con los activos y con todos se filtra por el destino y el motivo no cuenta', () => {
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'activos', 'venta', 'muerte'))).toEqual(['5']);
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'todos', 'venta', 'venta'))).toEqual(['2', '5']);
   });
 });

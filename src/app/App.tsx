@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { PantallaFicha } from '../modulos/consulta/PantallaFicha';
 import { PantallaConflictos } from '../modulos/correcciones/PantallaConflictos';
 import { PantallaCorreccionesRecientes } from '../modulos/correcciones/PantallaCorreccionesRecientes';
 import { PantallaCorregir } from '../modulos/correcciones/PantallaCorregir';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
-import { Recordatorios } from '../modulos/recordatorios/SeccionRecordatorios';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
 import { PantallaComparacion } from '../modulos/leche/PantallaComparacion';
 import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
@@ -28,14 +27,19 @@ import { restaurarSesionLocal } from '../sesion/sesionLocal';
 import type { Identidad } from '../sesion/token';
 import { AvisoAlmacenamiento } from '../ui/componentes/AvisoAlmacenamiento';
 import { BarraEstado } from '../ui/componentes/BarraEstado';
-import { ConfirmacionCierre } from '../ui/componentes/ConfirmacionCierre';
-import { PreparandoTelefono, RegistroEnEspera } from '../ui/componentes/PreparandoTelefono';
+import { RegistroEnEspera } from '../ui/componentes/PreparandoTelefono';
 import { useCargaInicialCompleta } from '../ui/useEstadoMotor';
 import { PantallaDefinirCodigo } from '../ui/pantallas/PantallaDefinirCodigo';
 import { PantallaDesbloqueo } from '../ui/pantallas/PantallaDesbloqueo';
+import { IconoPersona } from '../ui/componentes/Iconos';
+import { NavegacionInferior } from '../ui/componentes/NavegacionInferior';
+import { PantallaAlertas } from '../modulos/inicio/PantallaAlertas';
+import { PantallaCuenta } from '../modulos/inicio/PantallaCuenta';
+import { PantallaInicio } from '../modulos/inicio/PantallaInicio';
+import { cargarRecordatorios } from '../modulos/recordatorios/recordatorios';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { PantallaInicioSesion } from '../ui/pantallas/PantallaInicioSesion';
 import { useAlmacenamiento } from '../ui/useAlmacenamiento';
-import paisaje from '../ui/imagenes/paisaje.webp';
 
 /**
  * Estructura general de la aplicación: encabezado, contenido y barra inferior. La barra inferior,
@@ -47,6 +51,10 @@ export function App() {
   const [avisoIngreso, setAvisoIngreso] = useState<string | null>(null);
   useSincronizacionAutomatica(cerradura === 'abierta');
   const cargaCompleta = useCargaInicialCompleta();
+  const enInicio = useLocation().pathname === '/';
+  const abierta = !!identidad && cerradura === 'abierta';
+  // El contador de Alertas en la barra inferior; la capa ui no lee los módulos.
+  const pendientes = useLiveQuery(() => (abierta ? cargarRecordatorios().then((grupos) => grupos.reduce((n, g) => n + g.recordatorios.length, 0)) : Promise.resolve(0)), [abierta]) ?? 0;
   // El aviso de RNF-15 se da en el inicio de sesión y en el uso diario; no se repite en las pantallas del
   // código ni mientras se prepara el teléfono (pedido del autor, 2026-10-22).
   const conAvisoAlmacenamiento = identidad === null || (cerradura === 'abierta' && cargaCompleta !== false);
@@ -54,7 +62,10 @@ export function App() {
   return (
     <div className="marco">
       <header className="encabezado">
-        <h1>Ganadería JR</h1>
+        <div>
+          <h1>Ganadería JR</h1>
+          {identidad && cerradura === 'abierta' && enInicio && <span className="encabezado__subtitulo">Panel principal</span>}
+        </div>
         {identidad && cerradura === 'abierta' && (
           <span className="encabezado__usuario">
             <span>
@@ -114,7 +125,10 @@ export function App() {
 
       <AvisoActualizacion />
 
-      <BarraEstado espacio={almacenamiento.espacio} conSesion={!!identidad && cerradura === 'abierta'} />
+      <div className="pie-fijo">
+        <BarraEstado espacio={almacenamiento.espacio} conSesion={abierta} />
+        {abierta && identidad && <NavegacionInferior conAnimales={puedeUsar(identidad.perfil, 'CU-03')} pendientes={pendientes} />}
+      </div>
     </div>
   );
 }
@@ -128,7 +142,10 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
   const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-02') && cargaCompleta === true;
   return (
           <Routes>
-            <Route path="/" element={<Inicio identidad={identidad} alCerrar={alCerrar} cargaCompleta={cargaCompleta} />} />
+            <Route path="/" element={<PantallaInicio identidad={identidad} alCerrar={alCerrar} cargaCompleta={cargaCompleta} />} />
+            {/* Pestañas de la barra inferior (rediseño del 2026-10-22). */}
+            <Route path="/alertas" element={<PantallaAlertas identidad={identidad} />} />
+            <Route path="/cuenta" element={<PantallaCuenta identidad={identidad} alCerrar={alCerrar} />} />
             <Route
               path="/animales/nuevo"
               element={
@@ -207,81 +224,6 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
   );
 }
 
-/**
- * Pantalla de inicio. Los accesos se muestran solo a los perfiles que pueden usarlos (Tabla 27);
- * los recordatorios van arriba (3.10.4.4, documento técnico 30).
- */
-function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; alCerrar: () => void; cargaCompleta: boolean | undefined }) {
-  return (
-    <>
-      {cargaCompleta !== false && (
-        <>
-          <p className="titulo-seccion">Prototipo en construcción</p>
-          <p className="texto-secundario">Iteración 5 · Consultas, alertas y economía</p>
-        </>
-      )}
-
-      {cargaCompleta === false && <PreparandoTelefono />}
-
-      {/* Documento técnico 30: los recordatorios derivados, arriba y para ambos perfiles (incluye la chapeta del 4.2). */}
-      {cargaCompleta !== false && <Recordatorios identidad={identidad} />}
-
-      {puedeUsar(identidad.perfil, 'CU-03') && cargaCompleta !== false && (
-        <Link className="boton boton--principal boton--ancho" to="/animales">
-          Animales
-        </Link>
-      )}
-
-      {puedeUsar(identidad.perfil, 'CU-02') && cargaCompleta === true && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/animales/nuevo">
-          Registrar animal
-        </Link>
-      )}
-
-      {puedeUsar(identidad.perfil, 'CU-06') && cargaCompleta === true && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/ordeno">
-          Ronda de ordeño
-        </Link>
-      )}
-
-      {puedeUsar(identidad.perfil, 'CU-07') && cargaCompleta !== false && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/produccion">
-          Producción de leche
-        </Link>
-      )}
-
-      {puedeUsar(identidad.perfil, 'CU-18') && cargaCompleta !== false && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/correcciones">
-          Correcciones recientes
-        </Link>
-      )}
-
-      {cargaCompleta !== false && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/medicamentos">
-          Medicamentos
-        </Link>
-      )}
-
-      <section className="tarjeta tarjeta--correcto separado sesion">
-        <span className="sesion__icono" aria-hidden="true">
-          <IconoPersona />
-        </span>
-        <div>
-          <h2>Sesión</h2>
-          <p>
-            {identidad.nombre} · {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
-          </p>
-        </div>
-      </section>
-
-      <ConfirmacionCierre alCerrar={alCerrar} />
-
-      {/* Mientras se prepara el teléfono la pantalla es corta: el paisaje la cierra, como en el ingreso. */}
-      {cargaCompleta === false && <img className="paisaje-pie" src={paisaje} alt="" width={1024} height={281} />}
-    </>
-  );
-}
-
 /** Estado de la cerradura del dispositivo (documento técnico 07, sección 3). */
 type Cerradura = 'definir' | 'bloqueada' | 'abierta';
 
@@ -339,12 +281,3 @@ function useSincronizacionAutomatica(activa: boolean): void {
   }, [activa]);
 }
 
-/** Silueta de una persona, para el usuario en el encabezado y en la sesión. */
-function IconoPersona() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-      <circle cx="12" cy="8" r="4.2" />
-      <path d="M3.8 20.2c.6-4.1 4-6.7 8.2-6.7s7.6 2.6 8.2 6.7c.1.5-.3.8-.8.8H4.6c-.5 0-.9-.3-.8-.8Z" />
-    </svg>
-  );
-}

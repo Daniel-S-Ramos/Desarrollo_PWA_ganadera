@@ -8,7 +8,7 @@ import { fechaDelPredio } from '../../dominio/fechas';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
 import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
 import { normalizarChapeta } from '../identificacion/registroAnimal';
-import { buscar, cargarListado, type AnimalListado, type FiltroDestino, type FiltroEstado } from './listado';
+import { buscar, cargarListado, type AnimalListado, type FiltroDestino, type FiltroEstado, type FiltroSalida } from './listado';
 
 const FILTROS: [FiltroEstado, string][] = [
   ['activos', 'Activos'],
@@ -21,6 +21,14 @@ const FILTROS_DESTINO: [FiltroDestino, string][] = [
   ['todos', 'Todos'],
   ...DESTINOS.map((d): [FiltroDestino, string] => [d, NOMBRE_DESTINO[d]]),
   ['sin_destino', 'Sin destino'],
+];
+
+/** Con los retirados, las fichas son los motivos de salida: así se encuentran los vendidos (2026-10-22). */
+const FILTROS_SALIDA: [FiltroSalida, string][] = [
+  ['todos', 'Todos'],
+  ['venta', 'Vendidos'],
+  ['muerte', 'Muertos'],
+  ['perdida_robo', 'Pérdida o robo'],
 ];
 
 const NOMBRE_FILTRO: Record<FiltroEstado, [string, string]> = {
@@ -38,13 +46,14 @@ export function PantallaListado({ puedeRegistrar, informacionIncompleta = false 
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<FiltroEstado>('activos');
   const [filtroDestino, setFiltroDestino] = useState<FiltroDestino>('todos');
+  const [filtroSalida, setFiltroSalida] = useState<FiltroSalida>('todos');
   const [hoy] = useState(() => fechaDelPredio());
   // La lista observa la base local: se actualiza sola cuando llega un animal o una foto.
   const animales = useLiveQuery(() => cargarListado(), []);
 
   if (!animales) return <p className="texto-secundario">Cargando…</p>;
 
-  const resultado = buscar(animales, texto, filtro, filtroDestino);
+  const resultado = buscar(animales, texto, filtro, filtroDestino, filtroSalida);
   const buscada = normalizarChapeta(texto);
   const [singular, plural] = NOMBRE_FILTRO[filtro];
 
@@ -78,13 +87,23 @@ export function PantallaListado({ puedeRegistrar, informacionIncompleta = false 
         ))}
       </div>
 
-      <div className="fichas-filtro" role="group" aria-label="Destino productivo">
-        {FILTROS_DESTINO.map(([clave, nombre]) => (
-          <button key={clave} type="button" className="ficha-filtro" aria-pressed={filtroDestino === clave} onClick={() => setFiltroDestino(clave)}>
-            {nombre}
-          </button>
-        ))}
-      </div>
+      {filtro === 'retirados' ? (
+        <div className="fichas-filtro" role="group" aria-label="Motivo de la salida">
+          {FILTROS_SALIDA.map(([clave, nombre]) => (
+            <button key={clave} type="button" className="ficha-filtro" aria-pressed={filtroSalida === clave} onClick={() => setFiltroSalida(clave)}>
+              {nombre}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="fichas-filtro" role="group" aria-label="Destino productivo">
+          {FILTROS_DESTINO.map(([clave, nombre]) => (
+            <button key={clave} type="button" className="ficha-filtro" aria-pressed={filtroDestino === clave} onClick={() => setFiltroDestino(clave)}>
+              {nombre}
+            </button>
+          ))}
+        </div>
+      )}
 
       <p className="texto-secundario" aria-live="polite">
         {resultado.animales.length === 1 ? `1 ${singular}` : `${resultado.animales.length} ${plural}`}

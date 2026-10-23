@@ -273,6 +273,7 @@ describe('PU-20 · 8. Filtro del listado (sección 6)', () => {
     fecha_nacimiento: null,
     fecha_nacimiento_exacta: false,
     retirado: false,
+    motivoSalida: null,
     chapetaPendiente: false,
     destino,
     estado_sync: 'sincronizado',
