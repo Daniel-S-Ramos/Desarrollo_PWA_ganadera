@@ -51,14 +51,13 @@ export function App() {
   const { identidad, cerradura, ingresar, desbloquear, salirAlIngreso } = useSesion();
   const [avisoIngreso, setAvisoIngreso] = useState<string | null>(null);
   useSincronizacionAutomatica(cerradura === 'abierta');
-  const cargaCompleta = useCargaInicialCompleta();
   const enInicio = useLocation().pathname === '/';
   const abierta = !!identidad && cerradura === 'abierta';
   // El contador de Alertas en la barra inferior; la capa ui no lee los módulos.
   const pendientes = useLiveQuery(() => (abierta ? cargarRecordatorios().then((grupos) => grupos.reduce((n, g) => n + g.recordatorios.length, 0)) : Promise.resolve(0)), [abierta]) ?? 0;
-  // El aviso de RNF-15 se da en el inicio de sesión y en el uso diario; no se repite en las pantallas del
-  // código ni mientras se prepara el teléfono (pedido del autor, 2026-10-22).
-  const conAvisoAlmacenamiento = identidad === null || (cerradura === 'abierta' && cargaCompleta !== false);
+  // El aviso de RNF-15 se da solo en el inicio de sesión, cuando se escriben el correo y la contraseña; no se
+  // repite en las demás pantallas (pedido del autor, 2026-10-24).
+  const conAvisoAlmacenamiento = identidad === null;
 
   return (
     <div className="marco">

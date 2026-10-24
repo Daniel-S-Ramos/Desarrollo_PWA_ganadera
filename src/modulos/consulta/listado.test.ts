@@ -3,7 +3,7 @@ import { db } from '../../datos/db';
 import { crear } from '../../datos/repositorio';
 import { uuidv7 } from '../../datos/uuidv7';
 import type { DatosNuevos } from '../../dominio/tipos';
-import { buscar, cargarFotoDeAnimal, cargarListado, compararChapetas, elegirFoto, type AnimalListado } from './listado';
+import { buscar, cargarFotoDeAnimal, cargarListado, compararChapetas, contarListado, elegirFoto, type AnimalListado } from './listado';
 
 /**
  * PU-16 · Listado (parte 2: búsqueda, filtro y foto de cada fila).
@@ -189,5 +189,33 @@ describe('PU-16 · 6. Los retirados por motivo de salida (2026-10-22)', () => {
   it('con los activos y con todos se filtra por el destino y el motivo no cuenta', () => {
     expect(chapetas(buscar(HATO_SALIDAS, '', 'activos', 'venta', 'muerte'))).toEqual(['5']);
     expect(chapetas(buscar(HATO_SALIDAS, '', 'todos', 'venta', 'venta'))).toEqual(['2', '5']);
+  });
+});
+
+describe('PU-16 · 7. Conteos de los botones del listado (2026-10-24)', () => {
+  const fila = (codigo: string, destino: AnimalListado['destino'], motivoSalida: AnimalListado['motivoSalida'] = null): AnimalListado => ({
+    ...animal(codigo, motivoSalida !== null),
+    destino,
+    motivoSalida,
+  });
+  const HATO_CONTEO = [fila('1', 'leche'), fila('2', 'leche'), fila('3', 'ceba'), fila('4', null), fila('5', 'venta', 'venta'), fila('6', null, 'muerte'), fila('7', 'leche', 'venta')];
+
+  it('los estados y, dentro del elegido, cada destino; los motivos entre los retirados', () => {
+    const activos = contarListado(HATO_CONTEO, 'activos');
+    expect(activos.estados).toEqual({ activos: 4, retirados: 3, todos: 7 });
+    expect(activos.destinos).toMatchObject({ todos: 4, leche: 2, ceba: 1, sin_destino: 1 });
+    expect(activos.destinos.venta ?? 0).toBe(0);
+    expect(activos.salidas).toEqual({ todos: 3, venta: 2, muerte: 1, perdida_robo: 0 });
+    expect(contarListado(HATO_CONTEO, 'todos').destinos).toMatchObject({ todos: 7, leche: 3, venta: 1, sin_destino: 2 });
+    expect(contarListado(HATO_CONTEO, 'retirados').destinos).toMatchObject({ todos: 3, leche: 1, venta: 1, sin_destino: 1 });
+  });
+
+  it('cada conteo coincide con lo que muestra el filtro', () => {
+    for (const filtro of ['activos', 'todos'] as const) {
+      const c = contarListado(HATO_CONTEO, filtro);
+      for (const destino of ['leche', 'ceba', 'venta', 'sin_destino'] as const) expect(buscar(HATO_CONTEO, '', filtro, destino).animales).toHaveLength(c.destinos[destino] ?? 0);
+    }
+    const c = contarListado(HATO_CONTEO, 'retirados');
+    for (const motivo of ['venta', 'muerte', 'perdida_robo'] as const) expect(buscar(HATO_CONTEO, '', 'retirados', 'todos', motivo).animales).toHaveLength(c.salidas[motivo]);
   });
 });
