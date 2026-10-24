@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contactoAdministrador } from './administrador';
+import { contactoAdministrador, mensajeAyuda } from './administrador';
 
 /**
  * PU-35 · Ayuda para recuperar la contraseña: el contacto del administrador (RF-24, CU-01; hallazgo del desarrollo).
@@ -32,5 +32,14 @@ describe('PU-35 · 3 y 4. El nombre y la falta de configuración', () => {
 
   it('solo el nombre, sin teléfono: el nombre sin botones', () => {
     expect(contactoAdministrador('Daniel Ramos', undefined)).toEqual({ nombre: 'Daniel Ramos', telefono: null });
+  });
+});
+
+describe('PU-35 · 5. El mensaje de la ayuda', () => {
+  it('con el nombre del administrador; sin nombre, el mensaje general', () => {
+    expect(mensajeAyuda('Daniel Ramos')).toBe(
+      'Comuníquese con Daniel Ramos, que es el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.',
+    );
+    expect(mensajeAyuda(null)).toBe('Comuníquese con el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.');
   });
 });

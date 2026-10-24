@@ -13,6 +13,15 @@ export interface ContactoAdministrador {
   telefono: { visible: string; llamar: string; whatsapp: string } | null;
 }
 
+/**
+ * El mensaje de la ayuda, con el nombre del administrador si se configuró (pedido del autor, 2026-10-24):
+ * «Comuníquese con Daniel Ramos, que es el administrador del sistema. …».
+ */
+export function mensajeAyuda(nombre: string | null): string {
+  const quien = nombre ? `${nombre}, que es el administrador del sistema` : 'el administrador del sistema';
+  return `Comuníquese con ${quien}. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.`;
+}
+
 /** Indicativo de Colombia. */
 const INDICATIVO = '57';
 

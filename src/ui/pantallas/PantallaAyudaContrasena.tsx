@@ -1,4 +1,4 @@
-import { contactoAdministrador } from '../../sesion/administrador';
+import { contactoAdministrador, mensajeAyuda } from '../../sesion/administrador';
 import { IconoMensaje, IconoTelefono } from '../componentes/Iconos';
 import { MarcoCodigo } from '../componentes/MarcoCodigo';
 
@@ -14,19 +14,17 @@ export function PantallaAyudaContrasena({ alVolver }: { alVolver: () => void }) 
     <MarcoCodigo
       ilustracion="cerrado"
       titulo="¿Olvidó su contraseña?"
-      explicacion="Comuníquese con el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí."
+      explicacion={mensajeAyuda(contacto.nombre)}
     >
       <div className="formulario">
-        {/* Con el nombre configurado se muestra quién es; con el teléfono, además, los botones (sección 3). */}
-        {(contacto.nombre || contacto.telefono) && (
-          <div className="tarjeta ayuda-contrasena__contacto">
-            <span className="texto-secundario">Administrador del sistema</span>
-            {contacto.nombre && <strong>{contacto.nombre}</strong>}
-            {contacto.telefono && <span>{contacto.telefono.visible}</span>}
-          </div>
-        )}
+        {/* El nombre va en el mensaje; con el teléfono configurado, además, la tarjeta y los botones (sección 3). */}
         {contacto.telefono && (
           <>
+            <div className="tarjeta ayuda-contrasena__contacto">
+              <span className="texto-secundario">Administrador del sistema</span>
+              {contacto.nombre && <strong>{contacto.nombre}</strong>}
+              <span>{contacto.telefono.visible}</span>
+            </div>
             {/* El marcador no necesita datos; WhatsApp sí. */}
             <a className="boton boton--principal boton--ancho ayuda-contrasena__accion" href={contacto.telefono.llamar}>
               <IconoTelefono />

@@ -45,8 +45,8 @@ pantalla de ayuda, con el diseño de las pantallas del código (candado, título
 | Elemento | Contenido |
 |---|---|
 | Título | **¿Olvidó su contraseña?** |
-| Explicación | «Comuníquese con el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.» |
-| Contacto | «Administrador: **Daniel**» y el teléfono, con los botones **Llamar a Daniel** y **Escribir por WhatsApp** (64 px) |
+| Explicación | «Comuníquese con **Daniel Ramos, que es el administrador del sistema**. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.» (sin nombre configurado: «Comuníquese con el administrador del sistema. …») |
+| Contacto | Solo si se configura el teléfono: una tarjeta con el nombre y el número, y los botones **Llamar a …** y **Escribir por WhatsApp** (64 px) |
 | Botón | **Volver al inicio de sesión** (secundario) |
 
 - **Funciona sin señal**: no envía nada. El botón de llamar abre el marcador del teléfono (`tel:`), que no
@@ -54,8 +54,8 @@ pantalla de ayuda, con el diseño de las pantallas del código (candado, título
 - **El nombre y el teléfono no van en el código:** se leen de la configuración de la aplicación
   (`VITE_ADMIN_NOMBRE` y `VITE_ADMIN_TELEFONO`, en `.env.local` y en las variables de Vercel). Si cambia el
   administrador, se cambia la configuración y se publica de nuevo.
-- **Con solo el nombre** (sin teléfono), la tarjeta muestra «Administrador del sistema · Daniel Ramos», sin botones: el
-  propietario ya tiene el número (decisión del autor, 2026-10-24). **Sin configuración**, solo el mensaje general.
+- **Con solo el nombre** (sin teléfono), el nombre va en el mensaje y no hay tarjeta ni botones: el propietario ya tiene
+  el número (decisión del autor, 2026-10-24). **Sin configuración**, el mensaje general.
 - El teléfono se escribe con o sin el indicativo de Colombia: un celular de 10 dígitos que empieza por 3 se
   completa con el 57 para los enlaces, y se muestra como «300 123 4567».
 
@@ -83,6 +83,7 @@ quede guardado. El usuario ingresa con ella en la aplicación. Va en el manual d
 | 2 | Teléfono inválido o vacío | Sin teléfono: no hay botones |
 | 3 | Nombre | El que se configure, recortado; con solo el nombre, sin botones; sin nombre, ninguno |
 | 4 | Sin configuración | Solo el mensaje general |
+| 5 | El mensaje | Con el nombre: «Comuníquese con Daniel Ramos, que es el administrador del sistema. …»; sin nombre, el general |
 
 ### PE-39 (manual)
 
