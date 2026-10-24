@@ -41,3 +41,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 30 | [Recordatorios derivados y posponer](30-recordatorios.md) | 5.3 | RF-22 · RF-23 · CU-15 · HU-14 |
 | 31 | [Costos por animal y consolidado económico](31-consolidado-economico.md) | 5.4 | RF-20 · RF-21 · CU-14 · HU-16 |
 | 32 | [Un solo ordeño vigente por vaca y día](32-ordeno-vigente-unico.md) | 6.0 | RF-10 · CU-06 · CU-17 · Tabla 24 |
+| 33 | [Cuentas de usuario y recuperación de la contraseña](33-recuperar-contrasena.md) | 6.0b | RF-24 · CU-01 · HU-06 · 3.9.1 |

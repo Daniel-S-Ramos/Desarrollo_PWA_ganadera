@@ -2426,3 +2426,11 @@ h3,
 .ficha__fotos-franja > span:first-child {
   white-space: nowrap;
 }
+
+/* «¿Olvidó su contraseña?» en el inicio de sesión (documento técnico 33, sección 3): enlace con área táctil cómoda. */
+.ingreso__olvido {
+  align-self: center;
+  min-height: 48px;
+  padding: 0 12px;
+  font-size: 1rem;
+}

@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router';
 import { iniciarSesion, type ResultadoIngreso } from '../../sesion/autenticacion';
 import { describirPendientes } from '../../dominio/pendientes';
 import type { Identidad } from '../../sesion/token';
 import paisaje from '../imagenes/paisaje.webp';
 import vaca from '../imagenes/vaca.webp';
+import { PantallaRecuperarContrasena } from './PantallaRecuperarContrasena';
 
 type Falla = Extract<ResultadoIngreso, { ok: false }>;
 type MotivoSimple = Exclude<Falla['motivo'], 'otro_usuario_con_pendientes'>;
@@ -34,6 +36,9 @@ export function PantallaInicioSesion({ alIngresar }: { alIngresar: (identidad: I
   const [verContrasena, setVerContrasena] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Documento técnico 33, sección 3: «¿Olvidó su contraseña?»; desde un enlace vencido llega con ?recuperar=1.
+  const [parametros] = useSearchParams();
+  const [recuperar, setRecuperar] = useState(() => parametros.get('recuperar') === '1');
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
@@ -44,6 +49,8 @@ export function PantallaInicioSesion({ alIngresar }: { alIngresar: (identidad: I
     if (resultado.ok) alIngresar(resultado.identidad);
     else setError(mensajeDeFalla(resultado));
   }
+
+  if (recuperar) return <PantallaRecuperarContrasena correoInicial={correo} alVolver={() => setRecuperar(false)} />;
 
   return (
     <div className="ingreso">
@@ -110,6 +117,9 @@ export function PantallaInicioSesion({ alIngresar }: { alIngresar: (identidad: I
         <button className="boton boton--principal boton--ancho" type="submit" disabled={enviando}>
           {enviando ? 'Verificando…' : 'Ingresar'}
         </button>
+        <button type="button" className="enlace ingreso__olvido" onClick={() => setRecuperar(true)}>
+          ¿Olvidó su contraseña?
+        </button>
       </form>
 
       <img className="ingreso__paisaje" src={paisaje} alt="" width={1024} height={281} />
@@ -120,7 +130,7 @@ export function PantallaInicioSesion({ alIngresar }: { alIngresar: (identidad: I
 /* Íconos de trazo, del color del texto que los rodea. */
 const trazo = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 
-function IconoCorreo() {
+export function IconoCorreo() {
   return (
     <svg viewBox="0 0 24 24" width="26" height="26" {...trazo}>
       <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -129,7 +139,7 @@ function IconoCorreo() {
   );
 }
 
-function IconoCandado() {
+export function IconoCandado() {
   return (
     <svg viewBox="0 0 24 24" width="26" height="26" {...trazo}>
       <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
@@ -139,7 +149,7 @@ function IconoCandado() {
   );
 }
 
-function IconoOjo({ tachado }: { tachado: boolean }) {
+export function IconoOjo({ tachado }: { tachado: boolean }) {
   return (
     <svg viewBox="0 0 24 24" width="28" height="28" {...trazo}>
       <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
