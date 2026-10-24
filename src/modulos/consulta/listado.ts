@@ -141,26 +141,3 @@ export function cargarFotoDeAnimal(animalId: Uuid): Promise<Blob | null> {
     elegirFoto(fotografias, reducidas),
   );
 }
-
-export interface ConteosListado {
-  estados: Record<FiltroEstado, number>;
-  /** Por destino, entre los animales del estado elegido (activos o todos). */
-  destinos: Record<FiltroDestino, number>;
-  /** Por motivo de salida, entre los retirados. */
-  salidas: Record<FiltroSalida, number>;
-}
-
-/**
- * Cuántos animales hay en cada estado y en cada categoría, para los botones del listado (rediseño del
- * 2026-10-24). Los destinos se cuentan dentro del estado elegido; los motivos, entre los retirados.
- */
-export function contarListado(animales: readonly AnimalListado[], filtro: FiltroEstado): ConteosListado {
-  const activos = animales.filter((a) => !a.retirado);
-  const retirados = animales.filter((a) => a.retirado);
-  const delEstado = filtro === 'activos' ? activos : filtro === 'retirados' ? retirados : animales;
-  const destinos = { todos: delEstado.length, sin_destino: delEstado.filter((a) => a.destino === null).length } as Record<FiltroDestino, number>;
-  for (const a of delEstado) if (a.destino) destinos[a.destino] = (destinos[a.destino] ?? 0) + 1;
-  const salidas = { todos: retirados.length, venta: 0, muerte: 0, perdida_robo: 0 } as Record<FiltroSalida, number>;
-  for (const a of retirados) if (a.motivoSalida) salidas[a.motivoSalida] += 1;
-  return { estados: { activos: activos.length, retirados: retirados.length, todos: animales.length }, destinos, salidas };
-}
