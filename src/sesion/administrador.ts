@@ -14,12 +14,14 @@ export interface ContactoAdministrador {
 }
 
 /**
- * El mensaje de la ayuda, con el nombre del administrador si se configuró (pedido del autor, 2026-10-24):
- * «Comuníquese con Daniel Ramos, que es el administrador del sistema. …».
+ * El mensaje de la ayuda, en partes para poder resaltar el nombre (pedido del autor, 2026-10-24):
+ * «Comuníquese con **Daniel Ramos**, que es el administrador del sistema. …». Sin nombre, `nombre` es null.
  */
-export function mensajeAyuda(nombre: string | null): string {
-  const quien = nombre ? `${nombre}, que es el administrador del sistema` : 'el administrador del sistema';
-  return `Comuníquese con ${quien}. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.`;
+export function mensajeAyuda(nombre: string | null): { antes: string; nombre: string | null; despues: string } {
+  const resto = 'Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.';
+  return nombre
+    ? { antes: 'Comuníquese con ', nombre, despues: `, que es el administrador del sistema. ${resto}` }
+    : { antes: 'Comuníquese con el administrador del sistema. ', nombre: null, despues: resto };
 }
 
 /** Indicativo de Colombia. */

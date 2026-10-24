@@ -16,7 +16,7 @@ export function MarcoCodigo({
   /** cerrado: elegir el código o desbloquear · listo: repetirlo para confirmar. */
   ilustracion: 'cerrado' | 'listo';
   titulo: string;
-  explicacion: string;
+  explicacion: ReactNode;
   children: ReactNode;
 }) {
   return (

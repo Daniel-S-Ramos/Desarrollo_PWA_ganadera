@@ -290,6 +290,135 @@ export function pelajeDe(id: string): Pelaje {
   return (['holstein', 'parda', 'negra'] as const)[suma % 3]!;
 }
 
+/* --------------------------------- Filtros del listado de animales (pedido del autor, 2026-10-24). */
+
+/** Silueta de una vaca de perfil, para los botones de estado (activos, retirados, todos). */
+export function SiluetaVaca({ tamano = 44, color = VERDE }: Tamano & { color?: string }) {
+  return (
+    <Dibujo ancho={tamano} alto={tamano * 0.72} vista="0 0 50 36">
+      <path
+        d="M6 12c0-2 1.6-3.6 3.6-3.6H31c1.4 0 2.6-.7 3.3-1.8l1.2-1.9c.5-.7 1.4-.8 2-.3l1 .8h3.3c.8 0 1.4.4 1.8 1l1.9 2.6c.4.6.3 1.4-.3 1.8L43 12v3.3c0 1.2-.9 2.1-2.1 2.1H40v12.4c0 .9-.7 1.6-1.6 1.6h-2c-.9 0-1.6-.7-1.6-1.6v-8H16.2v8c0 .9-.7 1.6-1.6 1.6h-2c-.9 0-1.6-.7-1.6-1.6V20.4L8.6 18.2v5.7c0 .5-.4.8-.8.8s-.8-.3-.8-.8V16.6A3.7 3.7 0 0 1 6 14.1Z"
+        fill={color}
+      />
+    </Dibujo>
+  );
+}
+
+/** Tres siluetas juntas: todos los animales. */
+export function SiluetasVacas({ tamano = 54, color = GRIS }: Tamano & { color?: string }) {
+  return (
+    <Dibujo ancho={tamano} alto={tamano * 0.7} vista="0 0 60 42">
+      <g transform="translate(10 0) scale(0.75)" opacity="0.65">
+        <SiluetaRuta color={color} />
+      </g>
+      <g transform="translate(0 6) scale(0.8)" opacity="0.85">
+        <SiluetaRuta color={color} />
+      </g>
+      <g transform="translate(16 9) scale(0.9)">
+        <SiluetaRuta color={color} />
+      </g>
+    </Dibujo>
+  );
+}
+
+function SiluetaRuta({ color }: { color: string }) {
+  return (
+    <path
+      d="M6 12c0-2 1.6-3.6 3.6-3.6H31c1.4 0 2.6-.7 3.3-1.8l1.2-1.9c.5-.7 1.4-.8 2-.3l1 .8h3.3c.8 0 1.4.4 1.8 1l1.9 2.6c.4.6.3 1.4-.3 1.8L43 12v3.3c0 1.2-.9 2.1-2.1 2.1H40v12.4c0 .9-.7 1.6-1.6 1.6h-2c-.9 0-1.6-.7-1.6-1.6v-8H16.2v8c0 .9-.7 1.6-1.6 1.6h-2c-.9 0-1.6-.7-1.6-1.6V20.4L8.6 18.2v5.7c0 .5-.4.8-.8.8s-.8-.3-.8-.8V16.6A3.7 3.7 0 0 1 6 14.1Z"
+      fill={color}
+    />
+  );
+}
+
+/** Matas de pasto: la ceba. */
+export function Pasto({ tamano = 44 }: Tamano) {
+  return (
+    <Dibujo ancho={tamano} vista="0 0 40 40">
+      <path d="M3 35h34" stroke="#7fa865" strokeWidth="3" strokeLinecap="round" />
+      <path d="M8 35c-1-8-4-13-6-15 4 1 7 5 8 10 0-8 2-15 5-18 0 6-1 12-2 18 2-6 5-10 9-11-3 4-5 10-5 16z" fill="#5f9a4c" />
+      <path d="M20 35c0-9 2-17 6-21-1 7-1 13-1 18 2-5 5-9 9-10-3 4-5 9-6 13z" fill={VERDE} />
+      <path d="M28 35c1-5 3-8 6-10-1 3-2 7-2 10z" fill="#93b56f" />
+    </Dibujo>
+  );
+}
+
+/** Etiqueta de precio con su cordón: el animal para la venta. */
+export function EtiquetaPrecio({ tamano = 44 }: Tamano) {
+  return (
+    <Dibujo ancho={tamano} vista="0 0 40 40">
+      <path d="M6 6c3-3 8-2 10 2" fill="none" stroke="#8a5a3c" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M14 8h11l11 11-15 15L8 21V10a2 2 0 0 1 2-2z" fill={VERDE_CLARO} stroke={VERDE} strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="15" cy="14" r="2.4" fill={BLANCO} stroke={VERDE} strokeWidth="1.6" />
+      <path d="M24 17v11M27 19h-4a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4h-4" fill="none" stroke={VERDE} strokeWidth="1.8" strokeLinecap="round" />
+    </Dibujo>
+  );
+}
+
+/** Planta de beneficio: el sacrificio, sin mostrar carne. */
+export function PlantaBeneficio({ tamano = 44 }: Tamano) {
+  return (
+    <Dibujo ancho={tamano} vista="0 0 40 40">
+      <path d="M3 35h34" stroke={METAL_OSCURO} strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M6 35V17l10-7 10 7v18z" fill={METAL_CLARO} stroke={VERDE} strokeWidth="1.8" strokeLinejoin="round" />
+      <rect x="26" y="20" width="9" height="15" fill={METAL} stroke={VERDE} strokeWidth="1.8" />
+      <rect x="28.5" y="11" width="4" height="9" fill={METAL_OSCURO} />
+      <rect x="12" y="25" width="8" height="10" rx="1" fill={VERDE} />
+      <rect x="9" y="19" width="4" height="3.5" fill={BLANCO} stroke={VERDE} strokeWidth="1" />
+      <rect x="19" y="19" width="4" height="3.5" fill={BLANCO} stroke={VERDE} strokeWidth="1" />
+    </Dibujo>
+  );
+}
+
+/** Signo de interrogación en un círculo: sin destino. */
+export function Interrogacion({ tamano = 40 }: Tamano) {
+  return (
+    <Dibujo ancho={tamano} vista="0 0 40 40">
+      <circle cx="20" cy="20" r="16" fill={BLANCO} stroke={VERDE} strokeWidth="2.4" />
+      <path d="M15 15a5 5 0 1 1 7 4.6c-1.4.7-2 1.6-2 3.2v1" fill="none" stroke={VERDE} strokeWidth="3" strokeLinecap="round" />
+      <circle cx="20" cy="29" r="2" fill={VERDE} />
+    </Dibujo>
+  );
+}
+
+/** Cruz sencilla sobre una loma: muertos. */
+export function Cruz({ tamano = 40 }: Tamano) {
+  return (
+    <Dibujo ancho={tamano} vista="0 0 40 40">
+      <path d="M2 36c8-6 28-6 36 0z" fill="#93b56f" />
+      <rect x="17.5" y="6" width="5" height="26" rx="1" fill={GRIS} />
+      <rect x="11" y="12" width="18" height="5" rx="1" fill={GRIS} />
+    </Dibujo>
+  );
+}
+
+/** Cerca con un tramo caído: pérdida o robo. */
+export function CercaRota({ tamano = 44 }: Tamano) {
+  return (
+    <Dibujo ancho={tamano} vista="0 0 40 40">
+      <path d="M2 35h36" stroke="#93b56f" strokeWidth="3" strokeLinecap="round" />
+      <g fill="#8a5a3c">
+        <rect x="4" y="12" width="4" height="23" rx="1" />
+        <rect x="18" y="12" width="4" height="23" rx="1" />
+        <rect x="32" y="12" width="4" height="23" rx="1" />
+        <rect x="4" y="16" width="18" height="3.5" rx="1" />
+        <rect x="4" y="25" width="18" height="3.5" rx="1" />
+        <rect x="22" y="16" width="14" height="3.5" rx="1" />
+      </g>
+      <rect x="23" y="29" width="13" height="3.5" rx="1" fill="#b07a52" transform="rotate(18 29 31)" />
+    </Dibujo>
+  );
+}
+
+/** Visto bueno en un círculo verde: el estado elegido. */
+export function Visto({ tamano = 26 }: Tamano) {
+  return (
+    <Dibujo ancho={tamano} vista="0 0 26 26">
+      <circle cx="13" cy="13" r="12" fill={VERDE} stroke={BLANCO} strokeWidth="2" />
+      <path d="m7.5 13.5 3.6 3.6 7.4-7.6" fill="none" stroke={BLANCO} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+    </Dibujo>
+  );
+}
+
 /** Campana con el número de pendientes adentro (tarjeta «Pendientes» del inicio). */
 export function CampanaConNumero({ numero, tamano = 64 }: Tamano & { numero: string }) {
   return (

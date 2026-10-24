@@ -2456,3 +2456,231 @@ h3,
 .ayuda-contrasena__accion {
   gap: 10px;
 }
+
+/* El nombre del administrador resaltado en el mensaje de la ayuda (pedido del autor, 2026-10-24). */
+.ayuda-contrasena__nombre {
+  color: var(--texto);
+  font-weight: 800;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+ * Títulos de pantalla como letrero de finca (pedido del autor, 2026-10-24): grandes y reconocibles, para
+ * saber siempre en qué sección se está. Verde oscuro sobre verde claro, 7,65 a 1 (3.10.4.1).
+ * ------------------------------------------------------------------------------------------------- */
+.letrero {
+  position: relative;
+  margin: 10px 0 6px;
+  padding: 6px 22px 6px 6px;
+}
+.letrero__placa {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 84px;
+  padding: 10px 44px 10px 30px;
+  border: 2px solid #c6e0cd;
+  border-radius: 46px 34px 40px 30px;
+  background: var(--verde-claro);
+  box-shadow: 0 3px 0 rgba(22, 82, 50, 0.12), 0 6px 14px rgba(22, 82, 50, 0.08);
+}
+.letrero__tornillo {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #8fb39b;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+.letrero__tornillo--izquierdo {
+  left: 12px;
+}
+.letrero__tornillo--derecho {
+  right: 16px;
+  top: 70%;
+}
+.letrero__dibujo {
+  width: 60px;
+  height: 60px;
+  background: #c6e0cd;
+}
+.letrero .letrero__texto {
+  margin: 0;
+  min-width: 0;
+  color: var(--verde-oscuro);
+  font-family: var(--letra-titulo);
+  font-weight: 900;
+  font-size: clamp(1.55rem, 7.2vw, 2.25rem);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.letrero__destellos {
+  position: absolute;
+  top: -6px;
+  left: -4px;
+}
+.letrero__planta {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+ * Listado de animales (pedido del autor, 2026-10-24): registrar arriba, buscador con lupa, estados con
+ * silueta y cantidad, y categorías con su dibujo. Controles de al menos 44 px en las fichas y 64 en el resto.
+ * ------------------------------------------------------------------------------------------------- */
+.listado__subtitulo {
+  margin: 0 0 12px;
+}
+.listado__registrar {
+  margin-bottom: 14px;
+}
+.campo__icono--claro {
+  background: var(--blanco);
+  border-right: 0;
+  color: var(--verde-oscuro);
+}
+.campo__grupo--busqueda input::placeholder {
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* Estados: tres tarjetas con silueta, nombre y cantidad; la elegida con visto y una ola verde. */
+.filtro-estados {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+.filtro-estado {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 108px;
+  padding: 10px 6px 14px;
+  overflow: hidden;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--texto);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.filtro-estado[aria-pressed='true'] {
+  border-color: var(--verde-oscuro);
+}
+.filtro-estado:focus-visible {
+  outline: 3px solid var(--amarillo);
+  outline-offset: 2px;
+}
+.filtro-estado__dibujo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 36px;
+}
+.filtro-estado__texto {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.filtro-estado__texto strong {
+  font-family: var(--letra-titulo);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.filtro-estado__texto span {
+  color: var(--texto-secundario);
+  font-size: 0.85rem;
+}
+.filtro-estado__visto {
+  position: absolute;
+  z-index: 2;
+  top: 6px;
+  right: 6px;
+  display: flex;
+}
+.filtro-estado__ola {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 30px;
+}
+
+/* Categorías: la etiqueta y las fichas con su dibujo, sobre un panel suave. */
+.filtro-categorias {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 8px;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: #f3f8f4; /* verde muy suave: el texto secundario conserva 7:1 */
+}
+.filtro-categorias__etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.filtro-categorias__etiqueta > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.filtro-categorias__etiqueta strong {
+  font-family: var(--letra-titulo);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.filtro-categorias__etiqueta > span > span {
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+}
+.ficha-filtro--icono {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 12px 0 6px;
+  font-size: 1rem;
+  background: var(--blanco);
+  border-color: var(--borde);
+  color: var(--texto);
+}
+.ficha-filtro--icono[aria-pressed='true'] {
+  border-color: var(--verde-oscuro);
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+}
+.ficha-filtro__icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+}
+/* En la ficha elegida, el dibujo va sobre un círculo blanco para que se vea sobre el verde. */
+.ficha-filtro--icono[aria-pressed='true'] .ficha-filtro__icono {
+  border-radius: 50%;
+  background: var(--blanco);
+  color: var(--verde-oscuro);
+}
+.ficha-filtro__simbolo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+}

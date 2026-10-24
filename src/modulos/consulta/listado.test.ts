@@ -3,7 +3,7 @@ import { db } from '../../datos/db';
 import { crear } from '../../datos/repositorio';
 import { uuidv7 } from '../../datos/uuidv7';
 import type { DatosNuevos } from '../../dominio/tipos';
-import { buscar, cargarFotoDeAnimal, cargarListado, compararChapetas, elegirFoto, type AnimalListado } from './listado';
+import { buscar, cargarFotoDeAnimal, cargarListado, compararChapetas, contarEstados, elegirFoto, type AnimalListado } from './listado';
 
 /**
  * PU-16 · Listado (parte 2: búsqueda, filtro y foto de cada fila).
@@ -189,5 +189,14 @@ describe('PU-16 · 6. Los retirados por motivo de salida (2026-10-22)', () => {
   it('con los activos y con todos se filtra por el destino y el motivo no cuenta', () => {
     expect(chapetas(buscar(HATO_SALIDAS, '', 'activos', 'venta', 'muerte'))).toEqual(['5']);
     expect(chapetas(buscar(HATO_SALIDAS, '', 'todos', 'venta', 'venta'))).toEqual(['2', '5']);
+  });
+});
+
+describe('PU-16 · 7. Cuántos animales hay en cada estado (2026-10-24)', () => {
+  it('activos, retirados y todos; coinciden con lo que muestra cada filtro', () => {
+    const hato = [animal('1'), animal('2', true), animal('3'), animal('4', true), animal('5')];
+    expect(contarEstados(hato)).toEqual({ activos: 3, retirados: 2, todos: 5 });
+    for (const filtro of ['activos', 'retirados', 'todos'] as const) expect(buscar(hato, '', filtro).animales).toHaveLength(contarEstados(hato)[filtro]);
+    expect(contarEstados([])).toEqual({ activos: 0, retirados: 0, todos: 0 });
   });
 });

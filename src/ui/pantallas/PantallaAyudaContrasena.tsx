@@ -10,11 +10,18 @@ import { MarcoCodigo } from '../componentes/MarcoCodigo';
 export function PantallaAyudaContrasena({ alVolver }: { alVolver: () => void }) {
   const contacto = contactoAdministrador(import.meta.env.VITE_ADMIN_NOMBRE, import.meta.env.VITE_ADMIN_TELEFONO);
   const nombre = contacto.nombre ?? 'el administrador';
+  const mensaje = mensajeAyuda(contacto.nombre);
   return (
     <MarcoCodigo
       ilustracion="cerrado"
       titulo="¿Olvidó su contraseña?"
-      explicacion={mensajeAyuda(contacto.nombre)}
+      explicacion={
+        <>
+          {mensaje.antes}
+          {mensaje.nombre && <strong className="ayuda-contrasena__nombre">{mensaje.nombre}</strong>}
+          {mensaje.despues}
+        </>
+      }
     >
       <div className="formulario">
         {/* El nombre va en el mensaje; con el teléfono configurado, además, la tarjeta y los botones (sección 3). */}

@@ -141,3 +141,9 @@ export function cargarFotoDeAnimal(animalId: Uuid): Promise<Blob | null> {
     elegirFoto(fotografias, reducidas),
   );
 }
+
+/** Cuántos animales hay en cada estado, para los botones del listado (pedido del autor, 2026-10-24). */
+export function contarEstados(animales: readonly Pick<AnimalListado, 'retirado'>[]): Record<FiltroEstado, number> {
+  const retirados = animales.filter((a) => a.retirado).length;
+  return { activos: animales.length - retirados, retirados, todos: animales.length };
+}

@@ -36,10 +36,16 @@ describe('PU-35 · 3 y 4. El nombre y la falta de configuración', () => {
 });
 
 describe('PU-35 · 5. El mensaje de la ayuda', () => {
-  it('con el nombre del administrador; sin nombre, el mensaje general', () => {
-    expect(mensajeAyuda('Daniel Ramos')).toBe(
+  const texto = (m: ReturnType<typeof mensajeAyuda>) => m.antes + (m.nombre ?? '') + m.despues;
+
+  it('con el nombre del administrador, aparte para resaltarlo; sin nombre, el mensaje general', () => {
+    const conNombre = mensajeAyuda('Daniel Ramos');
+    expect(conNombre.nombre).toBe('Daniel Ramos');
+    expect(texto(conNombre)).toBe(
       'Comuníquese con Daniel Ramos, que es el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.',
     );
-    expect(mensajeAyuda(null)).toBe('Comuníquese con el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.');
+    const sinNombre = mensajeAyuda(null);
+    expect(sinNombre.nombre).toBeNull();
+    expect(texto(sinNombre)).toBe('Comuníquese con el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí.');
   });
 });
