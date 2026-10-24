@@ -2298,3 +2298,131 @@ h3,
 .boton__flecha {
   display: flex;
 }
+
+/* ---------------------------------------------------------------------------------------------------
+ * Ficha del animal reorganizada (2026-10-24): quién es, datos del animal, una tarjeta por tema con su
+ * dato vigente y sus acciones lado a lado, y lo que se usa poco al final. Controles de 64 px (3.10.4.2).
+ * ------------------------------------------------------------------------------------------------- */
+.ficha__seccion {
+  margin: 8px 0 10px;
+  font-family: var(--letra-titulo);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+/* Franja de las fotos: cuántas hay y su botón al lado. */
+.ficha__fotos-franja {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 8px 8px 14px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--blanco);
+  font-size: 0.95rem;
+}
+.ficha__fotos-franja--incompleta {
+  border-color: var(--amarillo);
+  background: var(--amarillo-claro);
+}
+.ficha__fotos-boton {
+  flex: none;
+  padding-right: 14px;
+}
+
+/* Datos del animal: origen y genealogía en una tarjeta. */
+.ficha__datos-animal {
+  padding: 4px 16px;
+}
+.ficha__lista {
+  margin: 0;
+}
+.ficha__datos-animal .ficha__dato {
+  padding: 12px 0;
+}
+.ficha__datos-animal .ficha__dato dd {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.ficha__datos-animal .ficha__dato dd small {
+  display: block;
+  margin-top: 2px;
+  color: var(--texto-secundario);
+  font-size: 0.92rem;
+  font-weight: 400;
+}
+
+/* Tarjetas de seguimiento. */
+.ficha__temas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ficha__temas .ficha__seccion {
+  margin-bottom: 0;
+}
+.tema {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tema__cabeza {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tema__cabeza .ilustracion {
+  width: 54px;
+  height: 54px;
+}
+.tarjeta .tema__titulo {
+  margin: 0;
+  font-family: var(--letra-titulo);
+  font-weight: 800;
+  font-size: 1.12rem;
+  line-height: 1.2;
+}
+.tarjeta .tema__dato {
+  margin: 2px 0 0;
+  color: var(--texto-secundario);
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+.tema__dato strong {
+  color: var(--texto);
+  font-weight: 700;
+}
+.tema__acciones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.tema__acciones--una {
+  grid-template-columns: 1fr;
+}
+.tema__acciones .boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  text-align: center;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+/* Otras acciones: corregir y registrar la salida, en una fila. */
+.ficha__otras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.ficha__otras .boton--ilustrado {
+  padding-right: 10px;
+  text-decoration: none;
+}
+.ficha__fotos-franja > span:first-child {
+  white-space: nowrap;
+}

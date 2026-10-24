@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { consulta } from '../../datos/repositorio';
 import { CAMPOS_CORREGIBLES, valorLegible } from '../../dominio/camposCorregibles';
@@ -81,11 +81,17 @@ export function EnlaceCorregir({
   registro,
   identidad,
   texto = 'Corregir o anular',
+  clase = 'enlace',
+  antes,
 }: {
   entidad: EntidadConCorreccion;
   registro: Pick<RegistroLocal<EntidadCorregible>, 'id' | 'autor_id' | 'creado_en'> & { estado_sync?: string };
   identidad: Identidad;
   texto?: string;
+  /** Aspecto del enlace: por omisión, un enlace de texto; en la ficha, un botón ilustrado (2026-10-24). */
+  clase?: string;
+  /** Dibujo antes del texto, para el botón ilustrado. */
+  antes?: ReactNode;
 }) {
   const usuarios = useUsuarios();
   const [aviso, setAviso] = useState(false);
@@ -94,16 +100,18 @@ export function EnlaceCorregir({
   if (opcion === 'vencida') {
     return (
       <span>
-        <button type="button" className="enlace" onClick={() => setAviso(true)}>
-          {texto}
+        <button type="button" className={clase} onClick={() => setAviso(true)}>
+          {antes}
+          {antes ? <span>{texto}</span> : texto}
         </button>
         {aviso && <span className="campo__ayuda"> La ventana de corrección venció: solo el propietario puede enmendarlo.</span>}
       </span>
     );
   }
   return (
-    <Link className="enlace" to={`/correccion/${entidad}/${registro.id}`}>
-      {texto}
+    <Link className={clase} to={`/correccion/${entidad}/${registro.id}`}>
+      {antes}
+      {antes ? <span>{texto}</span> : texto}
     </Link>
   );
 }

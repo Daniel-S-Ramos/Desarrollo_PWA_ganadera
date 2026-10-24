@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Bascula, Billete, Calendario, Camara, Camion, Cantinas, CaraVaca, Curva, JeringaFrasco, Libreta, LibretaSanitaria, Monedas, pelajeDe, Senal } from '../../ui/componentes/Ilustraciones';
-import { useEffect, useState } from 'react';
+import { Bascula, Calendario, Camara, Camion, Cantina, CaraVaca, JeringaFrasco, Lapiz, Monedas, pelajeDe, Senal } from '../../ui/componentes/Ilustraciones';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { imagenCompletaLocal } from '../../datos/repositorio';
 import { describirEdad } from '../../dominio/edad';
@@ -28,6 +28,9 @@ import { salidaDelAnimal } from '../salida/salidas';
 import { ResolverConflictoChapeta } from '../correcciones/ResolverConflicto';
 import { EvolucionPeso } from '../peso/EvolucionPeso';
 import { ControlReproductivo } from '../reproduccion/ControlReproductivo';
+import { cargarControlReproductivo } from '../reproduccion/partos';
+import { cargarConsolidado } from '../economia/consolidado';
+import { formatearPesos } from '../../dominio/salida';
 import { puedeVerCosto } from '../sanidad/eventos';
 import { HistorialSanitario } from '../sanidad/HistorialSanitario';
 import { consolidarFicha, type FichaAnimal, type FotoFicha, type Progenitor } from './ficha';
@@ -60,6 +63,11 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
     );
   }
 
+  const hembra = ficha.sexo === 'hembra';
+  const puedeSalida = !ficha.retirado && puedeUsar(identidad.perfil, 'CU-13');
+
+  // Reorganización del 2026-10-24: quién es, sus datos (origen y genealogía) y una tarjeta por tema, con el dato
+  // vigente y sus acciones juntas; lo que se usa poco, al final. La lógica de cada sección no cambia.
   return (
     <div className="ficha">
       <Link className="enlace" to="/animales">
@@ -78,93 +86,93 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
       {ficha.estado_sync === 'conflicto' && <ResolverConflictoChapeta animalId={ficha.id} numero={ficha.codigo_chapeta} identidad={identidad} />}
 
       {/* Documento técnico 29, sección 7: la salida del animal, con su marca y su corrección. */}
-      <SalidaDelAnimal animalId={ficha.id} hembra={ficha.sexo === 'hembra'} identidad={identidad} />
+      <SalidaDelAnimal animalId={ficha.id} hembra={hembra} identidad={identidad} />
 
       {/* Un animal retirado ya no recibe la chapeta (documento técnico 29, sección 7). */}
       {!ficha.retirado && <AvisoChapeta animalId={ficha.id} numero={ficha.codigo_chapeta} nacimiento={ficha.fecha_nacimiento} identidad={identidad} />}
 
       {verFotos && <VistasFotos ficha={ficha} identidad={identidad} />}
 
-      {/* Documento técnico 29, sección 2: registrar la salida, solo el propietario y en un animal activo. */}
-      {!ficha.retirado && puedeUsar(identidad.perfil, 'CU-13') && <BotonSalida animalId={ficha.id} />}
-
-      {/* Documento técnico 31: costos y consolidado, solo el propietario; también en un retirado (sección 3, decisión C). */}
-      {puedeUsar(identidad.perfil, 'CU-14') && (
-        <div className="acciones-formulario">
-          <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${ficha.id}/consolidado`}>
-            <span className="boton__ilustracion"><Monedas /></span>
-            <span>Consolidado económico</span>
-          </Link>
-          <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${ficha.id}/costo`}>
-            <span className="boton__ilustracion"><Billete /></span>
-            <span>Registrar costo</span>
-          </Link>
+      <section>
+        <h2 className="ficha__seccion">Datos del animal</h2>
+        <div className="tarjeta ficha__datos-animal">
+          <dl className="ficha__lista">
+            <div className="ficha__dato">
+              <dt>Origen</dt>
+              {ficha.origen === 'nacido' ? (
+                <dd>Nació en el predio{ficha.fecha_nacimiento ? ` el ${formatearFecha(ficha.fecha_nacimiento)}` : ''}</dd>
+              ) : (
+                <dd>
+                  Comprado{ficha.fecha_ingreso ? `, ingresó el ${formatearFecha(ficha.fecha_ingreso)}` : ''}
+                  {(ficha.procedencia || ficha.fecha_nacimiento) && (
+                    <small>
+                      {ficha.procedencia ? `Procedencia: ${ficha.procedencia}` : ''}
+                      {ficha.procedencia && ficha.fecha_nacimiento ? ' · ' : ''}
+                      {ficha.fecha_nacimiento ? `Nacimiento ${ficha.fecha_nacimiento_exacta ? '' : 'aproximado '}el ${formatearFecha(ficha.fecha_nacimiento)}` : ''}
+                    </small>
+                  )}
+                </dd>
+              )}
+            </div>
+            <div className="ficha__dato">
+              <dt>Genealogía</dt>
+              <dd>
+                Madre: <TextoProgenitor progenitor={ficha.madre} desconocido="desconocida" externo="externa" />
+                <br />
+                Padre: <TextoProgenitor progenitor={ficha.padre} desconocido="desconocido" externo="reproductor externo" />
+              </dd>
+            </div>
+          </dl>
+          {/* Documento técnico 26, sección 3: la marca de los datos corregidos (la opción de corregir va al final). */}
+          <MarcaDatosCorregidos animalId={ficha.id} />
         </div>
-      )}
-
-      {/* Los datos que pidió el propietario, en su orden (3.10.4.4). */}
-      <dl className="ficha__datos">
-        <Dato nombre="Último peso" valor={textoPeso(ficha)} />
-        <Dato nombre="Última vacuna" valor={ficha.vacuna ? `${ficha.vacuna.nombre} · ${formatearFecha(ficha.vacuna.fecha)}` : 'Sin vacunas registradas'} />
-        {ficha.leche !== null && (
-          <Dato
-            nombre="Leche más reciente"
-            valor={ficha.leche === 'sin_registros' ? 'Sin registros de leche' : `${formatearNumero(ficha.leche.litros)} litros · ${formatearFecha(ficha.leche.fecha)}`}
-          />
-        )}
-        <Dato
-          nombre="Destino productivo"
-          valor={ficha.destino ? `${NOMBRE_DESTINO[ficha.destino.destino]} · desde el ${formatearFecha(ficha.destino.desde)}` : 'Sin destino asignado'}
-        />
-      </dl>
-
-      {/* Documento técnico 23, sección 2: la producción de la vaca, solo para el propietario (CU-07). */}
-      {ficha.sexo === 'hembra' && puedeUsar(identidad.perfil, 'CU-07') && (
-        <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/produccion?vaca=${ficha.id}`}>
-          <span className="boton__ilustracion"><Cantinas tamano={30} /></span>
-          <span>Ver producción</span>
-        </Link>
-      )}
-
-      {/* Documento técnico 29, sección 7: en un animal retirado se consulta, pero ya no se registra. */}
-      <SeccionSanidad animalId={ficha.id} identidad={identidad} retirado={ficha.retirado} />
-
-      <SeccionPeso animalId={ficha.id} identidad={identidad} retirado={ficha.retirado} />
-
-      {ficha.sexo === 'hembra' && <SeccionReproduccion animalId={ficha.id} identidad={identidad} retirado={ficha.retirado} />}
-
-      {/* CU-12: solo el propietario cambia el destino y ve su historial; al trabajador no se le muestran (HU-06.4). */}
-      {puedeUsar(identidad.perfil, 'CU-12') && <SeccionDestino animalId={ficha.id} identidad={identidad} hoy={hoy} retirado={ficha.retirado} />}
-
-      <section className="tarjeta">
-        <h2>Origen</h2>
-        {ficha.origen === 'nacido' ? (
-          <p>Nació en el predio{ficha.fecha_nacimiento ? ` el ${formatearFecha(ficha.fecha_nacimiento)}` : ''}.</p>
-        ) : (
-          <p>
-            Comprado{ficha.fecha_ingreso ? `, ingresó el ${formatearFecha(ficha.fecha_ingreso)}` : ''}
-            {ficha.procedencia ? `. Procedencia: ${ficha.procedencia}` : ''}.
-          </p>
-        )}
-        {ficha.origen === 'comprado' && ficha.fecha_nacimiento && (
-          <p className="texto-secundario">
-            Nacimiento {ficha.fecha_nacimiento_exacta ? '' : 'aproximado '}el {formatearFecha(ficha.fecha_nacimiento)}.
-          </p>
-        )}
       </section>
 
-      <section className="tarjeta">
-        <h2>Genealogía</h2>
-        <p>
-          Madre: <TextoProgenitor progenitor={ficha.madre} desconocido="desconocida" externo="externa" />
-        </p>
-        <p>
-          Padre: <TextoProgenitor progenitor={ficha.padre} desconocido="desconocido" externo="reproductor externo" />
-        </p>
+      <section className="ficha__temas">
+        <h2 className="ficha__seccion">Seguimiento</h2>
+
+        {/* Peso: registrar (CU-08) y evolución (CU-09), para ambos perfiles (documento técnico 24, sección 3; HU-02.4). */}
+        <TemaPeso ficha={ficha} identidad={identidad} />
+
+        {/* Sanidad: registrar (CU-04) e historial (CU-05), para ambos perfiles (documento técnico 20). */}
+        <TemaSanidad ficha={ficha} identidad={identidad} />
+
+        {/* Leche: la producción de la vaca, solo para el propietario (documento técnico 23, sección 2; CU-07). */}
+        {(ficha.leche !== null || (hembra && puedeUsar(identidad.perfil, 'CU-07'))) && (
+          <Tema
+            dibujo={<Cantina tamano={36} />}
+            titulo="Leche"
+            dato={
+              ficha.leche === null ? undefined : ficha.leche === 'sin_registros' ? (
+                'Sin registros de leche'
+              ) : (
+                <>
+                  <strong>{formatearNumero(ficha.leche.litros)} litros</strong> · {formatearFecha(ficha.leche.fecha)}
+                </>
+              )
+            }
+          >
+            {hembra && puedeUsar(identidad.perfil, 'CU-07') && (
+              <div className="tema__acciones tema__acciones--una">
+                <Link className="boton boton--secundario" to={`/produccion?vaca=${ficha.id}`}>
+                  Ver producción
+                </Link>
+              </div>
+            )}
+          </Tema>
+        )}
+
+        {/* Reproducción: partos (ambos perfiles, CU-10) y control reproductivo (solo el propietario, CU-11). */}
+        {hembra && <TemaReproduccion ficha={ficha} identidad={identidad} />}
+
+        {/* Destino: a la vista de ambos; cambiarlo y su historial, solo el propietario (CU-12; HU-06.4). */}
+        <TemaDestino ficha={ficha} identidad={identidad} hoy={hoy} />
+
+        {/* Economía: costos y consolidado, solo el propietario; también en un retirado (documento técnico 31, sección 3). */}
+        {puedeUsar(identidad.perfil, 'CU-14') && <TemaEconomia animalId={ficha.id} />}
       </section>
 
-      {/* Documento técnico 26, sección 3: los datos del animal se corrigen (la chapeta no). */}
-      <DatosCorregidos animalId={ficha.id} identidad={identidad} />
+      <OtrasAcciones ficha={ficha} identidad={identidad} puedeSalida={puedeSalida} />
 
       {/* HU-15: quién registró y cuándo, al pie (3.10.4.4). */}
       <p className="ficha__autoria">
@@ -175,141 +183,245 @@ export function PantallaFicha({ identidad }: { identidad: Identidad }) {
   );
 }
 
-/** Registro e historial sanitario, para ambos perfiles (documento técnico 20, secciones 3 y 8; HU-02.4). */
-/**
- * Registro y evolución del peso, para ambos perfiles (documento técnico 24, sección 3; HU-02.4). Al volver
- * de registrar un pesaje (?peso=1), la evolución aparece abierta.
- */
-/** La marca de los datos corregidos del animal y la opción de corregirlos. */
-function DatosCorregidos({ animalId, identidad }: { animalId: string; identidad: Identidad }) {
-  const vigente = useLiveQuery(() => cargarVigente('animal', animalId), [animalId]);
-  if (!vigente) return null;
+/** Una tarjeta de seguimiento: dibujo, título, el dato vigente y sus acciones; lo que se abre, debajo. */
+function Tema({ dibujo, titulo, dato, children }: { dibujo: ReactNode; titulo: string; dato?: ReactNode; children?: ReactNode }) {
   return (
-    <div className="ficha__correccion">
-      <MarcaCorreccion entidad="animal" vigente={vigente} />
-      <EnlaceCorregir entidad="animal" registro={vigente.original} identidad={identidad} texto="Corregir datos del animal" />
+    <div className="tarjeta tema">
+      <div className="tema__cabeza">
+        <span className="ilustracion">{dibujo}</span>
+        <div>
+          <h3 className="tema__titulo">{titulo}</h3>
+          {dato !== undefined && <p className="tema__dato">{dato}</p>}
+        </div>
+      </div>
+      {children}
     </div>
   );
 }
 
+/** La marca de los datos corregidos del animal (documento técnico 26, sección 3). */
+function MarcaDatosCorregidos({ animalId }: { animalId: string }) {
+  const vigente = useLiveQuery(() => cargarVigente('animal', animalId), [animalId]);
+  if (!vigente) return null;
+  return <MarcaCorreccion entidad="animal" vigente={vigente} />;
+}
+
 /**
- * Partos de la vaca: registrar (ambos perfiles, CU-10) y control reproductivo (solo el propietario, CU-11).
- * Documento técnico 25, sección 3. Al volver de registrar un parto sin cría (?reproduccion=1), el control
- * aparece abierto.
+ * Lo que se usa poco: corregir los datos del animal (documento técnico 26, sección 3; la chapeta no) y registrar
+ * su salida (documento técnico 29, sección 2: solo el propietario y en un animal activo).
  */
-function SeccionReproduccion({ animalId, identidad, retirado }: { animalId: string; identidad: Identidad; retirado: boolean }) {
-  const [parametros] = useSearchParams();
-  const puedeVerControl = puedeUsar(identidad.perfil, 'CU-11');
-  const [verControl, setVerControl] = useState(() => puedeVerControl && parametros.get('reproduccion') === '1');
-  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-10') && !retirado;
-  if (!puedeRegistrar && !puedeVerControl) return null;
+function OtrasAcciones({ ficha, identidad, puedeSalida }: { ficha: FichaAnimal; identidad: Identidad; puedeSalida: boolean }) {
+  const vigente = useLiveQuery(() => cargarVigente('animal', ficha.id), [ficha.id]);
   return (
-    <>
-      <div className="acciones-formulario">
-        {puedeRegistrar && (
-          <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${animalId}/parto`}>
-            <span className="boton__ilustracion"><CaraVaca tamano={34} pelaje="parda" conFondo={false} /></span>
-            <span>Registrar parto</span>
+    <section>
+      <h2 className="ficha__seccion">Otras acciones</h2>
+      <div className="ficha__otras">
+        {vigente && (
+          <EnlaceCorregir
+            entidad="animal"
+            registro={vigente.original}
+            identidad={identidad}
+            texto="Corregir datos"
+            clase="boton boton--secundario boton--ilustrado"
+            antes={
+              <span className="boton__ilustracion">
+                <Lapiz />
+              </span>
+            }
+          />
+        )}
+        {puedeSalida && (
+          <Link className="boton boton--secundario boton--ilustrado" to={`/animales/${ficha.id}/salida`}>
+            <span className="boton__ilustracion">
+              <Camion />
+            </span>
+            <span>Registrar salida</span>
           </Link>
         )}
-        {puedeVerControl && (
-          <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={verControl} onClick={() => setVerControl((v) => !v)}>
-            <span className="boton__ilustracion"><Calendario /></span>
-            <span>{verControl ? 'Ocultar control reproductivo' : 'Control reproductivo'}</span>
-          </button>
-        )}
       </div>
-      {verControl && <ControlReproductivo vacaId={animalId} identidad={identidad} />}
-    </>
+    </section>
   );
 }
 
-function SeccionPeso({ animalId, identidad, retirado }: { animalId: string; identidad: Identidad; retirado: boolean }) {
+/**
+ * Peso: registrar y evolución, para ambos perfiles (documento técnico 24, sección 3; HU-02.4). Al volver de
+ * registrar un pesaje (?peso=1), la evolución aparece abierta.
+ */
+function TemaPeso({ ficha, identidad }: { ficha: FichaAnimal; identidad: Identidad }) {
   const [parametros] = useSearchParams();
   const [verEvolucion, setVerEvolucion] = useState(() => parametros.get('peso') === '1');
-  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-08') && !retirado;
-  if (!puedeRegistrar && !puedeUsar(identidad.perfil, 'CU-09')) return null;
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-08') && !ficha.retirado;
+  const puedeVer = puedeUsar(identidad.perfil, 'CU-09');
   return (
-    <>
-      <div className="acciones-formulario">
-        {puedeRegistrar && (
-          <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${animalId}/pesaje`}>
-            <span className="boton__ilustracion"><Bascula /></span>
-            <span>Registrar pesaje</span>
-          </Link>
-        )}
-        {puedeUsar(identidad.perfil, 'CU-09') && (
-          <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={verEvolucion} onClick={() => setVerEvolucion((v) => !v)}>
-            <span className="boton__ilustracion"><Curva /></span>
-            <span>{verEvolucion ? 'Ocultar evolución del peso' : 'Evolución del peso'}</span>
-          </button>
-        )}
-      </div>
-      {verEvolucion && <EvolucionPeso animalId={animalId} puedeRegistrar={puedeRegistrar} identidad={identidad} />}
-    </>
+    <Tema dibujo={<Bascula tamano={36} />} titulo="Peso" dato={textoPeso(ficha)}>
+      {(puedeRegistrar || puedeVer) && (
+        <div className={puedeRegistrar && puedeVer ? 'tema__acciones' : 'tema__acciones tema__acciones--una'}>
+          {puedeRegistrar && (
+            <Link className="boton boton--principal" to={`/animales/${ficha.id}/pesaje`}>
+              Registrar pesaje
+            </Link>
+          )}
+          {puedeVer && (
+            <button type="button" className="boton boton--secundario" aria-expanded={verEvolucion} onClick={() => setVerEvolucion((v) => !v)}>
+              {verEvolucion ? 'Ocultar evolución' : 'Ver evolución'}
+            </button>
+          )}
+        </div>
+      )}
+      {verEvolucion && <EvolucionPeso animalId={ficha.id} puedeRegistrar={puedeRegistrar} identidad={identidad} />}
+    </Tema>
   );
 }
 
-function SeccionSanidad({ animalId, identidad, retirado }: { animalId: string; identidad: Identidad; retirado: boolean }) {
+/** Sanidad: registrar e historial, para ambos perfiles (documento técnico 20, secciones 3 y 8; HU-02.4). */
+function TemaSanidad({ ficha, identidad }: { ficha: FichaAnimal; identidad: Identidad }) {
   // Desde la consulta de correcciones (?sanidad=1) el historial aparece abierto (documento técnico 27, sección 6).
   const [parametros] = useSearchParams();
   const [verHistorial, setVerHistorial] = useState(() => parametros.get('sanidad') === '1');
-  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-04') && !retirado;
-  if (!puedeRegistrar && !puedeUsar(identidad.perfil, 'CU-05')) return null;
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-04') && !ficha.retirado;
+  const puedeVer = puedeUsar(identidad.perfil, 'CU-05');
   return (
-    <>
-      <div className="acciones-formulario">
-        {puedeRegistrar && (
-          <Link className="boton boton--principal boton--ancho boton--ilustrado" to={`/animales/${animalId}/evento-sanitario`}>
-            <span className="boton__ilustracion"><JeringaFrasco tamano={34} /></span>
-            <span>Registrar evento sanitario</span>
-          </Link>
-        )}
-        {puedeUsar(identidad.perfil, 'CU-05') && (
-          <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={verHistorial} onClick={() => setVerHistorial((v) => !v)}>
-            <span className="boton__ilustracion"><LibretaSanitaria /></span>
-            <span>{verHistorial ? 'Ocultar historial sanitario' : 'Historial sanitario'}</span>
-          </button>
-        )}
-      </div>
-      {verHistorial && <HistorialSanitario animalId={animalId} verCosto={puedeVerCosto(identidad.perfil)} puedeRegistrar={puedeRegistrar} identidad={identidad} />}
-    </>
+    <Tema
+      dibujo={<JeringaFrasco tamano={38} />}
+      titulo="Sanidad"
+      dato={
+        ficha.vacuna ? (
+          <>
+            <strong>{ficha.vacuna.nombre}</strong> · última vacuna, {formatearFecha(ficha.vacuna.fecha)}
+          </>
+        ) : (
+          'Sin vacunas registradas'
+        )
+      }
+    >
+      {(puedeRegistrar || puedeVer) && (
+        <div className={puedeRegistrar && puedeVer ? 'tema__acciones' : 'tema__acciones tema__acciones--una'}>
+          {puedeRegistrar && (
+            <Link className="boton boton--principal" to={`/animales/${ficha.id}/evento-sanitario`}>
+              Registrar evento
+            </Link>
+          )}
+          {puedeVer && (
+            <button type="button" className="boton boton--secundario" aria-expanded={verHistorial} onClick={() => setVerHistorial((v) => !v)}>
+              {verHistorial ? 'Ocultar historial' : 'Ver historial'}
+            </button>
+          )}
+        </div>
+      )}
+      {verHistorial && <HistorialSanitario animalId={ficha.id} verCosto={puedeVerCosto(identidad.perfil)} puedeRegistrar={puedeRegistrar} identidad={identidad} />}
+    </Tema>
   );
 }
 
-/** Las opciones del propietario sobre el destino (documento técnico 19, secciones 2 y 4). */
-function SeccionDestino({ animalId, identidad, hoy, retirado }: { animalId: string; identidad: Identidad; hoy: string; retirado: boolean }) {
-  // Desde la consulta de correcciones (?destino=1) el historial aparece abierto (documento técnico 27, sección 6).
+/**
+ * Reproducción: registrar partos (ambos perfiles, CU-10) y el control reproductivo (solo el propietario, CU-11).
+ * Documento técnico 25, sección 3. Al volver de registrar un parto sin cría (?reproduccion=1), el control
+ * aparece abierto. El número de partos solo lo ve quien ve el control.
+ */
+function TemaReproduccion({ ficha, identidad }: { ficha: FichaAnimal; identidad: Identidad }) {
   const [parametros] = useSearchParams();
-  const [abierto, setAbierto] = useState<'cambiar' | 'historial' | null>(() => (parametros.get('destino') === '1' ? 'historial' : null));
-  const contexto = useLiveQuery(() => cargarContextoDestino(animalId), [animalId]);
-  const alternar = (opcion: 'cambiar' | 'historial') => setAbierto((actual) => (actual === opcion ? null : opcion));
-
+  const puedeVerControl = puedeUsar(identidad.perfil, 'CU-11');
+  const [verControl, setVerControl] = useState(() => puedeVerControl && parametros.get('reproduccion') === '1');
+  const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-10') && !ficha.retirado;
+  const control = useLiveQuery(() => (puedeVerControl ? cargarControlReproductivo(ficha.id) : Promise.resolve(null)), [ficha.id, puedeVerControl]);
+  if (!puedeRegistrar && !puedeVerControl) return null;
+  const partos = control ? [...control.vigentes.values()].filter((v) => v.anulacion === null).length : null;
   return (
-    <>
-      <div className="acciones-formulario">
-        {!retirado && (
-          <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={abierto === 'cambiar'} onClick={() => alternar('cambiar')}>
-            <span className="boton__ilustracion"><Senal /></span>
-            <span>Cambiar destino</span>
+    <Tema
+      dibujo={<Calendario tamano={34} />}
+      titulo="Reproducción"
+      dato={partos === null ? undefined : partos === 0 ? 'Sin partos registrados' : partos === 1 ? <strong>1 parto</strong> : <strong>{partos} partos</strong>}
+    >
+      <div className={puedeRegistrar && puedeVerControl ? 'tema__acciones' : 'tema__acciones tema__acciones--una'}>
+        {puedeRegistrar && (
+          <Link className="boton boton--principal" to={`/animales/${ficha.id}/parto`}>
+            Registrar parto
+          </Link>
+        )}
+        {puedeVerControl && (
+          <button type="button" className="boton boton--secundario" aria-expanded={verControl} onClick={() => setVerControl((v) => !v)}>
+            {verControl ? 'Ocultar control' : 'Control reproductivo'}
           </button>
         )}
-        <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" aria-expanded={abierto === 'historial'} onClick={() => alternar('historial')}>
-          <span className="boton__ilustracion"><Libreta /></span>
-          <span>{abierto === 'historial' ? 'Ocultar historial del destino' : 'Historial del destino'}</span>
-        </button>
       </div>
-      {abierto === 'cambiar' && contexto && (
-        <CambiarDestino animalId={animalId} contexto={contexto} identidad={identidad} hoy={hoy} alTerminar={() => setAbierto(null)} />
+      {verControl && <ControlReproductivo vacaId={ficha.id} identidad={identidad} />}
+    </Tema>
+  );
+}
+
+/** Destino: a la vista de ambos perfiles; cambiarlo y su historial, solo el propietario (documento técnico 19). */
+function TemaDestino({ ficha, identidad, hoy }: { ficha: FichaAnimal; identidad: Identidad; hoy: string }) {
+  // Desde la consulta de correcciones (?destino=1) el historial aparece abierto (documento técnico 27, sección 6).
+  const [parametros] = useSearchParams();
+  const puedeGestionar = puedeUsar(identidad.perfil, 'CU-12');
+  const [abierto, setAbierto] = useState<'cambiar' | 'historial' | null>(() => (puedeGestionar && parametros.get('destino') === '1' ? 'historial' : null));
+  const contexto = useLiveQuery(() => cargarContextoDestino(ficha.id), [ficha.id]);
+  const alternar = (opcion: 'cambiar' | 'historial') => setAbierto((actual) => (actual === opcion ? null : opcion));
+  return (
+    <Tema
+      dibujo={<Senal tamano={34} />}
+      titulo="Destino"
+      dato={
+        ficha.destino ? (
+          <>
+            <strong>{NOMBRE_DESTINO[ficha.destino.destino]}</strong> · desde el {formatearFecha(ficha.destino.desde)}
+          </>
+        ) : (
+          'Sin destino asignado'
+        )
+      }
+    >
+      {puedeGestionar && (
+        <div className={!ficha.retirado ? 'tema__acciones' : 'tema__acciones tema__acciones--una'}>
+          {!ficha.retirado && (
+            <button type="button" className="boton boton--secundario" aria-expanded={abierto === 'cambiar'} onClick={() => alternar('cambiar')}>
+              Cambiar destino
+            </button>
+          )}
+          <button type="button" className="boton boton--secundario" aria-expanded={abierto === 'historial'} onClick={() => alternar('historial')}>
+            {abierto === 'historial' ? 'Ocultar historial' : 'Ver historial'}
+          </button>
+        </div>
       )}
-      {abierto === 'historial' && <HistorialDestino animalId={animalId} identidad={identidad} />}
-    </>
+      {abierto === 'cambiar' && contexto && (
+        <CambiarDestino animalId={ficha.id} contexto={contexto} identidad={identidad} hoy={hoy} alTerminar={() => setAbierto(null)} />
+      )}
+      {abierto === 'historial' && <HistorialDestino animalId={ficha.id} identidad={identidad} />}
+    </Tema>
+  );
+}
+
+/** Economía: lo invertido y los accesos a registrar un costo y al consolidado (documento técnico 31). */
+function TemaEconomia({ animalId }: { animalId: string }) {
+  const consolidado = useLiveQuery(() => cargarConsolidado(animalId), [animalId]);
+  return (
+    <Tema
+      dibujo={<Monedas tamano={36} />}
+      titulo="Economía"
+      dato={
+        consolidado ? (
+          <>
+            Invertido <strong>{formatearPesos(consolidado.totalInvertido)}</strong>
+          </>
+        ) : undefined
+      }
+    >
+      <div className="tema__acciones">
+        <Link className="boton boton--secundario" to={`/animales/${animalId}/costo`}>
+          Registrar costo
+        </Link>
+        <Link className="boton boton--secundario" to={`/animales/${animalId}/consolidado`}>
+          Ver consolidado
+        </Link>
+      </div>
+    </Tema>
   );
 }
 
 function Encabezado({ ficha, hoy, verFotos, alAlternarFotos }: { ficha: FichaAnimal; hoy: string; verFotos: boolean; alAlternarFotos: () => void }) {
   const foto = useUrlDeImagen(ficha.fotoPrincipal);
   const hembra = ficha.sexo === 'hembra';
+  const incompleto = ficha.fotos.length < 3 && !ficha.retirado;
   return (
     <header className="ficha__encabezado">
       {foto ? (
@@ -322,34 +434,27 @@ function Encabezado({ ficha, hoy, verFotos, alAlternarFotos }: { ficha: FichaAni
       <div className="ficha__identidad">
         <span className="ficha__chapeta chapeta chapeta--grande">{ficha.codigo_chapeta}</span>
         <span className="fila-animal__detalle">
+          <span className="fila-animal__sexo" aria-hidden="true">
+            {hembra ? '♀' : '♂'}
+          </span>{' '}
           {hembra ? 'Hembra' : 'Macho'} · {describirEdad(ficha.fecha_nacimiento, ficha.fecha_nacimiento_exacta, hoy)}
         </span>
         {ficha.retirado && <span className="fila-animal__retirado">{hembra ? 'Retirada' : 'Retirado'} del predio</span>}
         <DistintivoSync estado={ficha.estado_sync} {...(ficha.detalle_conflicto ? { detalle: ficha.detalle_conflicto } : {})} />
       </div>
-      <div className="ficha__fotos-resumen">
-        {ficha.fotos.length < 3 && !ficha.retirado ? (
-          // Tabla 31: el registro fotográfico incompleto se señala para completarlo después.
-          <p className="aviso aviso--atencion aviso--en-contenido">⚠ Registro fotográfico incompleto: {ficha.fotos.length} de 3.</p>
-        ) : (
-          <p className="texto-secundario">Fotos: {ficha.fotos.length} de 3</p>
-        )}
-        <button type="button" className="boton boton--secundario boton--ancho boton--ilustrado" onClick={alAlternarFotos}>
-          <span className="boton__ilustracion"><Camara /></span>
-          <span>{verFotos ? 'Ocultar fotos' : ficha.fotos.length < 3 && !ficha.retirado ? 'Ver y completar fotos' : 'Ver fotos'}</span>
+      {/* Tabla 31: el registro fotográfico incompleto se señala para completarlo después; en una franja, con su acción al lado. */}
+      <div className={incompleto ? 'ficha__fotos-franja ficha__fotos-franja--incompleta' : 'ficha__fotos-franja'}>
+        <span>
+          {incompleto ? '⚠ ' : ''}Fotos: {ficha.fotos.length} de 3
+        </span>
+        <button type="button" className="boton boton--secundario boton--ilustrado ficha__fotos-boton" aria-expanded={verFotos} onClick={alAlternarFotos}>
+          <span className="boton__ilustracion">
+            <Camara tamano={26} />
+          </span>
+          <span>{verFotos ? 'Ocultar fotos' : incompleto ? 'Completar fotos' : 'Ver fotos'}</span>
         </button>
       </div>
     </header>
-  );
-}
-
-/** El acceso a registrar la salida (documento técnico 29, sección 2). Con la salida anterior anulada, se admite otra. */
-function BotonSalida({ animalId }: { animalId: string }) {
-  return (
-    <Link className="boton boton--secundario boton--ancho boton--ilustrado" to={`/animales/${animalId}/salida`}>
-      <span className="boton__ilustracion"><Camion /></span>
-      <span>Registrar salida</span>
-    </Link>
   );
 }
 
@@ -449,15 +554,6 @@ function FotoCompleta({ animalId, foto, enLinea }: { animalId: string; foto: Fot
         Foto de {foto.autor}, {formatearInstante(foto.creado_en)}
       </figcaption>
     </figure>
-  );
-}
-
-function Dato({ nombre, valor }: { nombre: string; valor: string }) {
-  return (
-    <div className="ficha__dato">
-      <dt>{nombre}</dt>
-      <dd>{valor}</dd>
-    </div>
   );
 }
 
