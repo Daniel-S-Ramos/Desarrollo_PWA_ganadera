@@ -3,16 +3,18 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { formatearLitros } from '../../dominio/leche';
+import { formatearKg } from '../../dominio/peso';
 import { puedeUsar } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
 import { ConfirmacionCierre } from '../../ui/componentes/ConfirmacionCierre';
 import { IconoFlecha } from '../../ui/componentes/Iconos';
-import { CampanaConNumero, Cantina, Cantinas, CaraVaca, JeringaFrasco, Libreta } from '../../ui/componentes/Ilustraciones';
+import { CampanaConNumero, Cantina, Cantinas, CaraVaca, Filete, JeringaFrasco, Libreta } from '../../ui/componentes/Ilustraciones';
 import { PreparandoTelefono } from '../../ui/componentes/PreparandoTelefono';
 import paisaje from '../../ui/imagenes/paisaje.webp';
 import { useUrlDeImagen } from '../../ui/useUrlDeImagen';
 import { cargarListado } from '../consulta/listado';
 import { cargarRonda } from '../leche/ronda';
+import { cargarResumenCarne } from '../peso/produccionCarne';
 import { cargarRecordatorios } from '../recordatorios/recordatorios';
 import { Recordatorios } from '../recordatorios/SeccionRecordatorios';
 import { TarjetaSesion } from './PantallaCuenta';
@@ -48,16 +50,23 @@ export function PantallaInicio({ identidad, alCerrar, cargaCompleta }: { identid
       </p>
       <p className="texto-secundario inicio__subtitulo">Este es el estado de tu ganadería.</p>
 
-      <div className="inicio__resumen">
-        <TarjetaPendientes />
-        {puedeUsar(perfil, 'CU-07') ? <TarjetaProduccion hoy={hoy} /> : conRonda ? <TarjetaRonda hoy={hoy} /> : null}
-      </div>
+      {puedeUsar(perfil, 'CU-07') ? (
+        // Documento técnico 34, sección 7: una sola tarjeta «Producción» con la leche y la carne.
+        <div className="inicio__resumen inicio__resumen--una">
+          <TarjetaPendientes />
+          <TarjetaProduccion hoy={hoy} />
+        </div>
+      ) : (
+        <div className="inicio__resumen">
+          <TarjetaPendientes />
+          {conRonda && <TarjetaRonda hoy={hoy} />}
+        </div>
+      )}
 
       <h2 className="inicio__pregunta">¿Qué deseas hacer?</h2>
       <div className="accesos">
         {puedeUsar(perfil, 'CU-03') && <AccesoAnimales />}
         {conRonda && <AccesoOrdeno hoy={hoy} />}
-        {puedeUsar(perfil, 'CU-07') && <Acceso a="/produccion" dibujo={<Cantinas />} titulo="Producción de leche" detalle="Consultar litros" />}
         <Acceso a="/medicamentos" dibujo={<JeringaFrasco />} titulo="Medicamentos" detalle="Catálogo" />
       </div>
       {puedeUsar(perfil, 'CU-18') && (
@@ -134,13 +143,57 @@ function TarjetaPendientes() {
   );
 }
 
-/** Propietario: los litros de hoy o del último día con ordeños, con la mini gráfica de 7 días. */
+/**
+ * Propietario: la tarjeta «Producción» partida en dos, cada mitad con su destino (documento técnico 34,
+ * sección 7, ajuste del autor del 2026-10-24).
+ */
 function TarjetaProduccion({ hoy }: { hoy: string }) {
+  return (
+    <section className="resumen produccion-inicio" aria-labelledby="produccion-inicio">
+      <h2 className="resumen__etiqueta produccion-inicio__titulo" id="produccion-inicio">
+        Producción
+      </h2>
+      <div className="produccion-inicio__mitades">
+        <MitadLeche hoy={hoy} />
+        <MitadCarne hoy={hoy} />
+      </div>
+    </section>
+  );
+}
+
+/** Los kilos ganados del mes en curso o del último mes con pesajes por los animales de ceba. */
+function MitadCarne({ hoy }: { hoy: string }) {
+  const resumen = useLiveQuery(() => cargarResumenCarne(hoy), [hoy]);
+  return (
+    <Link className="produccion-inicio__mitad" to="/produccion-carne">
+      <span className="produccion-inicio__nombre">
+        <Filete tamano={34} />
+        Carne
+      </span>
+      <span className="resumen__valor">
+        {resumen === undefined ? '…' : resumen?.kgGanados != null ? `${resumen.kgGanados >= 0 ? '+' : '−'}${formatearKg(Math.abs(resumen.kgGanados))} kg` : '—'}
+      </span>
+      <span className="resumen__detalle">
+        {resumen === undefined
+          ? ''
+          : !resumen
+            ? 'Sin pesajes de ceba'
+            : `${resumen.periodo.etiqueta.charAt(0).toUpperCase()}${resumen.periodo.etiqueta.slice(1, resumen.periodo.etiqueta.indexOf(' '))} · ${resumen.pesados} de ${resumen.total} pesados`}
+      </span>
+    </Link>
+  );
+}
+
+/** Los litros de hoy o del último día con ordeños, con la mini gráfica de 7 días. */
+function MitadLeche({ hoy }: { hoy: string }) {
   const resumen = useLiveQuery(() => cargarResumenProduccion(hoy), [hoy]);
   const maximo = resumen ? Math.max(...resumen.serie, 1) : 1;
   return (
-    <Link className="resumen" to="/produccion">
-      <span className="resumen__etiqueta">Producción de leche</span>
+    <Link className="produccion-inicio__mitad" to="/produccion">
+      <span className="produccion-inicio__nombre">
+        <Cantinas tamano={30} />
+        Leche
+      </span>
       {resumen && (
         // Los 7 días como cantinas que se llenan; la del día resumido, llena de verde.
         <span className="resumen__cantinas" aria-hidden="true">

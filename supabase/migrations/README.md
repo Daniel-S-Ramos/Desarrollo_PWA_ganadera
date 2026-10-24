@@ -19,6 +19,7 @@ Migraciones del servicio remoto, en orden de aplicación. Especificación:
 | `20261021000100_salida_vigente_unica.sql` | Una sola salida **vigente** por animal: la restricción única pasa a un disparador que no cuenta las salidas anuladas (documento técnico 29, sección 8) |
 | `20261021000200_compra_vigente_unica.sql` | Una sola compra **vigente** por animal: el índice único parcial pasa a un disparador que no cuenta las compras anuladas (documento técnico 31, sección 4) |
 | `20261022000100_ordeno_vigente_unico.sql` | Un solo ordeño **vigente** por vaca y día: la restricción única pasa a un disparador que no cuenta los ordeños anulados (documento técnico 32, sección 3) |
+| `20261024000100_peso_final_ceba.sql` | Parámetro `peso_final_ceba` de 500 kg: peso con el que el propietario da por terminado un animal de ceba (documento técnico 34, sección 6 bis) |
 
 Se aplican con `npm run db:push` (CLI de Supabase), que registra en el servicio cuáles ya se
 aplicaron. Una migración aplicada no se edita: los cambios van en un archivo nuevo.

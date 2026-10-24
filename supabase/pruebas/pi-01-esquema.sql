@@ -250,6 +250,13 @@ begin
            'ok', codigos = array['OK','23505','OK','OK','OK','23505'],
            'd', 'códigos: ' || array_to_string(codigos, ', '));
 
+    -- -------------------------------------------------------------- 20. Peso de finalización de la ceba
+    -- El parámetro de 500 kg está cargado (docs/tecnica/34-produccion-de-carne.md, sección 6 bis).
+    select count(*) into cuenta from public.parametro p where p.clave = 'peso_final_ceba' and p.valor = 500;
+    r := r || jsonb_build_object('n',20,'v','Peso de finalización de la ceba cargado: 500 kg',
+           'ok', cuenta = 1,
+           'd', 'parámetro: ' || cuenta);
+
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.
     raise exception using errcode = 'P0099', message = 'REVERTIR';
   exception when sqlstate 'P0099' then

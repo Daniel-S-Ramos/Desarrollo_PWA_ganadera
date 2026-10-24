@@ -42,3 +42,4 @@ actualiza si la implementación obliga a cambiar algo.
 | 31 | [Costos por animal y consolidado económico](31-consolidado-economico.md) | 5.4 | RF-20 · RF-21 · CU-14 · HU-16 |
 | 32 | [Un solo ordeño vigente por vaca y día](32-ordeno-vigente-unico.md) | 6.0 | RF-10 · CU-06 · CU-17 · Tabla 24 |
 | 33 | [Cuentas de usuario y ayuda para recuperar la contraseña](33-recuperar-contrasena.md) | 6.0b | RF-24 · RF-27 · CU-01 · HU-06 |
+| 34 | [Producción de carne: kilos ganados por los animales de ceba](34-produccion-de-carne.md) | 6.0c | 2.2.7 · RF-13 · RF-14 · CU-09 · HU-05 |

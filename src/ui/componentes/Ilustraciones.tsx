@@ -330,14 +330,18 @@ function SiluetaRuta({ color }: { color: string }) {
   );
 }
 
-/** Matas de pasto: la ceba. */
-export function Pasto({ tamano = 44 }: Tamano) {
+/**
+ * Filete de carne con su borde de grasa y su hueso: la ceba y la producción de carne (pedido del autor,
+ * 2026-10-24: «es lo que mejor entiende el propietario»; documento técnico 34, sección 7 bis).
+ */
+export function Filete({ tamano = 44 }: Tamano) {
   return (
     <Dibujo ancho={tamano} vista="0 0 40 40">
-      <path d="M3 35h34" stroke="#7fa865" strokeWidth="3" strokeLinecap="round" />
-      <path d="M8 35c-1-8-4-13-6-15 4 1 7 5 8 10 0-8 2-15 5-18 0 6-1 12-2 18 2-6 5-10 9-11-3 4-5 10-5 16z" fill="#5f9a4c" />
-      <path d="M20 35c0-9 2-17 6-21-1 7-1 13-1 18 2-5 5-9 9-10-3 4-5 9-6 13z" fill={VERDE} />
-      <path d="M28 35c1-5 3-8 6-10-1 3-2 7-2 10z" fill="#93b56f" />
+      <path d="M3 18C4 9 13 4 22 4.6 31.5 5.3 38 11 37.6 19.5 37.2 28.5 29.5 35 19.5 35.4 9.5 35.8 2 28 3 18z" fill="#f3dcc4" stroke="#b9805c" strokeWidth="1.4" />
+      <path d="M7 18.4C7.8 11.4 14.4 8 21.6 8.4 29 8.9 33.9 13.1 33.6 19.6 33.3 26.4 27.6 31.2 19.8 31.5 12 31.8 6.3 26 7 18.4z" fill="#b83227" />
+      <path d="M17 13.5c3 .8 5-.6 8 .4M10.5 22c2.8-.4 4.4 1.2 7.2.6M20 25.5c2.6.8 4.4-.4 7 .4M25.5 18.5c1.6 1 3.4.8 5 1.6" stroke="#ec958a" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <circle cx="13.5" cy="16" r="4" fill={BLANCO} stroke="#dcc3a8" strokeWidth="1.2" />
+      <circle cx="13.5" cy="16" r="1.6" fill="#e8cfb4" />
     </Dibujo>
   );
 }

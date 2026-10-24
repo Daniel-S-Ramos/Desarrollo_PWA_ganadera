@@ -9,6 +9,7 @@ import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegis
 import { PantallaComparacion } from '../modulos/leche/PantallaComparacion';
 import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
 import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
+import { PantallaProduccionCarne } from '../modulos/peso/PantallaProduccionCarne';
 import { PantallaRegistrarPesaje } from '../modulos/peso/PantallaRegistrarPesaje';
 import { PantallaRegistrarParto } from '../modulos/reproduccion/PantallaRegistrarParto';
 import { PantallaRegistrarSalida } from '../modulos/salida/PantallaRegistrarSalida';
@@ -219,6 +220,8 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
             <Route path="/produccion" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaProduccion /> : <Navigate to="/" replace />} />
             {/* Documento técnico 28: comparación entre vacas, solo el propietario (CU-07, pasos 5 y 6). */}
             <Route path="/produccion/comparar" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaComparacion /> : <Navigate to="/" replace />} />
+            {/* Documento técnico 34: producción de carne, solo el propietario (como CU-07, Tabla 27). */}
+            <Route path="/produccion-carne" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaProduccionCarne /> : <Navigate to="/" replace />} />
             {/* Documento técnico 27: solo el propietario (CU-18, Tabla 27). */}
             <Route path="/correcciones" element={puedeUsar(identidad.perfil, 'CU-18') ? <PantallaCorreccionesRecientes /> : <Navigate to="/" replace />} />
             {/* Documento técnico 26, sección 10.6: los conflictos de este teléfono, para ambos perfiles. */}

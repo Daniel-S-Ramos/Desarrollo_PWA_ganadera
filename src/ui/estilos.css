@@ -2694,3 +2694,75 @@ h3,
   font-weight: 800;
   line-height: 1;
 }
+
+/* ---------------------------------------------------------------------------------------------------
+ * Producción de carne (documento técnico 34): la tarjeta «Producción» del inicio partida en dos y el lote
+ * de ceba. Cada mitad es un enlace de al menos 64 px (3.10.4.2).
+ * ------------------------------------------------------------------------------------------------- */
+.inicio__resumen--una {
+  grid-template-columns: minmax(0, 1fr);
+}
+.inicio__resumen--una .resumen:first-child {
+  min-height: 0;
+}
+.produccion-inicio {
+  min-height: 0;
+  padding: 12px 0 0;
+}
+.produccion-inicio__titulo {
+  margin: 0 14px 4px;
+  font-family: inherit;
+}
+.produccion-inicio__mitades {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.produccion-inicio__mitad {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 132px;
+  padding: 8px 14px 14px;
+  color: var(--texto);
+  text-decoration: none;
+}
+.produccion-inicio__mitad + .produccion-inicio__mitad {
+  border-left: 2px solid var(--borde);
+}
+.produccion-inicio__mitad:focus-visible {
+  outline: 3px solid var(--amarillo);
+  outline-offset: -3px;
+  border-radius: var(--radio);
+}
+.produccion-inicio__nombre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--verde-oscuro);
+  font-family: var(--letra-titulo);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.produccion-inicio__mitad .resumen__valor {
+  font-size: 1.7rem;
+}
+.carne__lote p {
+  margin: 0;
+}
+.carne__lote-kg {
+  font-size: 1.15rem;
+}
+.carne__lote-kg strong {
+  font-family: var(--letra-titulo);
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: var(--verde-oscuro);
+}
+.carne__terminado {
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  font-weight: 700;
+}
