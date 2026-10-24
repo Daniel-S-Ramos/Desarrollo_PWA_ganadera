@@ -54,7 +54,8 @@ pantalla de ayuda, con el diseño de las pantallas del código (candado, título
 - **El nombre y el teléfono no van en el código:** se leen de la configuración de la aplicación
   (`VITE_ADMIN_NOMBRE` y `VITE_ADMIN_TELEFONO`, en `.env.local` y en las variables de Vercel). Si cambia el
   administrador, se cambia la configuración y se publica de nuevo.
-- **Sin configuración**, la pantalla muestra solo «Comuníquese con el administrador del sistema», sin botones.
+- **Con solo el nombre** (sin teléfono), la tarjeta muestra «Administrador del sistema · Daniel Ramos», sin botones: el
+  propietario ya tiene el número (decisión del autor, 2026-10-24). **Sin configuración**, solo el mensaje general.
 - El teléfono se escribe con o sin el indicativo de Colombia: un celular de 10 dígitos que empieza por 3 se
   completa con el 57 para los enlaces, y se muestra como «300 123 4567».
 
@@ -69,8 +70,8 @@ quede guardado. El usuario ingresa con ella en la aplicación. Va en el manual d
 | Ajuste | Dónde | Valor |
 |---|---|---|
 | Registro abierto | Supabase: Authentication → Sign In / Providers | **Desactivado** (hecho el 2026-10-24) |
-| Nombre del administrador | `.env.local` y variables de Vercel | `VITE_ADMIN_NOMBRE=Daniel` |
-| Teléfono del administrador | `.env.local` y variables de Vercel | `VITE_ADMIN_TELEFONO=` el celular del administrador |
+| Nombre del administrador | `.env.local` y variables de Vercel (tipo Config) | `VITE_ADMIN_NOMBRE=Daniel Ramos` |
+| Teléfono del administrador | `.env.local` y variables de Vercel (tipo Config) | Opcional; hoy no se configura porque el propietario ya tiene el número |
 
 ## 6. Pruebas (decisión F)
 
@@ -80,7 +81,7 @@ quede guardado. El usuario ingresa con ella en la aplicación. Va en el manual d
 |---|---|---|
 | 1 | Teléfono | Con o sin 57, con espacios, guiones o «+»: el enlace `tel:+57…`, el de WhatsApp `https://wa.me/57…` y la forma «300 123 4567» |
 | 2 | Teléfono inválido o vacío | Sin teléfono: no hay botones |
-| 3 | Nombre | El que se configure; sin nombre, «el administrador» |
+| 3 | Nombre | El que se configure, recortado; con solo el nombre, sin botones; sin nombre, ninguno |
 | 4 | Sin configuración | Solo el mensaje general |
 
 ### PE-39 (manual)

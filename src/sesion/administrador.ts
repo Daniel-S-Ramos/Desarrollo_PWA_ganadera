@@ -7,8 +7,8 @@
  */
 
 export interface ContactoAdministrador {
-  /** «Daniel», o «el administrador» si no se configuró. */
-  nombre: string;
+  /** «Daniel Ramos», o null si no se configuró. */
+  nombre: string | null;
   /** null si no hay un teléfono válido: la pantalla muestra solo el mensaje general. */
   telefono: { visible: string; llamar: string; whatsapp: string } | null;
 }
@@ -25,7 +25,7 @@ export function contactoAdministrador(nombre: string | undefined, telefono: stri
   const local = limpio.length === 12 && limpio.startsWith(INDICATIVO) ? limpio.slice(2) : limpio;
   const valido = /^3\d{9}$/.test(local);
   return {
-    nombre: nombre?.trim() || 'el administrador',
+    nombre: nombre?.trim() || null,
     telefono: valido
       ? {
           visible: `${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`,

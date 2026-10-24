@@ -24,9 +24,13 @@ describe('PU-35 · 2. Teléfono inválido o vacío', () => {
 });
 
 describe('PU-35 · 3 y 4. El nombre y la falta de configuración', () => {
-  it('el nombre configurado, recortado; sin nombre, «el administrador»', () => {
-    expect(contactoAdministrador('  Daniel ', '3001234567').nombre).toBe('Daniel');
-    expect(contactoAdministrador(undefined, '3001234567').nombre).toBe('el administrador');
-    expect(contactoAdministrador('   ', undefined)).toEqual({ nombre: 'el administrador', telefono: null });
+  it('el nombre configurado, recortado; sin nombre, ninguno', () => {
+    expect(contactoAdministrador('  Daniel Ramos ', '3001234567').nombre).toBe('Daniel Ramos');
+    expect(contactoAdministrador(undefined, '3001234567').nombre).toBeNull();
+    expect(contactoAdministrador('   ', undefined)).toEqual({ nombre: null, telefono: null });
+  });
+
+  it('solo el nombre, sin teléfono: el nombre sin botones', () => {
+    expect(contactoAdministrador('Daniel Ramos', undefined)).toEqual({ nombre: 'Daniel Ramos', telefono: null });
   });
 });

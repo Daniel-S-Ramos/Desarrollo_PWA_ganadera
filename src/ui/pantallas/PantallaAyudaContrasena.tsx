@@ -9,6 +9,7 @@ import { MarcoCodigo } from '../componentes/MarcoCodigo';
  */
 export function PantallaAyudaContrasena({ alVolver }: { alVolver: () => void }) {
   const contacto = contactoAdministrador(import.meta.env.VITE_ADMIN_NOMBRE, import.meta.env.VITE_ADMIN_TELEFONO);
+  const nombre = contacto.nombre ?? 'el administrador';
   return (
     <MarcoCodigo
       ilustracion="cerrado"
@@ -16,25 +17,26 @@ export function PantallaAyudaContrasena({ alVolver }: { alVolver: () => void }) 
       explicacion="Comuníquese con el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí."
     >
       <div className="formulario">
-        {contacto.telefono ? (
+        {/* Con el nombre configurado se muestra quién es; con el teléfono, además, los botones (sección 3). */}
+        {(contacto.nombre || contacto.telefono) && (
+          <div className="tarjeta ayuda-contrasena__contacto">
+            <span className="texto-secundario">Administrador del sistema</span>
+            {contacto.nombre && <strong>{contacto.nombre}</strong>}
+            {contacto.telefono && <span>{contacto.telefono.visible}</span>}
+          </div>
+        )}
+        {contacto.telefono && (
           <>
-            <div className="tarjeta ayuda-contrasena__contacto">
-              <span className="texto-secundario">Administrador</span>
-              <strong>{contacto.nombre}</strong>
-              <span>{contacto.telefono.visible}</span>
-            </div>
-            {/* El marcador no necesita datos; WhatsApp sí (sección 3). */}
+            {/* El marcador no necesita datos; WhatsApp sí. */}
             <a className="boton boton--principal boton--ancho ayuda-contrasena__accion" href={contacto.telefono.llamar}>
               <IconoTelefono />
-              <span>Llamar a {contacto.nombre}</span>
+              <span>Llamar a {nombre}</span>
             </a>
             <a className="boton boton--secundario boton--ancho ayuda-contrasena__accion" href={contacto.telefono.whatsapp} target="_blank" rel="noreferrer">
               <IconoMensaje />
               <span>Escribir por WhatsApp</span>
             </a>
           </>
-        ) : (
-          <p className="aviso aviso--atencion aviso--en-contenido">Comuníquese con el administrador del sistema.</p>
         )}
         <button type="button" className="boton boton--secundario boton--ancho" onClick={alVolver}>
           Volver al inicio de sesión
