@@ -57,7 +57,7 @@ export function PantallaInicio({ identidad, alCerrar, cargaCompleta }: { identid
       <div className="accesos">
         {puedeUsar(perfil, 'CU-03') && <AccesoAnimales />}
         {conRonda && <AccesoOrdeno hoy={hoy} />}
-        {puedeUsar(perfil, 'CU-07') && <Acceso a="/produccion" dibujo={<Cantinas />} titulo="Producción" detalle="Consultar litros" />}
+        {puedeUsar(perfil, 'CU-07') && <Acceso a="/produccion" dibujo={<Cantinas />} titulo="Producción de leche" detalle="Consultar litros" />}
         <Acceso a="/medicamentos" dibujo={<JeringaFrasco />} titulo="Medicamentos" detalle="Catálogo" />
       </div>
       {puedeUsar(perfil, 'CU-18') && (
@@ -140,7 +140,7 @@ function TarjetaProduccion({ hoy }: { hoy: string }) {
   const maximo = resumen ? Math.max(...resumen.serie, 1) : 1;
   return (
     <Link className="resumen" to="/produccion">
-      <span className="resumen__etiqueta">Producción</span>
+      <span className="resumen__etiqueta">Producción de leche</span>
       {resumen && (
         // Los 7 días como cantinas que se llenan; la del día resumido, llena de verde.
         <span className="resumen__cantinas" aria-hidden="true">
