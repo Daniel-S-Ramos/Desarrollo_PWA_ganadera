@@ -40,8 +40,6 @@ import { PantallaInicio } from '../modulos/inicio/PantallaInicio';
 import { cargarRecordatorios } from '../modulos/recordatorios/recordatorios';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { PantallaInicioSesion } from '../ui/pantallas/PantallaInicioSesion';
-import { PantallaNuevaContrasena } from '../ui/pantallas/PantallaNuevaContrasena';
-import { RUTA_NUEVA_CONTRASENA } from '../sesion/recuperacion';
 import { useAlmacenamiento } from '../ui/useAlmacenamiento';
 
 /**
@@ -53,16 +51,13 @@ export function App() {
   const { identidad, cerradura, ingresar, desbloquear, salirAlIngreso } = useSesion();
   const [avisoIngreso, setAvisoIngreso] = useState<string | null>(null);
   useSincronizacionAutomatica(cerradura === 'abierta');
-  const { pathname } = useLocation();
-  const enInicio = pathname === '/';
-  // Documento técnico 33, sección 4.1: el enlace del correo se atiende antes de la cerradura y sin la sesión.
-  const enNuevaContrasena = pathname === RUTA_NUEVA_CONTRASENA;
-  const abierta = !!identidad && cerradura === 'abierta' && !enNuevaContrasena;
+  const enInicio = useLocation().pathname === '/';
+  const abierta = !!identidad && cerradura === 'abierta';
   // El contador de Alertas en la barra inferior; la capa ui no lee los módulos.
   const pendientes = useLiveQuery(() => (abierta ? cargarRecordatorios().then((grupos) => grupos.reduce((n, g) => n + g.recordatorios.length, 0)) : Promise.resolve(0)), [abierta]) ?? 0;
   // El aviso de RNF-15 se da solo en el inicio de sesión, cuando se escriben el correo y la contraseña; no se
   // repite en las demás pantallas (pedido del autor, 2026-10-24).
-  const conAvisoAlmacenamiento = identidad === null && !enNuevaContrasena;
+  const conAvisoAlmacenamiento = identidad === null;
 
   return (
     <div className="marco">
@@ -75,7 +70,7 @@ export function App() {
             {identidad && cerradura === 'abierta' && enInicio && <span className="encabezado__subtitulo">Panel principal</span>}
           </div>
         </div>
-        {abierta && identidad && (
+        {identidad && cerradura === 'abierta' && (
           <span className="encabezado__usuario">
             <span>
               {identidad.nombre}
@@ -93,47 +88,43 @@ export function App() {
       <main className="contenido">
         {conAvisoAlmacenamiento && <AvisoAlmacenamiento persistencia={almacenamiento.persistencia} />}
 
-        {enNuevaContrasena ? (
-          <PantallaNuevaContrasena />
-        ) : (
+        {identidad === undefined && <p className="texto-secundario">Cargando…</p>}
+
+        {identidad === null && (
           <>
-            {identidad === undefined && <p className="texto-secundario">Cargando…</p>}
-
-            {identidad === null && (
-              <>
-                {avisoIngreso && (
-                  <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
-                    <p>⚠ {avisoIngreso}</p>
-                  </div>
-                )}
-                <PantallaInicioSesion
-                  alIngresar={(nueva) => {
-                    setAvisoIngreso(null);
-                    ingresar(nueva);
-                  }}
-                />
-              </>
+            {avisoIngreso && (
+              <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
+                <p>⚠ {avisoIngreso}</p>
+              </div>
             )}
-
-            {identidad && cerradura === 'definir' && <PantallaDefinirCodigo alDefinir={desbloquear} />}
-
-            {identidad && cerradura === 'bloqueada' && (
-              <PantallaDesbloqueo
-                identidad={identidad}
-                alDesbloquear={desbloquear}
-                alSalir={(motivo) => {
-                  setAvisoIngreso(
-                    motivo === 'bloqueo'
-                      ? 'Se superaron los 5 intentos del código. Ingrese con su correo y contraseña.'
-                      : 'Ingrese con su correo y contraseña para definir un código nuevo.',
-                  );
-                  salirAlIngreso();
-                }}
-              />
-            )}
-
-            {identidad && cerradura === 'abierta' && <RutasDelPredio identidad={identidad} alCerrar={salirAlIngreso} />}
+            <PantallaInicioSesion
+              alIngresar={(nueva) => {
+                setAvisoIngreso(null);
+                ingresar(nueva);
+              }}
+            />
           </>
+        )}
+
+        {identidad && cerradura === 'definir' && <PantallaDefinirCodigo alDefinir={desbloquear} />}
+
+        {identidad && cerradura === 'bloqueada' && (
+          <PantallaDesbloqueo
+            identidad={identidad}
+            alDesbloquear={desbloquear}
+            alSalir={(motivo) => {
+              setAvisoIngreso(
+                motivo === 'bloqueo'
+                  ? 'Se superaron los 5 intentos del código. Ingrese con su correo y contraseña.'
+                  : 'Ingrese con su correo y contraseña para definir un código nuevo.',
+              );
+              salirAlIngreso();
+            }}
+          />
+        )}
+
+        {identidad && cerradura === 'abierta' && (
+          <RutasDelPredio identidad={identidad} alCerrar={salirAlIngreso} />
         )}
       </main>
 
