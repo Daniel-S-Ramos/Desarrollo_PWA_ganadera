@@ -22,6 +22,9 @@ etiqueta `v1.0`.
 | PU-36 | Producción de carne: por mes, ciclo completo y resumen del inicio | 6.0c | 2.2.7 · RF-13 · RF-14 · CU-09 · HU-05 | ✅ |
 | PI-01 | Esquema remoto: peso de finalización de la ceba (verificación 20) | 6.0c | Tabla 30 | ✅ |
 | PE-40 | Producción de carne en el navegador real, propietario y trabajador | 6.0c | 2.2.7 · CU-09 · Tabla 27 | ✅ |
+| PU-23.5 · PU-32.3 | Variación atípica de la leche desde 35 %, tomada del parámetro del propietario | R3 | Tabla 30 · RF-22 · CU-06 | ✅ |
+| PI-01 | Esquema remoto: parámetros del propietario (verificación 21) | R3 | Tabla 30 | ✅ |
+| PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
 
 ---
 
@@ -181,3 +184,25 @@ puede pasar de 100. Se quitó el tope del código. Al cierre, 33 de 33.
    pesajes y viendo la evolución en la ficha.
 4. La marca «Bajo lo esperado» no se vio porque el parámetro `ganancia_diaria_esperada` no está cargado: es un
    parámetro de la Tabla 30 que falta definir con el propietario (PLAN.md, ruta de cierre). La cubre PU-36.5.
+
+## R3 · Parámetros del propietario (PU-23.5, PU-32.3, PI-01 verificación 21 y PI-03)
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar los dos parámetros de la Tabla 30 que definió el propietario el 2026-10-24: la **variación atípica de la leche** desde 35 % (antes 25 % fijo en el código), que usan la ronda, la producción diaria y el recordatorio de leche baja; y la **ganancia diaria esperada** de 0,5 kg/día (el mínimo del rango de 0,5 a 0,8 que espera), que usan el pesaje, la evolución y la producción de carne |
+| Requerimiento | Tabla 30 · 3.10.4.6 · RF-22 · CU-06 · CU-08 · CU-09 |
+| Tipo | Unitaria, automática (PU-23.5 y PU-32.3); integración contra Supabase (PI-01 y PI-03) |
+| Código | [`leche.ts`](../../src/dominio/leche.ts) (`compararConPromedio` con el umbral como argumento) · [`ronda.ts`](../../src/modulos/leche/ronda.ts) · [`produccion.ts`](../../src/modulos/leche/produccion.ts) · [`recordatorios.ts`](../../src/modulos/recordatorios/recordatorios.ts) · migración [`20261024000200_parametros_del_propietario.sql`](../../supabase/migrations/20261024000200_parametros_del_propietario.sql) · documentos técnicos 22 (sección 6.3), 24 (sección 8) y 30 |
+| Resultado obtenido | **963 de 963** automáticas (casos nuevos: 34 % no avisa, 35 % exacto avisa también con decimales binarios, el umbral del parámetro, 8 de 12 litros ya no avisa). **PI-01: 21 de 21 · PI-03: 11 de 11** ([evidencia](evidencias/cierre/PI-01-21-y-PI-03-11-parametros.txt)) |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-24 |
+
+**Observaciones.**
+
+1. **El primer intento de PI-01 falló antes de verificar**: la prueba usaba chapetas fijas de la serie de
+   pruebas (Z901 a Z908) y el autor había creado Z901 a mano en PE-40. PI-03 tenía el mismo riesgo (Z911 a
+   Z916). Ahora ambas toman chapetas **libres** de la serie Z900–Z999, de la más alta hacia abajo, cada vez que
+   corren; siguen sin dejar datos.
+2. El propietario aclaró que no pesa a diario: la ganancia diaria es el promedio entre dos pesajes, que se
+   compara con la meta cualquiera que sea la frecuencia (documento técnico 34, sección 4).
+

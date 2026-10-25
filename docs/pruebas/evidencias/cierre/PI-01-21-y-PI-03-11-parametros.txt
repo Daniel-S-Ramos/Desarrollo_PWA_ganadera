@@ -1,0 +1,24 @@
+PI-01 y PI-03 · 2026-10-24 (salida de la consola entregada por el autor; verificaciones relevantes)
+
+npm run db:push
+  Applying migration 20261024000200_parametros_del_propietario.sql... Finished supabase db push.
+
+Primer intento de PI-01: falló antes de verificar
+  ERROR 23505: duplicate key value violates unique constraint "animal_codigo_chapeta_key"
+  Key (codigo_chapeta)=(Z901) already exists.
+  Causa: PI-01 usaba chapetas fijas de la serie de pruebas y el autor creó Z901 a mano en PE-40.
+  Arreglo: PI-01 y PI-03 toman chapetas libres de la serie Z900–Z999 cada vez que corren.
+
+npm run prueba:pi-01  →  21 de 21 APROBADA
+  12 | Chapeta: se rechazan minúscula, espacio, cero inicial, letra O, cero, dos letras y fuera de rango;
+       una chapeta libre de la serie Z9xx se admite | APROBADA | códigos: 23514 ×8, OK
+  20 | Peso de finalización de la ceba cargado: 500 kg | APROBADA | parámetro: 1
+  21 | Parámetros del propietario cargados: ganancia de 0,5 kg/día y variación atípica de 35 % | APROBADA |
+       parámetros: 2 de 2
+  (1 a 19 aprobadas, sin cambios)
+
+npm run prueba:pi-03  →  11 de 11 APROBADA
+  1  | Cada perfil registra con su propia autoría; nadie registra a nombre de otro | APROBADA
+  5  | El trabajador lee pesajes, salidas, destinos, los usuarios del predio y los parámetros | APROBADA |
+       pesajes 12 · salidas 7 · destinos 12 · ve al propietario 1 · parámetros 11
+  (2 a 4 y 6 a 11 aprobadas, sin cambios)
