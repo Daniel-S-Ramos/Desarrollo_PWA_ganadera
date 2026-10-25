@@ -55,12 +55,12 @@ al cambiar el medicamento o la fecha.
 **Información** (aviso neutro, no bloquea):
 
 > Última aplicación de **Prueba Aftosa** a este animal: **12 de octubre de 2026** (hace 3 días),
-> registrada por Daniel Ramos
+> **con 1,5 ml**, registrada por Daniel Ramos
 
 **Advertencia** (aviso de atención, como pide la Figura 19):
 
-> ⚠ **Prueba Aftosa ya se aplicó a Z920 el 12 de octubre de 2026** (hace 3 días), registrada por Daniel
-> Ramos.
+> ⚠ **Prueba Aftosa ya se aplicó a Z920 el 12 de octubre de 2026** (hace 3 días), **con 1,5 ml**, registrada
+> por Daniel Ramos.
 > El intervalo de este medicamento es de 35 días.
 > ☐ Confirmo que esta nueva aplicación es correcta
 
@@ -68,6 +68,7 @@ al cambiar el medicamento o la fecha.
 |---|---|
 | «Hace» | Desde hoy: «hoy», «ayer», «hace N días»; si la otra aplicación es posterior a hoy no puede ocurrir (las fechas no son futuras) |
 | Si la otra es posterior a la fecha elegida | «… se aplicó a Z920 el 20 de octubre de 2026, después de la fecha que está registrando» |
+| Dosis | La dosis vigente que se registró en esa aplicación, con la unidad del medicamento («con 1,5 ml»), o «sin dosis registrada». Es un dato del historial, no una recomendación: la Tabla 30 establece que la aplicación «recupera la última dosis registrada y no formula recomendación alguna». Agregada a pedido del autor el 2026-10-25 (sesión B de la evaluación) |
 | Autor | Nombre de quien la registró (HU-15); si ya no está en el teléfono, «un usuario que ya no está en el predio» |
 | Estado | El distintivo de sincronización de esa aplicación (Tabla 22): «Pendiente» o «Conflicto». Una aplicación ya enviada no lleva distintivo, como en el resto de la aplicación (documento 11, sección 4) |
 | Animal | La chapeta, para que no haya duda de a cuál se refiere (Figura 19) |

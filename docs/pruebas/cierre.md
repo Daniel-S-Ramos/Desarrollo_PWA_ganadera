@@ -27,6 +27,7 @@ etiqueta `v1.0`.
 | PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
 | R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
 | R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7; sesión A (consultas con el volumen de la finca): 13 de 13; falta la sesión C | 6.3 | RF-24 a RF-27 · CU-01 · consultas | 🔄 |
+| R7 | Conectividad limitada (sesión B): CP-44 y CP-45 aprobados; faltan CP-47 y CP-48 | 6.4 | RF-28 a RF-30 · Tabla 34 | 🔄 |
 
 ---
 
@@ -343,4 +344,30 @@ para provocar la baja que la versión 1 de los datos no traía.
    por vaca, el número del animal aparecía como texto y no en la chapeta amarilla que se usa para todos los
    animales. Ahora va en la chapeta (`PantallaCorreccionesRecientes.tsx`, `consultaCorrecciones.ts` con los campos
    `chapeta` y `nombre`, PU-28 ampliada; `PantallaProduccion.tsx`). 963 de 963 automáticas, ejecutadas por el autor.
+
+## R7 · Conectividad limitada (paso 6.4)
+
+Sesión B del [documento de casos](casos-de-prueba.md), sección 14, con dos equipos: el trabajador (Daniel Ramos) en
+un iPhone en modo avión y el propietario (José Ramos) en Chrome del computador sin conexión. Lo demás de la Tabla 34
+está cubierto por PE-32 (chapeta en dos teléfonos), PI-03 (permisos en el servidor), CP-02 y CP-07.
+
+| Caso | Resultado obtenido | Estado | Evidencia |
+|---|---|---|---|
+| CP-44 · Mismo animal en dos equipos sin señal (Tabla 34, escenario 1) | Sin conexión, el trabajador registró una vitamina (Complejo B, 1,5 ml) al **434** y el propietario un pesaje (472 kg, báscula); cada uno quedó «1 registro pendiente de enviar». Al reconectar, **los dos registros están en los dos equipos**, cada uno con su autor: en el computador, la vitamina «Registrado por Daniel Ramos»; en el iPhone, el pesaje «registrado por José Ramos», con «por debajo de la meta» y «Métodos distintos» | ✅ Aprobado | [iPhone pendiente](evidencias/cierre/CP-44-01-iphone-evento-pendiente.png) · [computador pendiente](evidencias/cierre/CP-44-02-computador-pesaje-pendiente.png) · [computador](evidencias/cierre/CP-44-03-computador-ve-evento-de-daniel.png) · [iPhone](evidencias/cierre/CP-44-04-iphone-ve-pesaje-de-jose.webp) |
+| CP-45 · El mismo ordeño en dos equipos sin señal (3.8.6, Tabla 21) | Sin conexión, la vaca **203** con 18 L en el iPhone y 20 L en el computador. Se reconectó primero el iPhone (aceptado su ordeño) y después el computador: su ordeño **no se duplicó ni se perdió**, sino que se convirtió en corrección del aceptado: en Correcciones recientes, «203 · Ordeño del 25 de octubre de 2026 · Litros: antes 18, ahora 20 · Registro duplicado · José Ramos». Las dos rondas quedan con **✓ 20 litros** y «2 de 15» (un solo ordeño) | ✅ Aprobado con observación 1 | [iPhone 18 L](evidencias/cierre/CP-45-01-iphone-18-litros.png) · [computador 20 L](evidencias/cierre/CP-45-02-computador-20-litros.png) · [iPhone enviado](evidencias/cierre/CP-45-03-iphone-enviado.png) · [ronda computador](evidencias/cierre/CP-45-04-computador-ronda-20.png) · [ronda iPhone](evidencias/cierre/CP-45-05-iphone-ronda-20.png) · [corrección](evidencias/cierre/CP-45-06-correccion-18-a-20.png) |
+| CP-47 · Conexión cortada a mitad del envío | Por ejecutar | ⬜ | — |
+| CP-48 · Teléfono dañado con pendientes | Por ejecutar | ⬜ | — |
+
+**Observaciones.**
+
+1. Prevalece el valor que llega **después** (20 L del computador), porque el segundo envío se registra como
+   corrección del primero (documento técnico 09; Tabla 21: «el segundo no se descarta, sino que se convierte en una
+   corrección sobre el registro aceptado»); el valor desplazado (18 L) y quién registró cada uno quedan a la vista del
+   propietario. Un trabajador no habría podido reemplazar a mano un ordeño del propietario, pero aquí el propietario
+   es quien envió segundo.
+2. **Mejora pedida por el autor.** Al registrar el evento, el aviso de la aplicación anterior del mismo medicamento
+   decía la fecha y el autor; el autor pidió que también diga la dosis de esa vez. Ahora dice, por ejemplo, «Última
+   aplicación de Complejo B de All Vet a este animal: 26 de febrero de 2026 (hace 8 meses), con 1,5 ml, registrada por
+   José Ramos», o «sin dosis registrada». Es un dato del historial, no una recomendación (Tabla 30). Cambio en
+   `AvisoRepeticion.tsx` y `eventos.ts`, documento técnico 21 (sección 3) y PU-22.8 ampliada: 964 de 964.
 
