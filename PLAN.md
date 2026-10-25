@@ -128,7 +128,8 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | Paso | Contenido | Estado |
 |---|---|---|
 | 6.0 | Un solo ordeño vigente por vaca y día (pendiente del acta de la Iteración 5) | ✅ |
-| 6.0b | Cuentas de usuario y ayuda para recuperar la contraseña (hallazgo del desarrollo) | 🔄 |
+| 6.0b | Cuentas de usuario y ayuda para recuperar la contraseña (hallazgo del desarrollo) · falta PE-39 | 🔄 |
+| 6.0c | Producción de carne: por mes, ciclo completo hasta 500 kg, tarjeta «Producción» del inicio (pedido del autor, documento técnico 34) | ✅ |
 | 6.1 | Conjunto de datos simulados con el volumen de la Ganadería JR | ⬜ |
 | 6.2 | Documento de casos de prueba | ⬜ |
 | 6.3 | Pruebas funcionales de flujos completos | ⬜ |
@@ -136,6 +137,34 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 6.5 | Despliegue del prototipo en un alojamiento con HTTPS (adelantado al paso 2.2b; aquí queda la versión final) | ⬜ |
 | 6.6 | Matriz de trazabilidad entre requerimientos y pruebas | ⬜ |
 | 6.7 | Insumos para el capítulo 4 del documento | ⬜ |
+
+### Ruta de cierre (revisión del documento contra el desarrollo, 2026-10-24)
+
+**Aquí se buscan los pendientes para terminar la aplicación.** Se revisó el documento de tesis completo
+(objetivos 1.4, metodología 1.6.3.7–1.6.3.11, Tablas 3, 8 a 14, 20, 27, 28, 30, 31 y 34, anexos A y B)
+contra el código y la documentación técnica.
+
+**Lo cumplido.** Los 32 RF (también los deseables RF-19 a RF-21), los 18 casos de uso, las 17 historias en
+las cinco iteraciones (v0.1 a v0.5), los 15 RNF (salvo la evidencia del RNF-02), las 19 pantallas de la
+Tabla 28 (más Medicamentos), las respuestas de la Tabla 31 y la arquitectura del capítulo 3 (PI-01: 20 de 20).
+Lo que falta es sobre todo **la evaluación** que promete el tercer objetivo y sus entregables (Tabla 3).
+
+Se cierran en este orden; al terminar uno se marca aquí y en la tabla de arriba.
+
+| # | Pendiente | Qué hay que hacer | Origen | Estado |
+|---|---|---|---|---|
+| R1 | Documentar PU-36 y PE-40 (6.0c) | En `docs/pruebas/cierre.md` | Paso 6.0c | ✅ 2026-10-24 |
+| R2 | PE-39 (6.0b) | Capturas del autor de «¿Olvidó su contraseña?» con **Daniel Ramos**; documentar y marcar 6.0b ✅ | Paso 6.0b | ⬜ |
+| R3 | Parámetros de la Tabla 30 sin valor | Preguntar al propietario la **ganancia diaria esperada** (hoy no está cargada: «Bajo lo esperado» nunca aparece) y la **variación atípica de la leche** (hoy fija en el código: 25 % bajo el promedio, `UMBRAL_MUY_POR_DEBAJO` en `src/dominio/leche.ts`); cargarlos como parámetros con una migración | Tabla 30 · 3.10.4.6 | ⬜ |
+| R4 | Datos simulados (6.1) | Conjunto con el volumen de la Ganadería JR (Tabla 26 y simulación del capítulo 3: unos 55 animales, 30 en ceba con seis pesajes al año, ordeños diarios, eventos sanitarios, partos, movimientos económicos). Entregable de la Tabla 3 | 1.6.3.8 | ⬜ |
+| R5 | Documento de casos de prueba (6.2) | Por requerimiento: condiciones iniciales, datos, pasos y resultado esperado. Entregable de la Tabla 3 | 1.6.3.7 | ⬜ |
+| R6 | Pruebas funcionales de flujos completos (6.3) | Con los datos simulados, por perfil. Incluir la sesión de acompañamiento que evidencia el **RNF-02** (un usuario sin experiencia registra tras una sola sesión) | 1.6.3.9 · RNF-02 | ⬜ |
+| R7 | Conectividad limitada (6.4) | Escenarios de la Tabla 34: dos teléfonos sin señal sobre el mismo animal; conexión cortada a mitad del envío; teléfono dañado con pendientes; chapeta repetida en dos teléfonos. Además el recordatorio y el pesaje sin conexión. Mantener activo el proyecto de Supabase durante la evaluación (se pausa tras días sin uso) | 1.6.3.10 · Tabla 34 | ⬜ |
+| R8 | Matriz de trazabilidad (6.6) | Los 47 requerimientos contra las pruebas ejecutadas, con el grado de cumplimiento. Entregable de la Tabla 3 | 1.6.3.11 | ⬜ |
+| R9 | Despliegue final (6.5) | Repetir PI-01 a PI-04 como regresión; borrar del servicio Z900–Z999 con sus registros, los medicamentos de prueba («Prueba…», «Otro mas», «pp prueba») y la cuenta `pruebas@ganaderiajr.test`; PR de `cierre` a `main`; publicar en producción; etiqueta **v1.0** | Pendientes de diseño 6.x | ⬜ |
+| R10 | Insumos del capítulo 4 (6.7) | Resultados e informe de pruebas, hallazgos (500 kg frente a 600 kg; ayuda de contraseña; conflictos de chapeta; unicidades vigentes) y limitaciones (revocar un acceso no surte efecto sin conexión; iPhone sin WebP) | 1.6.3.11 · capítulo 4 | ⬜ |
+| R11 | Ajustes al documento de tesis | Las precisiones de «Pendientes para el documento» (más abajo), para que documento y aplicación coincidan | Desarrollo | ⬜ |
+| R12 | Opcional: dividir el código por pantallas | Aligera la primera carga (aviso de Vite) | Pendientes de diseño 6.x | ⬜ |
 
 ---
 
