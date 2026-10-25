@@ -173,7 +173,7 @@ function DiaVaca({ chapeta, dia, hoy, diasPromedio, irA }: { chapeta: string; di
       {dia.litros !== null ? (
         <section className="tarjeta produccion__resumen">
           <h2>
-            {chapeta} · {formatearLitros(dia.litros)} litros
+            <span className="chapeta">{chapeta}</span> {formatearLitros(dia.litros)} litros
           </h2>
           <p className="texto-secundario">
             {dia.promedio
@@ -209,7 +209,7 @@ function PeriodoVaca({ chapeta, datos, agregacion, irA }: { chapeta: string; dat
       ) : (
         <section className="tarjeta produccion__resumen">
           <h2>
-            {chapeta} · {formatearLitros(resumen.total)} litros
+            <span className="chapeta">{chapeta}</span> {formatearLitros(resumen.total)} litros
           </h2>
           <p>
             {formatearLitros(resumen.promedio!)} litros por día registrado · {resumen.diasRegistrados} de {resumen.diasDelPeriodo} días registrados

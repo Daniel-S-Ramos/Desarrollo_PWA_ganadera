@@ -62,6 +62,9 @@ describe('PU-29 · 1. Contenido de cada entrada (sección 3)', () => {
     const [entrada] = (await cargarCorreccionesRecientes(null, POR_PAGINA, HOY)).grupos[0]!.entradas;
     expect(entrada).toMatchObject({
       titulo: 'Z921 · Vacuna Prueba Aftosa del 14 de octubre de 2026',
+      // La chapeta aparte, para la chapeta amarilla de la pantalla (sesión A, 2026-10-25).
+      chapeta: 'Z921',
+      nombre: 'Vacuna Prueba Aftosa del 14 de octubre de 2026',
       cambio: 'Dosis: antes 1, ahora 2,5',
       anulacion: false,
       motivo: 'Error de digitación · Se anotó mal',

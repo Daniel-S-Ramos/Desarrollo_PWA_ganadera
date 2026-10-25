@@ -77,7 +77,15 @@ export function PantallaCorreccionesRecientes() {
 function Entrada({ entrada: e }: { entrada: EntradaCorreccion }) {
   const contenido = (
     <>
-      <span className="correcciones__titulo">{e.titulo}</span>
+      <span className="correcciones__titulo">
+        {e.chapeta ? (
+          <>
+            <span className="chapeta">{e.chapeta}</span> {e.nombre}
+          </>
+        ) : (
+          e.titulo
+        )}
+      </span>
       <span className={e.anulacion ? 'correcciones__cambio correcciones__cambio--anulado' : 'correcciones__cambio'}>{e.cambio}</span>
       <span className="texto-secundario">{e.motivo}</span>
       <span className="texto-secundario">

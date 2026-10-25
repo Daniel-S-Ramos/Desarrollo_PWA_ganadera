@@ -12,9 +12,13 @@ function conSigno(kg: number): string {
   return kg === 0 ? '0' : `${kg > 0 ? '+' : '−'}${formatearKg(Math.abs(kg))}`;
 }
 
-/** «15 sep.»: la fecha corta de los pesos. */
+/**
+ * «15 de septiembre»: la fecha de los pesos, con el año solo si no es el del año en curso. Sin el año, una compra
+ * de octubre del año pasado parecía posterior a un pesaje de septiembre (sesión A, 2026-10-25).
+ */
 function fechaCorta(fecha: string | null): string {
-  return fecha ? formatearFecha(fecha).replace(/ de \d{4}$/, '') : 'fecha desconocida';
+  if (!fecha) return 'fecha desconocida';
+  return fecha.slice(0, 4) === fechaDelPredio().slice(0, 4) ? formatearFecha(fecha).replace(/ de \d{4}$/, '') : formatearFecha(fecha);
 }
 
 /**
