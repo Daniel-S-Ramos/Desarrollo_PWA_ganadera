@@ -189,7 +189,11 @@ const sinOrdeno = vacas[13];
 for (let i = ordenos.length - 1; i >= 0; i--) if (ordenos[i].a === sinOrdeno && ordenos[i].dia <= 5) ordenos.splice(i, 1);
 const conBaja = vacas[14];
 const ayer = ordenos.find((o) => o.a === conBaja && o.dia === 1) ?? (ordenos.push({ a: conBaja, dia: 1, min: 60, litros: 10, autor: 'T1' }), ordenos.at(-1));
-ayer.litros = Math.max(1, medio(conBaja.base * 0.45));
+// La mitad de su promedio de los 7 días anteriores, que es con lo que la compara la aplicación. (La versión 1
+// usaba la mitad de su pico y, en una vaca al final de la lactancia, el ordeño quedaba por encima del promedio:
+// hallazgo del caso CP-20, 2026-10-25.)
+const previos7 = ordenos.filter((o) => o.a === conBaja && o.dia >= 2 && o.dia <= 8);
+ayer.litros = Math.max(0.5, medio((previos7.reduce((s, o) => s + o.litros, 0) / previos7.length) * 0.5));
 
 // --- Ceba: pesajes, ventas, una muerte y una pérdida ------------------------
 const COMPRADORES = ['Frigorífico de Guadalupe', 'Comerciante de Cáqueza', 'Feria de Villavicencio', 'Vecino de la vereda'];

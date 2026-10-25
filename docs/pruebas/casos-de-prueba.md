@@ -460,3 +460,54 @@ Se ejecutan en el paso 6.4 (R7). «Sin conexión» es el modo avión del teléfo
 
 Los resultados de la ejecución se registran en [`cierre.md`](cierre.md) (R6 y R7) y el contraste final en la matriz
 de trazabilidad (R8).
+
+## 17. Casos cubiertos por pruebas anteriores (decisión del autor, 2026-10-25)
+
+Al ejecutar el bloque 1 el autor observó que la mayoría de los casos repetían pruebas manuales ya hechas. Se
+adoptó este criterio: **un caso queda cubierto por una prueba anterior (PE) si la lógica de esa función no cambió
+después de la prueba**; el rediseño visual del 2026-10-22 al 24 cambió la presentación, no las reglas, y lo revisó
+el autor pantalla por pantalla. Se ejecutan de nuevo solo los casos que aportan evidencia nueva: las **consultas
+con el volumen de la finca** (las PE se hicieron con 3 o 4 animales), lo que **cambió después** de su prueba y lo
+que **nunca se probó a mano**.
+
+| Caso | Cubierto por | Se ejecuta de nuevo | Por qué |
+|---|---|---|---|
+| CP-01 a CP-07 | PE-13, PE-14, PE-16, PE-22, PE-39 | Sí (ya ejecutados, bloque 1) | Primera sesión con los datos simulados |
+| CP-08 Registrar un animal sin conexión, con fotos | PE-17, PE-18 | No | Sin cambios de lógica |
+| CP-09 Chapeta repetida | PE-17 | No | Sin cambios de lógica |
+| CP-10 Fotos incompletas | PE-18, PE-20 | No | Sin cambios de lógica |
+| CP-11 Buscar y consultar la ficha | PE-20 | **Sí** (sesión A) | Con 70 animales y un año de registros |
+| CP-12 Genealogía | PE-30 | No | Sin cambios de lógica |
+| CP-13 Filtros del listado | PE-20 · PU-16.7 | **Sí** (sesión A) | Filtros rediseñados; cantidades con el volumen real |
+| CP-14 a CP-16 Evento sanitario, repetición, medicamento nuevo | PE-23, PE-25, PE-26 | No | Sin cambios de lógica |
+| CP-17 Historial sanitario | PE-25 | **Sí** (sesión A) | Un año de eventos; detalle con síntomas |
+| CP-18 · CP-19 Ronda y ordeño existente | PE-27, PE-38 | No | Sin cambios de lógica |
+| CP-20 Baja atípica de la leche | PE-27 (con 25 %) | **Sí** (sesión A) | El umbral cambió a 35 % (R3) |
+| CP-21 · CP-22 Producción y comparación | PE-28, PE-34 | **Sí** (sesión A) | Con un año de ordeños, secados y pocos registros reales |
+| CP-23 · CP-24 Pesaje y variación atípica | PE-29 (y CP-07) | No | Sin cambios de lógica |
+| CP-25 Evolución del peso | PE-29 (y CP-06) | No | La meta de 0,5 kg/día ya se vio en CP-06 |
+| CP-26 · CP-27 Producción de carne y ciclo | PE-40 | **Sí** (sesión A) | PE-40 tenía 4 animales; ahora 28 en ceba |
+| CP-28 · CP-29 Venta y muerte | PE-35 | No | Sin cambios de lógica |
+| CP-30 a CP-32 Partos y control reproductivo | PE-30 | No | Sin cambios de lógica |
+| CP-33 Destino e historial | PE-24 | No | Sin cambios de lógica |
+| CP-34 Registrar un costo | PE-37 | No | Sin cambios de lógica |
+| CP-35 a CP-37 Consolidados | PE-37 | **Sí** (sesión A) | Con un año de leche, compras y ventas |
+| CP-38 Recordatorios al iniciar | PE-36 | **Sí** (sesión A) | Con los casos preparados y el umbral de 35 % |
+| CP-39 Posponer y atender | PE-36 | No | Sin cambios de lógica |
+| CP-40 · CP-41 Corregir y anular | PE-31, PE-33, PE-38 | **Solo CP-41, consulta** (sesión A) | Correcciones recientes con las 49 del conjunto |
+| CP-42 · CP-43 Sin conexión y cierre inesperado | PE-10, PE-17, PE-22 (y CP-02, CP-07) | No | Ya visto en el bloque 1 |
+| CP-44 Dos teléfonos, mismo animal | — | **Sí** (sesión B) | Escenario 1 de la Tabla 34, nunca probado a mano |
+| CP-45 Mismo ordeño en dos teléfonos | PU-10 (PE-38, obs. 3: no probado a mano) | **Sí** (sesión B) | Nunca probado a mano |
+| CP-46 Misma chapeta en dos teléfonos | PE-32 | No | Probado con dos teléfonos en PE-32 |
+| CP-47 Conexión cortada a mitad del envío | PU-09 | **Sí** (sesión B) | Escenario 6 de la Tabla 34, nunca probado a mano |
+| CP-48 Teléfono dañado con pendientes | PE-21, PE-22 | **Sí** (sesión B) | Escenario 3 de la Tabla 34 completo |
+| CP-49 Permisos en el servidor | PI-03 | No | Prueba de integración |
+| CP-50 · CP-51 Instalación, persistencia, teléfono y computador | PE-06, PE-11, PE-12 | No | Sin cambios |
+| CP-52 Operación en campo | PU-01 | No | Prueba automática del contraste y los tamaños |
+| CP-53 Pocos pasos | — | **Sí** (sesión C) | Nunca medido |
+| CP-54 Aprendizaje con una sola sesión (RNF-02) | — | **Sí** (sesión C) | Nunca evaluado |
+| CP-55 · CP-56 Fotos comprimidas, inmutabilidad, módulos | PE-18, PI-04, PI-03, PE-02 | No | Sin cambios |
+
+**Sesiones:** **A**, consultas con el volumen de la finca (propietario, en el computador; R6); **B**, conectividad
+limitada con dos teléfonos (R7); **C**, pasos y aprendizaje con un usuario de la finca (R6, RNF-02).
+

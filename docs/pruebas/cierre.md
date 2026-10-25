@@ -26,7 +26,7 @@ etiqueta `v1.0`.
 | PI-01 | Esquema remoto: parámetros del propietario (verificación 21) | R3 | Tabla 30 | ✅ |
 | PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
 | R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
-| R6 | Pruebas funcionales (CP-01 a CP-41) · bloque 1 de acceso: 7 de 7 aprobados | 6.3 | RF-24 a RF-27 · CU-01 | 🔄 |
+| R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7 aprobados; sesión A: 5 de 13 casos aprobados | 6.3 | RF-24 a RF-27 · CU-01 · consultas | 🔄 |
 
 ---
 
@@ -292,4 +292,27 @@ previa de la rama `cierre` con los datos simulados. Criterios de la sección 2 d
    confirmación de variación atípica y, entre báscula y cinta, la evolución advierte «Métodos distintos: compárese
    con cautela». En el historial sanitario, los síntomas se ven al tocar el evento (CU-05, paso 4); se verifica en
    CP-17.
+
+### Sesión A · Consultas con el volumen de la finca · 2026-10-25
+
+Propietario, Chrome del computador, con los datos simulados. Casos de la sección 17 del documento de casos.
+
+| Caso | Resultado obtenido | Estado | Evidencia |
+|---|---|---|---|
+| CP-13 | Activos 56, Retirados 14, Todos 70; en Retirados, los motivos Vendidos, Muertos y Pérdida o robo, con los vendidos en «Para venta»; las categorías con su dibujo (Ceba con el filete) | ✅ Aprobado | [activos](evidencias/cierre/CP-13-01-activos.png) · [retirados](evidencias/cierre/CP-13-02-retirados-motivos.png) · [todos](evidencias/cierre/CP-13-03-todos.png) |
+| CP-11 | «215» en el buscador: 1 animal activo. Ficha: «Unos 5 años» (aproximada, comprada), peso de compra 411 kg, última vacuna Clostrisan P del 9 de mayo, leche 7,5 litros del 23 de octubre, sin partos, destino Producción de leche, invertido $4.290.000, y la autoría del registro | ✅ Aprobado | [búsqueda](evidencias/cierre/CP-11-01-buscar-215.png) · [ficha](evidencias/cierre/CP-11-02-ficha-215.png) |
+| CP-17 | Historial de 210 del más reciente al más antiguo; al tocar el tratamiento del 3 de abril: «Síntomas: Mastitis en un cuarto · Costo: $46.000 · Registrado el 3 de abril de 2026 a las 11:41 a. m.» | ✅ Aprobado | [detalle](evidencias/cierre/CP-17-01-tratamiento-sintomas.png) |
+| CP-20 | Vaca 215, promedio de 7 días 5,8 L: con 6 L «Similar a su promedio»; con 5 L (14 % menos) «Por debajo de su promedio»; con 3 L (48 % menos) «⚠ Muy por debajo de su promedio», sin impedir guardar | ✅ Aprobado con observación 1 | [6 L](evidencias/cierre/CP-20-01-similar.png) · [5 L](evidencias/cierre/CP-20-02-por-debajo.png) · [3 L](evidencias/cierre/CP-20-03-muy-por-debajo.png) |
+| CP-21 | Vaca 201 por mes: junio 447,5 L (28 de 30 días), julio 472 L (30 de 31 días, 15,7 L por día registrado); septiembre «Sin registro de 201 este mes», con «Ir al mes del ordeño anterior: 13 ago» y «del siguiente: 12 oct»: el secado de 60 días antes del parto del 12 de octubre, sin ceros | ✅ Aprobado con observación 2 | [junio](evidencias/cierre/CP-21-01-201-junio.png) · [julio](evidencias/cierre/CP-21-02-201-julio.png) · [septiembre](evidencias/cierre/CP-21-03-201-septiembre-seca.png) |
+
+**Observaciones.**
+
+1. **Hallazgo en los datos simulados, no en la aplicación.** El ordeño de ayer de la 215 debía ser una baja de más
+   del 35 % para que apareciera el recordatorio de leche baja, pero quedó en 7,5 L, por encima de su promedio
+   (5,8 L): el generador tomaba la mitad del pico de la vaca y no de su promedio reciente, y la 215 va al final de la
+   lactancia. Se corrigió el generador (versión 2: la fila pasa a 2,5 L); el conjunto cargado es la versión 1 y no
+   se recargó por una sola fila. Para la evaluación, la baja se provoca registrando hoy 3 L a la 215 en la ronda
+   (CP-38).
+2. Las instrucciones pedían mirar julio o agosto; el secado de la 201 va del 14 de agosto al 11 de octubre, por eso
+   julio aparece completo y septiembre vacío. La aplicación mostraba lo correcto.
 

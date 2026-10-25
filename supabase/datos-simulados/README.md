@@ -44,6 +44,13 @@ fichas muestran «Fotos: 0 de 3».
 más del 35 % ayer (recordatorios); animales de ceba bajo la meta y terminados (más de 500 kg); la cría 501 sin chapeta;
 animales sin pesaje reciente; vacas compradas y nacidas para el consolidado económico.
 
+## Versiones
+
+| Versión | Fecha | Cambio |
+|---|---|---|
+| 1 | 2026-10-24 | La cargada en el servidor para la evaluación |
+| 2 | 2026-10-25 | La baja de ayer de la vaca 215 se calcula sobre su promedio de los 7 días anteriores (la versión 1 usaba la mitad de su pico y quedaba en 7,5 L, por encima del promedio; hallazgo del caso CP-20). Cambia una sola fila; no se recargó: en la evaluación la baja se provoca registrando hoy 3 L en la ronda |
+
 ## Cómo se cargan
 
 El catálogo de medicamentos **no se carga por SQL**: lo registra el autor en la aplicación con los productos

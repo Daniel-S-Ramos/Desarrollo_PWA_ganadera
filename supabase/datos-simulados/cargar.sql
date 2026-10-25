@@ -4923,7 +4923,7 @@ select gen_random_uuid(), a.id, ((h.d - v.dia) + make_interval(mins => v.minuto 
 (18,'P',4,11,5),
 (18,'T2',3,63,5),
 (18,'T1',2,6,5.5),
-(18,'T1',1,44,7.5)
+(18,'T1',1,44,2.5)
   ) v(n, autor, dia, minuto, litros)
   join sim_animal s on s.n = v.n join sim_autor a on a.rol = v.autor cross join sim_hoy h;
 
