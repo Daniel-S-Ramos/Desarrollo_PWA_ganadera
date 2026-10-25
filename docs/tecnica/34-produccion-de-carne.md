@@ -186,8 +186,8 @@ que se sigue:
   leche. Cada mitad es un enlace aparte, de al menos 64 px de alto (3.10.4.2), separadas por una línea.
 - Los kilos se escriben sin signo cuando son ganancia («180 kg») y con «−» cuando el lote perdió peso.
 - En **«¿Qué deseas hacer?»** quedan los dos accesos: **Producción de leche** («Consultar litros») y
-  **Producción de carne** («Consultar kilos», con el filete). Si el último acceso queda solo en su fila
-  (Medicamentos), se muestra en horizontal, con el dibujo a la izquierda, como en el modelo.
+  **Producción de carne** («Consultar kilos», con el filete). Todos los accesos tienen el mismo tamaño,
+  también Medicamentos cuando queda solo en su fila (pedido del autor en PE-40).
 - Colores de la Tabla 29 y contraste de 7 a 1 (PU-01).
 
 El **trabajador** no ve la tarjeta ni los accesos de producción (sección 8): sigue viendo **Ordeño de hoy**
