@@ -26,7 +26,7 @@ etiqueta `v1.0`.
 | PI-01 | Esquema remoto: parámetros del propietario (verificación 21) | R3 | Tabla 30 | ✅ |
 | PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
 | R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
-| R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7 aprobados; sesión A: 5 de 13 casos aprobados | 6.3 | RF-24 a RF-27 · CU-01 · consultas | 🔄 |
+| R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7; sesión A (consultas con el volumen de la finca): 13 de 13; falta la sesión C | 6.3 | RF-24 a RF-27 · CU-01 · consultas | 🔄 |
 
 ---
 
@@ -315,4 +315,32 @@ Propietario, Chrome del computador, con los datos simulados. Casos de la secció
    (CP-38).
 2. Las instrucciones pedían mirar julio o agosto; el secado de la 201 va del 14 de agosto al 11 de octubre, por eso
    julio aparece completo y septiembre vacío. La aplicación mostraba lo correcto.
+
+**Sesión A, segunda parte (2026-10-25).** Antes de los recordatorios se registró a la 215 con 3 litros en la ronda,
+para provocar la baja que la versión 1 de los datos no traía.
+
+| Caso | Resultado obtenido | Estado | Evidencia |
+|---|---|---|---|
+| CP-22 | Semana del 19 al 25 de octubre (en curso): promedio del hato 11,4 L por día con 14 vacas con registros, ordenadas de 203 (19,7 L por día) a 215 (5,3 L por día); la **214** al final, bajo «Sin registros en el periodo»; el botón «De menor a mayor» | ✅ Aprobado con observación 3 | [lista](evidencias/cierre/CP-22-01-comparacion-semana.png) · [sin registros](evidencias/cierre/CP-22-02-comparacion-sin-registros.png) |
+| CP-26 | Octubre (en curso): «+483 kg ganados · 0,6 kg por día · meta 0,5 kg por día · 15 de 31 pesados»; los animales por ganancia diaria (434 con 1 kg por día primero); el 413 vendido en el mes, marcado «Retirado»; «Compárese con cautela: cinta y báscula» en 402 y 425 | ✅ Aprobado | [octubre](evidencias/cierre/CP-26-01-carne-octubre.png) |
+| CP-27 | «28 animales en ceba · 1 terminado (desde 500 kg) · +2.751 kg ganados en el predio»; **408** arriba con «Terminado: alcanzó los 500 kg»; 402 «Faltan 21 kg… unos 35 días»; 410 «Faltan 62,6 kg… unos 4 meses · Último pesaje hace 54 días» | ✅ Aprobado con observación 4 | [ciclo](evidencias/cierre/CP-27-01-ciclo-completo.png) |
+| CP-35 | 210: invertido $4.264.000 (compra, 3 servicios veterinarios, 10 medicamentos); generado $8.073.975 (4.140,5 litros a $1.950); «Resultado parcial: el animal sigue en el predio» y «La leche se valora al precio del parámetro: es el valor de la producción, no el dinero recibido»; ganancia $3.809.975 | ✅ Aprobado | [210](evidencias/cierre/CP-35-01-consolidado-210.png) |
+| CP-36 | 201: «Nació en el predio: no tiene costo de compra, y su resultado no es comparable con el de un animal comprado»; ganancia $9.998.975 | ✅ Aprobado | [201](evidencias/cierre/CP-36-01-consolidado-201.png) |
+| CP-37 | 401 (vendido): venta $4.659.000 como ingreso, ganancia $2.274.000. 421 (muerto): «Salió por muerte: no hubo venta, y lo invertido se presenta como pérdida»; «Pérdida por muerte: $2.557.500» | ✅ Aprobado | [401](evidencias/cierre/CP-37-01-consolidado-401.png) · [421](evidencias/cierre/CP-37-02-consolidado-421.png) |
+| CP-38 | Tras registrar 3 L a la 215: 16 recordatorios: 11 sin pesaje (416, 435, 410…), 214 sin ordeño desde el 18 de octubre, **215 «3 litros el 25 de octubre de 2026: muy por debajo de su promedio (5,8 litros)»**, 301 y 506 sin registros desde hace 93 días, y la cría 501 sin chapeta («quedan 77 días del plazo») | ✅ Aprobado | [ronda](evidencias/cierre/CP-38-01-ronda-215-3-litros.png) · [alertas](evidencias/cierre/CP-38-02-alertas-pesajes-ordeno.png) · [leche baja](evidencias/cierre/CP-38-03-alertas-leche-baja.png) |
+| CP-41 | Correcciones recientes por fecha, con quién, sobre qué registro, el cambio y el motivo: «442 · Pesaje del 21 de octubre de 2026 · Peso en kg: antes 407,3, ahora 307,3 · Error de digitación · José Ramos»; «205 · Ordeño del 19 de septiembre · Litros: antes 140, ahora 14 · Daniel Ramos» | ✅ Aprobado con observación 5 | [lista](evidencias/cierre/CP-41-01-correcciones-recientes.png) · [205](evidencias/cierre/CP-41-02-correccion-205.png) |
+
+**La sesión A queda completa: 13 de 13 casos aprobados.**
+
+3. El documento de casos esperaba la 214 «con pocos registros»; como en la semana no tiene ninguno, la aplicación la
+   pone al final bajo «Sin registros en el periodo», que es la regla del documento técnico 28, sección 7. Ninguna
+   vaca tiene menos de la mitad de los días (las demás tienen 5 de 7, porque los datos llegan hasta el 23 y la
+   semana cuenta hasta hoy).
+4. **Hallazgo corregido.** En el ciclo, el 410 decía «peso de compra, 13 de octubre» y «1 de septiembre»: la compra
+   fue en octubre de 2025, pero sin el año parecía posterior al pesaje. Ahora las fechas que no son del año en
+   curso muestran el año (`PantallaProduccionCarne.tsx`).
+5. **Hallazgo corregido (pedido del autor).** En Correcciones recientes, y en el resumen de la producción de leche
+   por vaca, el número del animal aparecía como texto y no en la chapeta amarilla que se usa para todos los
+   animales. Ahora va en la chapeta (`PantallaCorreccionesRecientes.tsx`, `consultaCorrecciones.ts` con los campos
+   `chapeta` y `nombre`, PU-28 ampliada; `PantallaProduccion.tsx`). 963 de 963 automáticas, ejecutadas por el autor.
 
