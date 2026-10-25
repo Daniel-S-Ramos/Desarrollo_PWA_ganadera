@@ -1,0 +1,25 @@
+R4 · Conteos del servidor después de cargar los datos simulados (2026-10-24, consulta de solo lectura)
+
+npm run datos:vaciar   → ejecutado por el autor (predio vacío: ver R4-01-predio-vacio.png)
+Panel de Supabase      → archivos de fotos de prueba borrados de Storage → fotografias
+Catálogo real          → 7 medicamentos registrados por el autor desde la aplicación (R4-02-catalogo-real.png)
+npm run datos:cargar   → terminó sin error (una sola transacción)
+
+animales              70
+produccion_leche      4633   (último ordeño: 2026-10-23, la víspera de la carga)
+pesaje                175
+evento_sanitario      280    (los 280 sin dosis: no se inventan dosis veterinarias)
+parto                 12
+salida                14
+movimiento_economico  83
+correccion            49
+destino_productivo    97
+colocacion_chapeta    9
+medicamento           7
+fotografia            0      (archivos en Storage: 0)
+
+Coinciden con el resumen del generador (scripts/datos-simulados.mjs).
+
+Inicio del propietario tras la carga inicial (R4-03-inicio-con-datos-simulados.png):
+56 activos · ronda de hoy 0 de 15 · Leche 164 L (último ordeño 23 de octubre) ·
+Carne 473,2 kg (último registro 23 de octubre) · 15 pendientes (11 pesajes · 2 sin registros, y los demás tipos).

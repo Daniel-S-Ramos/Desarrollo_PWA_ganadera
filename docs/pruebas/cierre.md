@@ -25,6 +25,7 @@ etiqueta `v1.0`.
 | PU-23.5 · PU-32.3 | Variación atípica de la leche desde 35 %, tomada del parámetro del propietario | R3 | Tabla 30 · RF-22 · CU-06 | ✅ |
 | PI-01 | Esquema remoto: parámetros del propietario (verificación 21) | R3 | Tabla 30 | ✅ |
 | PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
+| R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
 
 ---
 
@@ -205,4 +206,31 @@ puede pasar de 100. Se quitó el tope del código. Al cierre, 33 de 33.
    corren; siguen sin dejar datos.
 2. El propietario aclaró que no pesa a diario: la ganancia diaria es el promedio entre dos pesajes, que se
    compara con la meta cualquiera que sea la frecuencia (documento técnico 34, sección 4).
+
+## R4 · Conjunto de datos simulados (paso 6.1)
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Preparar los datos simulados con la estructura y el volumen de la Ganadería JR (1.6.3.8), para las pruebas funcionales y de conectividad |
+| Requerimiento | Apartado 1.6.3.8 · Tabla 3 (entregable «conjunto de datos simulados») · apartado 3.8.7 y Tabla 26 |
+| Tipo | Preparación de datos; carga contra Supabase |
+| Código | Generador [`datos-simulados.mjs`](../../scripts/datos-simulados.mjs) · [`cargar.sql`](../../supabase/datos-simulados/cargar.sql) · [`vaciar.sql`](../../supabase/datos-simulados/vaciar.sql) · especificación [README](../../supabase/datos-simulados/README.md) |
+| Decisión | Opción A del autor (2026-10-24): en el proyecto de la finca, que aún no tiene datos reales; se vacía otra vez antes de entregar (R9) |
+| Resultado obtenido | Cargado: **70 animales (56 activos), 4.633 ordeños, 175 pesajes, 280 eventos sanitarios, 12 partos, 14 salidas, 83 movimientos económicos, 49 correcciones, 97 destinos, 9 colocaciones de chapeta**, con el catálogo real de 7 medicamentos registrado por el autor ([conteos](evidencias/cierre/R4-conteos-del-servidor.txt)) |
+| Estado | ✅ Terminado |
+| Fecha | 2026-10-24 |
+
+| # | Paso | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Prueba del script contra el servidor dentro de una transacción revertida | Tres errores de tipos corregidos (columnas todas vacías y valores lógicos); al tercer intento cargó todo y, al revertir, quedaron los mismos 24 animales de antes | — |
+| 2 | `npm run datos:vaciar` y borrado de los archivos de fotos en el panel | Predio vacío: 0 activos, sin ordeños ni pesajes | [captura](evidencias/cierre/R4-01-predio-vacio.png) |
+| 3 | El autor registra el catálogo real desde la aplicación (el catálogo no se carga por SQL) | 7 medicamentos: vacuna, purgas, vitamina y antibiótico | [captura](evidencias/cierre/R4-02-catalogo-real.png) |
+| 4 | `npm run datos:cargar` y carga inicial en el navegador del propietario | 56 activos; ronda de hoy 0 de 15; leche 164 L; carne 473,2 kg; 15 pendientes | [captura](evidencias/cierre/R4-03-inicio-con-datos-simulados.png) |
+
+**Observaciones.**
+
+1. Los ordeños llegan hasta la víspera de la carga (23 de octubre): la ronda del día queda para la prueba.
+2. Los pesajes van cada 30 a 75 días porque el propietario no pesa a diario; por eso aparecen 11 recordatorios de
+   pesaje (más de 30 días, Tabla 30), un resultado esperado del conjunto.
+3. Los eventos sanitarios no tienen dosis, para no inventar dosis veterinarias; las fichas no tienen fotos.
 

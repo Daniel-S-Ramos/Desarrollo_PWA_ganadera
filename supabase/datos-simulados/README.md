@@ -8,6 +8,7 @@ volumen de información propios de la Ganadería JR». Es un entregable de la Ta
 | [`../../scripts/datos-simulados.mjs`](../../scripts/datos-simulados.mjs) | El generador. Determinista (semilla fija): cada ejecución produce el mismo conjunto |
 | [`cargar.sql`](cargar.sql) | Lo que produce el generador. **No se edita a mano** |
 | [`vaciar.sql`](vaciar.sql) | Borra los registros del predio y el catálogo; conserva cuentas y parámetros |
+| [`casos.json`](casos.json) | Los casos preparados por chapeta (vendidos, bajo la meta, terminados, anulados…), para los casos de prueba |
 
 ## Dónde se cargan (decisión del autor, 2026-10-24)
 
@@ -29,7 +30,7 @@ resuelve con la fecha del predio. Supuestos del apartado 3.8.7 y la Tabla 26:
 | Pesajes | 175 | **Cada 30 a 75 días**: el propietario no pesa a diario; 85 % con cinta, 15 % con báscula |
 | Salidas | 14 | 12 ventas de animales que pasaron de 505 kg (con destino «venta» antes), una muerte (timpanismo) y una pérdida o robo |
 | Partos | 12 | 10 crías vivas (con madre, padre del predio o inseminación), un aborto y una cría nacida muerta |
-| Colocaciones de chapeta | 9 | Las dos crías más recientes siguen sin chapeta puesta |
+| Colocaciones de chapeta | 9 | La cría más reciente (501) sigue sin chapeta puesta |
 | Eventos sanitarios | 280 | Aftosa dos veces al año, purgas cada 100 a 140 días, vitaminas en partos y compras, 18 tratamientos con síntomas. **Sin dosis**: no se inventan dosis veterinarias |
 | Movimientos económicos | 83 | Compras, alimentación y servicios veterinarios |
 | Correcciones | 49 | 40 litros mal escritos y 6 pesos corregidos por su autor; 3 ordeños anulados y registrados de nuevo |
@@ -40,7 +41,7 @@ la Tabla 27: destinos, salidas y economía solo el propietario. **Sin fotografí
 fichas muestran «Fotos: 0 de 3».
 
 **Casos preparados para la evaluación:** la vaca 214 sin ordeño en los últimos 5 días y la 215 con una baja de
-más del 35 % ayer (recordatorios); animales de ceba bajo la meta y terminados (más de 500 kg); crías sin chapeta;
+más del 35 % ayer (recordatorios); animales de ceba bajo la meta y terminados (más de 500 kg); la cría 501 sin chapeta;
 animales sin pesaje reciente; vacas compradas y nacidas para el consolidado económico.
 
 ## Cómo se cargan

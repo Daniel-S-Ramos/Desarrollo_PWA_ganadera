@@ -130,7 +130,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 6.0 | Un solo ordeño vigente por vaca y día (pendiente del acta de la Iteración 5) | ✅ |
 | 6.0b | Cuentas de usuario y ayuda para recuperar la contraseña (hallazgo del desarrollo) · falta PE-39 | 🔄 |
 | 6.0c | Producción de carne: por mes, ciclo completo hasta 500 kg, tarjeta «Producción» del inicio (pedido del autor, documento técnico 34) | ✅ |
-| 6.1 | Conjunto de datos simulados con el volumen de la Ganadería JR | ⬜ |
+| 6.1 | Conjunto de datos simulados con el volumen de la Ganadería JR | ✅ |
 | 6.2 | Documento de casos de prueba | ⬜ |
 | 6.3 | Pruebas funcionales de flujos completos | ⬜ |
 | 6.4 | Verificación en conectividad limitada | ⬜ |
@@ -156,8 +156,8 @@ Se cierran en este orden; al terminar uno se marca aquí y en la tabla de arriba
 | R1 | Documentar PU-36 y PE-40 (6.0c) | En `docs/pruebas/cierre.md` | Paso 6.0c | ✅ 2026-10-24 |
 | R2 | PE-39 (6.0b) | Capturas del autor de «¿Olvidó su contraseña?» con **Daniel Ramos**; documentar y marcar 6.0b ✅ | Paso 6.0b | ⬜ |
 | R3 | Parámetros de la Tabla 30 sin valor | El propietario los definió el 2026-10-24: **ganancia diaria esperada de 0,5 a 0,8 kg/día** (se carga el mínimo, 0,5) y **variación atípica de la leche desde 35 %** (antes 25 % fijo en el código). Parámetros `ganancia_diaria_esperada` y `variacion_atipica_leche`, migración `20261024000200_parametros_del_propietario.sql`, PI-01 verificación 21. PI-01: 21 de 21; PI-03 (regresión): 11 de 11 | Tabla 30 · 3.10.4.6 | ✅ 2026-10-24 |
-| R4 | Datos simulados (6.1) | Generador y SQL listos (`supabase/datos-simulados/`, opción A: en el proyecto de la finca, que se vacía otra vez en R9). Probado en una transacción revertida. Falta que el autor registre el catálogo real, vacíe y cargue | 1.6.3.8 | 🔄 |
-| R5 | Documento de casos de prueba (6.2) | Por requerimiento: condiciones iniciales, datos, pasos y resultado esperado. Entregable de la Tabla 3 | 1.6.3.7 | ⬜ |
+| R4 | Datos simulados (6.1) | Generador y SQL listos (`supabase/datos-simulados/`, opción A: en el proyecto de la finca, que se vacía otra vez en R9). Cargado el 2026-10-24: 70 animales, 4.633 ordeños, 175 pesajes, 280 eventos (documentado en `docs/pruebas/cierre.md`) | 1.6.3.8 | ✅ 2026-10-24 |
+| R5 | Documento de casos de prueba (6.2) | `docs/pruebas/casos-de-prueba.md`: 56 casos (CP-01 a CP-56) con condiciones, datos del conjunto simulado, pasos y resultado esperado, y su relación con los 47 requerimientos. Falta la aprobación del autor | 1.6.3.7 | 🔄 |
 | R6 | Pruebas funcionales de flujos completos (6.3) | Con los datos simulados, por perfil. Incluir la sesión de acompañamiento que evidencia el **RNF-02** (un usuario sin experiencia registra tras una sola sesión) | 1.6.3.9 · RNF-02 | ⬜ |
 | R7 | Conectividad limitada (6.4) | Escenarios de la Tabla 34: dos teléfonos sin señal sobre el mismo animal; conexión cortada a mitad del envío; teléfono dañado con pendientes; chapeta repetida en dos teléfonos. Además el recordatorio y el pesaje sin conexión. Mantener activo el proyecto de Supabase durante la evaluación (se pausa tras días sin uso) | 1.6.3.10 · Tabla 34 | ⬜ |
 | R8 | Matriz de trazabilidad (6.6) | Los 47 requerimientos contra las pruebas ejecutadas, con el grado de cumplimiento. Entregable de la Tabla 3 | 1.6.3.11 | ⬜ |

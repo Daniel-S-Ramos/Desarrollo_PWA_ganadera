@@ -488,3 +488,29 @@ fs.mkdirSync('supabase/datos-simulados', { recursive: true });
 fs.writeFileSync(salida, lineas.join('\n'));
 console.log(`Escrito ${salida} (${Math.round(fs.statSync(salida).size / 1024)} KB)`);
 console.log(resumen);
+
+// Los casos preparados, por chapeta, para el documento de casos de prueba (R5).
+const chapetas = (lista) => lista.map((a) => a.chapeta);
+const ultimoPeso = (c) => pesajes.filter((p) => p.a === c).sort((x, y) => x.dia - y.dia)[0];
+const casos = {
+  vacasCompradas: chapetas(vacas.filter((v) => v.ingreso !== null)),
+  vacasNacidas: chapetas(vacas.filter((v) => v.ingreso === null)),
+  vacaSinOrdenoReciente: sinOrdeno.chapeta,
+  vacaConBajaAyer: conBaja.chapeta,
+  partos: partos.map((p) => ({ madre: p.madre.chapeta, diasAtras: p.dia, resultado: p.resultado, cria: p.cria?.chapeta ?? null })),
+  criasSinChapetaPuesta: chapetas(crias.filter((c) => c.nac <= 30)),
+  cebaVendidos: salidas.filter((x) => x.motivo === 'venta').map((x) => ({ chapeta: x.a.chapeta, diasAtras: x.dia, peso: x.peso, valor: x.valor })),
+  cebaMuerto: muerto.chapeta,
+  cebaPerdido: robado.chapeta,
+  cebaActivosBajoMeta: chapetas(ceba.filter((c) => !fueraDesde.has(c.n) && c.adg < 0.5)),
+  cebaActivosMasPesados: ceba
+    .filter((c) => !fueraDesde.has(c.n) && ultimoPeso(c))
+    .map((c) => ({ chapeta: c.chapeta, ultimoPeso: ultimoPeso(c).peso, diasAtras: ultimoPeso(c).dia }))
+    .sort((x, y) => y.ultimoPeso - x.ultimoPeso)
+    .slice(0, 5),
+  ordenosAnulados: correcciones.filter((c) => c.tipo === 'anulacion').map((c) => ({ vaca: c.a.chapeta, diasAtras: c.dia })),
+  pesosCorregidos: correcciones.filter((c) => c.tabla === 'pesaje').map((c) => ({ chapeta: c.a.chapeta, diasAtras: c.dia, de: c.anterior, a: c.nuevo })),
+  tratamientos: eventos.filter((e) => e.tipo === 'tratamiento').map((e) => ({ chapeta: e.a.chapeta, diasAtras: e.dia, sintomas: e.sintomas })),
+};
+fs.writeFileSync('supabase/datos-simulados/casos.json', JSON.stringify(casos, null, 2) + '\n');
+console.log('Escrito supabase/datos-simulados/casos.json');

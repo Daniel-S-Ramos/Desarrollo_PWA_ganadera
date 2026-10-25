@@ -1,0 +1,337 @@
+{
+  "vacasCompradas": [
+    "210",
+    "211",
+    "212",
+    "213",
+    "214",
+    "215"
+  ],
+  "vacasNacidas": [
+    "201",
+    "202",
+    "203",
+    "204",
+    "205",
+    "206",
+    "207",
+    "208",
+    "209"
+  ],
+  "vacaSinOrdenoReciente": "214",
+  "vacaConBajaAyer": "215",
+  "partos": [
+    {
+      "madre": "201",
+      "diasAtras": 12,
+      "resultado": "cria_viva",
+      "cria": "501"
+    },
+    {
+      "madre": "202",
+      "diasAtras": 33,
+      "resultado": "cria_viva",
+      "cria": "502"
+    },
+    {
+      "madre": "203",
+      "diasAtras": 58,
+      "resultado": "cria_viva",
+      "cria": "503"
+    },
+    {
+      "madre": "204",
+      "diasAtras": 81,
+      "resultado": "cria_viva",
+      "cria": "504"
+    },
+    {
+      "madre": "205",
+      "diasAtras": 104,
+      "resultado": "cria_viva",
+      "cria": "505"
+    },
+    {
+      "madre": "206",
+      "diasAtras": 132,
+      "resultado": "aborto",
+      "cria": null
+    },
+    {
+      "madre": "207",
+      "diasAtras": 159,
+      "resultado": "cria_viva",
+      "cria": "506"
+    },
+    {
+      "madre": "208",
+      "diasAtras": 187,
+      "resultado": "cria_viva",
+      "cria": "507"
+    },
+    {
+      "madre": "209",
+      "diasAtras": 214,
+      "resultado": "cria_nacida_muerta",
+      "cria": null
+    },
+    {
+      "madre": "210",
+      "diasAtras": 248,
+      "resultado": "cria_viva",
+      "cria": "508"
+    },
+    {
+      "madre": "211",
+      "diasAtras": 281,
+      "resultado": "cria_viva",
+      "cria": "509"
+    },
+    {
+      "madre": "212",
+      "diasAtras": 319,
+      "resultado": "cria_viva",
+      "cria": "510"
+    }
+  ],
+  "criasSinChapetaPuesta": [
+    "501"
+  ],
+  "cebaVendidos": [
+    {
+      "chapeta": "401",
+      "diasAtras": 82,
+      "peso": 521,
+      "valor": 4659000
+    },
+    {
+      "chapeta": "403",
+      "diasAtras": 17,
+      "peso": 517.1,
+      "valor": 4335000
+    },
+    {
+      "chapeta": "404",
+      "diasAtras": 242,
+      "peso": 524,
+      "valor": 4450000
+    },
+    {
+      "chapeta": "405",
+      "diasAtras": 20,
+      "peso": 531.1,
+      "valor": 4765000
+    },
+    {
+      "chapeta": "406",
+      "diasAtras": 118,
+      "peso": 536.9,
+      "valor": 4571000
+    },
+    {
+      "chapeta": "407",
+      "diasAtras": 116,
+      "peso": 537,
+      "valor": 4614000
+    },
+    {
+      "chapeta": "409",
+      "diasAtras": 134,
+      "peso": 538.4,
+      "valor": 4588000
+    },
+    {
+      "chapeta": "413",
+      "diasAtras": 13,
+      "peso": 537.9,
+      "valor": 4516000
+    },
+    {
+      "chapeta": "414",
+      "diasAtras": 43,
+      "peso": 573.5,
+      "valor": 4810000
+    },
+    {
+      "chapeta": "423",
+      "diasAtras": 34,
+      "peso": 533.5,
+      "valor": 4735000
+    },
+    {
+      "chapeta": "427",
+      "diasAtras": 56,
+      "peso": 515.7,
+      "valor": 4363000
+    },
+    {
+      "chapeta": "431",
+      "diasAtras": 24,
+      "peso": 521.3,
+      "valor": 4424000
+    }
+  ],
+  "cebaMuerto": "421",
+  "cebaPerdido": "428",
+  "cebaActivosBajoMeta": [
+    "411",
+    "415",
+    "417",
+    "419",
+    "424",
+    "426",
+    "435",
+    "441"
+  ],
+  "cebaActivosMasPesados": [
+    {
+      "chapeta": "408",
+      "ultimoPeso": 535.2,
+      "diasAtras": 16
+    },
+    {
+      "chapeta": "402",
+      "ultimoPeso": 469.2,
+      "diasAtras": 2
+    },
+    {
+      "chapeta": "434",
+      "ultimoPeso": 468.1,
+      "diasAtras": 21
+    },
+    {
+      "chapeta": "410",
+      "ultimoPeso": 437.4,
+      "diasAtras": 53
+    },
+    {
+      "chapeta": "412",
+      "ultimoPeso": 436.6,
+      "diasAtras": 1
+    }
+  ],
+  "ordenosAnulados": [
+    {
+      "vaca": "205",
+      "diasAtras": 49
+    },
+    {
+      "vaca": "205",
+      "diasAtras": 85
+    },
+    {
+      "vaca": "210",
+      "diasAtras": 36
+    }
+  ],
+  "pesosCorregidos": [
+    {
+      "chapeta": "413",
+      "diasAtras": 77,
+      "de": "582.9",
+      "a": "482.9"
+    },
+    {
+      "chapeta": "442",
+      "diasAtras": 3,
+      "de": "407.3",
+      "a": "307.3"
+    },
+    {
+      "chapeta": "436",
+      "diasAtras": 121,
+      "de": "402.2",
+      "a": "302.2"
+    },
+    {
+      "chapeta": "413",
+      "diasAtras": 107,
+      "de": "565.7",
+      "a": "465.7"
+    },
+    {
+      "chapeta": "401",
+      "diasAtras": 216,
+      "de": "529.8",
+      "a": "429.8"
+    },
+    {
+      "chapeta": "404",
+      "diasAtras": 428,
+      "de": "493.1",
+      "a": "393.1"
+    }
+  ],
+  "tratamientos": [
+    {
+      "chapeta": "508",
+      "diasAtras": 178,
+      "sintomas": "Tos y secreción nasal"
+    },
+    {
+      "chapeta": "414",
+      "diasAtras": 79,
+      "sintomas": "Herida en el costado"
+    },
+    {
+      "chapeta": "210",
+      "diasAtras": 204,
+      "sintomas": "Mastitis en un cuarto"
+    },
+    {
+      "chapeta": "214",
+      "diasAtras": 37,
+      "sintomas": "Diarrea y decaimiento"
+    },
+    {
+      "chapeta": "401",
+      "diasAtras": 149,
+      "sintomas": "Cojera en la pata trasera derecha"
+    },
+    {
+      "chapeta": "210",
+      "diasAtras": 357,
+      "sintomas": "Cojera en la pata trasera derecha"
+    },
+    {
+      "chapeta": "210",
+      "diasAtras": 165,
+      "sintomas": "Cojera en la pata trasera derecha"
+    },
+    {
+      "chapeta": "213",
+      "diasAtras": 319,
+      "sintomas": "Mastitis en un cuarto"
+    },
+    {
+      "chapeta": "404",
+      "diasAtras": 308,
+      "sintomas": "Tos y secreción nasal"
+    },
+    {
+      "chapeta": "301",
+      "diasAtras": 118,
+      "sintomas": "Herida en el costado"
+    },
+    {
+      "chapeta": "416",
+      "diasAtras": 33,
+      "sintomas": "Cojera en la pata trasera derecha"
+    },
+    {
+      "chapeta": "402",
+      "diasAtras": 171,
+      "sintomas": "Herida en el costado"
+    },
+    {
+      "chapeta": "428",
+      "diasAtras": 204,
+      "sintomas": "Herida en el costado"
+    },
+    {
+      "chapeta": "408",
+      "diasAtras": 305,
+      "sintomas": "Fiebre, no quiere comer"
+    }
+  ]
+}
