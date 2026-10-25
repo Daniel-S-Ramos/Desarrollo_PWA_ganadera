@@ -27,7 +27,7 @@ etiqueta `v1.0`.
 | PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
 | R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
 | R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7; sesión A (consultas con el volumen de la finca): 13 de 13; falta la sesión C | 6.3 | RF-24 a RF-27 · CU-01 · consultas | 🔄 |
-| R7 | Conectividad limitada (sesión B): CP-44 y CP-45 aprobados; faltan CP-47 y CP-48 | 6.4 | RF-28 a RF-30 · Tabla 34 | 🔄 |
+| R7 | Conectividad limitada (sesión B): CP-44, CP-45, CP-47 y CP-48 aprobados | 6.4 | RF-28 a RF-30 · RNF-05 · Tabla 34 | ✅ |
 
 ---
 
@@ -355,8 +355,8 @@ está cubierto por PE-32 (chapeta en dos teléfonos), PI-03 (permisos en el serv
 |---|---|---|---|
 | CP-44 · Mismo animal en dos equipos sin señal (Tabla 34, escenario 1) | Sin conexión, el trabajador registró una vitamina (Complejo B, 1,5 ml) al **434** y el propietario un pesaje (472 kg, báscula); cada uno quedó «1 registro pendiente de enviar». Al reconectar, **los dos registros están en los dos equipos**, cada uno con su autor: en el computador, la vitamina «Registrado por Daniel Ramos»; en el iPhone, el pesaje «registrado por José Ramos», con «por debajo de la meta» y «Métodos distintos» | ✅ Aprobado | [iPhone pendiente](evidencias/cierre/CP-44-01-iphone-evento-pendiente.png) · [computador pendiente](evidencias/cierre/CP-44-02-computador-pesaje-pendiente.png) · [computador](evidencias/cierre/CP-44-03-computador-ve-evento-de-daniel.png) · [iPhone](evidencias/cierre/CP-44-04-iphone-ve-pesaje-de-jose.webp) |
 | CP-45 · El mismo ordeño en dos equipos sin señal (3.8.6, Tabla 21) | Sin conexión, la vaca **203** con 18 L en el iPhone y 20 L en el computador. Se reconectó primero el iPhone (aceptado su ordeño) y después el computador: su ordeño **no se duplicó ni se perdió**, sino que se convirtió en corrección del aceptado: en Correcciones recientes, «203 · Ordeño del 25 de octubre de 2026 · Litros: antes 18, ahora 20 · Registro duplicado · José Ramos». Las dos rondas quedan con **✓ 20 litros** y «2 de 15» (un solo ordeño) | ✅ Aprobado con observación 1 | [iPhone 18 L](evidencias/cierre/CP-45-01-iphone-18-litros.png) · [computador 20 L](evidencias/cierre/CP-45-02-computador-20-litros.png) · [iPhone enviado](evidencias/cierre/CP-45-03-iphone-enviado.png) · [ronda computador](evidencias/cierre/CP-45-04-computador-ronda-20.png) · [ronda iPhone](evidencias/cierre/CP-45-05-iphone-ronda-20.png) · [corrección](evidencias/cierre/CP-45-06-correccion-18-a-20.png) |
-| CP-47 · Conexión cortada a mitad del envío | Por ejecutar | ⬜ | — |
-| CP-48 · Teléfono dañado con pendientes | Por ejecutar | ⬜ | — |
+| CP-47 · Conexión cortada a mitad del envío (Tabla 34, escenario 6) | Sin conexión, el propietario completó la ronda: «13 registros pendientes de enviar». Al reconectar empezó «Enviando…» y se cortó la conexión; al final, «✓ Todo enviado» y la ronda con «15 de 15 vacas», **cada vaca una sola vez**. En el servidor hay 15 ordeños de hoy para 15 vacas distintas, todos vigentes | ✅ Aprobado con observación 3 | [13 pendientes](evidencias/cierre/CP-47-01-13-pendientes.png) · [enviando](evidencias/cierre/CP-47-02-enviando.png) · [enviado](evidencias/cierre/CP-47-03-todo-enviado-sin-conexion.png) · [ronda](evidencias/cierre/CP-47-04-ronda-sin-duplicados.png) · [servidor](evidencias/cierre/CP-47-48-servidor.txt) |
+| CP-48 · Teléfono dañado con pendientes (Tabla 34, escenario 3; RNF-05) | En el iPhone, sin conexión, un pesaje del **412** (435 kg) quedó pendiente; se borraron los datos de Safari («Borrar historial y datos»: datos de sitios web, 0 bytes). Al entrar de nuevo con conexión, la carga inicial (70 animales y los registros) **recuperó todo lo enviado**: el 434 con el pesaje de José Ramos de CP-44; y el 412 termina en 436,6 kg del 23 de octubre, **sin el pesaje que no alcanzó a enviarse**. En el servidor no hay pesaje del 412 de hoy | ✅ Aprobado con observación 4 | [pendiente](evidencias/cierre/CP-48-01-pesaje-412-pendiente.webp) · [borrar](evidencias/cierre/CP-48-02-borrar-datos.png) · [0 bytes](evidencias/cierre/CP-48-03-datos-0-bytes.png) · [carga](evidencias/cierre/CP-48-04-carga-inicial.webp) · [412](evidencias/cierre/CP-48-05-412-sin-el-pesaje.webp) · [434](evidencias/cierre/CP-48-06-434-recuperado.png) · [servidor](evidencias/cierre/CP-47-48-servidor.txt) |
 
 **Observaciones.**
 
@@ -370,4 +370,13 @@ está cubierto por PE-32 (chapeta en dos teléfonos), PI-03 (permisos en el serv
    aplicación de Complejo B de All Vet a este animal: 26 de febrero de 2026 (hace 8 meses), con 1,5 ml, registrada por
    José Ramos», o «sin dosis registrada». Es un dato del historial, no una recomendación (Tabla 30). Cambio en
    `AvisoRepeticion.tsx` y `eventos.ts`, documento técnico 21 (sección 3) y PU-22.8 ampliada: 964 de 964.
+3. Las capturas no permiten asegurar en qué punto exacto se cortó el envío: la conexión se quitó durante «Enviando…» y
+   al terminar el indicador decía «✓ Todo enviado · Sin conexión». Lo que el caso debe demostrar se cumple: no hay
+   duplicados ni pérdidas, comprobado en el servidor. El corte a mitad de una tanda y el reintento sin duplicar los
+   cubren además PU-09 y PU-10 (identificador generado en el teléfono y `on conflict do nothing`, 3.7.8).
+4. Tras borrar los datos, Safari informó «Espacio usado (estimado): 0 B» aun con los datos ya descargados: es la
+   estimación del navegador, que en iPhone se actualiza tarde; no afecta el funcionamiento.
+
+**La sesión B queda completa: los cuatro escenarios aprobados. Con PE-32, PI-03, CP-02 y CP-07, los siete escenarios
+de la Tabla 34 quedan verificados.**
 

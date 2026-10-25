@@ -133,7 +133,7 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 6.1 | Conjunto de datos simulados con el volumen de la Ganadería JR | ✅ |
 | 6.2 | Documento de casos de prueba | ✅ |
 | 6.3 | Pruebas funcionales de flujos completos | ⬜ |
-| 6.4 | Verificación en conectividad limitada | ⬜ |
+| 6.4 | Verificación en conectividad limitada | ✅ |
 | 6.5 | Despliegue del prototipo en un alojamiento con HTTPS (adelantado al paso 2.2b; aquí queda la versión final) | ⬜ |
 | 6.6 | Matriz de trazabilidad entre requerimientos y pruebas | ⬜ |
 | 6.7 | Insumos para el capítulo 4 del documento | ⬜ |
@@ -159,7 +159,7 @@ Se cierran en este orden; al terminar uno se marca aquí y en la tabla de arriba
 | R4 | Datos simulados (6.1) | Generador y SQL listos (`supabase/datos-simulados/`, opción A: en el proyecto de la finca, que se vacía otra vez en R9). Cargado el 2026-10-24: 70 animales, 4.633 ordeños, 175 pesajes, 280 eventos (documentado en `docs/pruebas/cierre.md`) | 1.6.3.8 | ✅ 2026-10-24 |
 | R5 | Documento de casos de prueba (6.2) | `docs/pruebas/casos-de-prueba.md`: 56 casos (CP-01 a CP-56) con condiciones, datos del conjunto simulado, pasos y resultado esperado, y su relación con los 47 requerimientos. Aprobado por el autor | 1.6.3.7 | ✅ 2026-10-25 |
 | R6 | Pruebas funcionales de flujos completos (6.3) | Bloque 1 (acceso, CP-01 a CP-07) aprobado. Los casos sin cambios de lógica se cubren con su PE anterior (`casos-de-prueba.md`, sección 17, decisión del autor del 2026-10-25). Sesión A (consultas con el volumen de la finca) aprobada, 13 de 13, con tres hallazgos corregidos. Falta la **sesión C** (CP-53 pasos y CP-54, sesión de aprendizaje del RNF-02) | 1.6.3.9 · RNF-02 | 🔄 |
-| R7 | Conectividad limitada (6.4) | **Sesión B** con dos teléfonos: CP-44 (mismo animal), CP-45 (mismo ordeño), CP-47 (conexión cortada a mitad del envío) y CP-48 (teléfono dañado con pendientes); lo demás de la Tabla 34 ya está cubierto (PE-32, PI-03, CP-02, CP-07). Mantener activo Supabase durante la evaluación | 1.6.3.10 · Tabla 34 | 🔄 CP-44 y CP-45 aprobados (2026-10-25) |
+| R7 | Conectividad limitada (6.4) | **Sesión B** con dos teléfonos: CP-44 (mismo animal), CP-45 (mismo ordeño), CP-47 (conexión cortada a mitad del envío) y CP-48 (teléfono dañado con pendientes); lo demás de la Tabla 34 ya está cubierto (PE-32, PI-03, CP-02, CP-07). Mantener activo Supabase durante la evaluación | 1.6.3.10 · Tabla 34 | ✅ 2026-10-25 · CP-44, 45, 47 y 48 aprobados |
 | R8 | Matriz de trazabilidad (6.6) | Los 47 requerimientos contra las pruebas ejecutadas, con el grado de cumplimiento. Entregable de la Tabla 3 | 1.6.3.11 | ⬜ |
 | R9 | Despliegue final (6.5) | Repetir PI-01 a PI-04 como regresión; borrar del servicio Z900–Z999 con sus registros, los medicamentos de prueba («Prueba…», «Otro mas», «pp prueba») y la cuenta `pruebas@ganaderiajr.test`; PR de `cierre` a `main`; publicar en producción; etiqueta **v1.0** | Pendientes de diseño 6.x | ⬜ |
 | R10 | Insumos del capítulo 4 (6.7) | Resultados e informe de pruebas, hallazgos (500 kg frente a 600 kg; ayuda de contraseña; conflictos de chapeta; unicidades vigentes) y limitaciones (revocar un acceso no surte efecto sin conexión; iPhone sin WebP) | 1.6.3.11 · capítulo 4 | ⬜ |
