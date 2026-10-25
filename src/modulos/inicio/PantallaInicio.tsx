@@ -50,23 +50,18 @@ export function PantallaInicio({ identidad, alCerrar, cargaCompleta }: { identid
       </p>
       <p className="texto-secundario inicio__subtitulo">Este es el estado de tu ganadería.</p>
 
-      {puedeUsar(perfil, 'CU-07') ? (
-        // Documento técnico 34, sección 7: una sola tarjeta «Producción» con la leche y la carne.
-        <div className="inicio__resumen inicio__resumen--una">
-          <TarjetaPendientes />
-          <TarjetaProduccion hoy={hoy} />
-        </div>
-      ) : (
-        <div className="inicio__resumen">
-          <TarjetaPendientes />
-          {conRonda && <TarjetaRonda hoy={hoy} />}
-        </div>
-      )}
+      <div className="inicio__resumen">
+        <TarjetaPendientes />
+        {/* Documento técnico 34, sección 7: el propietario ve la tarjeta «Producción» con la leche y la carne. */}
+        {puedeUsar(perfil, 'CU-07') ? <TarjetaProduccion hoy={hoy} /> : conRonda ? <TarjetaRonda hoy={hoy} /> : null}
+      </div>
 
       <h2 className="inicio__pregunta">¿Qué deseas hacer?</h2>
       <div className="accesos">
         {puedeUsar(perfil, 'CU-03') && <AccesoAnimales />}
         {conRonda && <AccesoOrdeno hoy={hoy} />}
+        {puedeUsar(perfil, 'CU-07') && <Acceso a="/produccion" dibujo={<Cantinas />} titulo="Producción de leche" detalle="Consultar litros" />}
+        {puedeUsar(perfil, 'CU-07') && <Acceso a="/produccion-carne" dibujo={<Filete tamano={42} />} titulo="Producción de carne" detalle="Consultar kilos" />}
         <Acceso a="/medicamentos" dibujo={<JeringaFrasco />} titulo="Medicamentos" detalle="Catálogo" />
       </div>
       {puedeUsar(perfil, 'CU-18') && (
@@ -92,8 +87,10 @@ function Acceso({ a, dibujo, titulo, detalle }: { a: string; dibujo: ReactNode; 
   return (
     <Link className="acceso" to={a}>
       <span className="ilustracion">{dibujo}</span>
-      <strong>{titulo}</strong>
-      <span className="acceso__detalle">{detalle}</span>
+      <span className="acceso__textos">
+        <strong>{titulo}</strong>
+        <span className="acceso__detalle">{detalle}</span>
+      </span>
     </Link>
   );
 }
@@ -145,7 +142,7 @@ function TarjetaPendientes() {
 
 /**
  * Propietario: la tarjeta «Producción» partida en dos, cada mitad con su destino (documento técnico 34,
- * sección 7, ajuste del autor del 2026-10-24).
+ * sección 7, según el modelo del autor del 2026-10-24).
  */
 function TarjetaProduccion({ hoy }: { hoy: string }) {
   return (
@@ -161,62 +158,43 @@ function TarjetaProduccion({ hoy }: { hoy: string }) {
   );
 }
 
-/** Los kilos ganados del mes en curso o del último mes con pesajes por los animales de ceba. */
-function MitadCarne({ hoy }: { hoy: string }) {
-  const resumen = useLiveQuery(() => cargarResumenCarne(hoy), [hoy]);
+function Mitad({ a, dibujo, nombre, valor, detalle }: { a: string; dibujo: ReactNode; nombre: string; valor: string; detalle: string }) {
   return (
-    <Link className="produccion-inicio__mitad" to="/produccion-carne">
-      <span className="produccion-inicio__nombre">
-        <Filete tamano={34} />
-        Carne
-      </span>
-      <span className="resumen__valor">
-        {resumen === undefined ? '…' : resumen?.kgGanados != null ? `${resumen.kgGanados >= 0 ? '+' : '−'}${formatearKg(Math.abs(resumen.kgGanados))} kg` : '—'}
-      </span>
-      <span className="resumen__detalle">
-        {resumen === undefined
-          ? ''
-          : !resumen
-            ? 'Sin pesajes de ceba'
-            : `${resumen.periodo.etiqueta.charAt(0).toUpperCase()}${resumen.periodo.etiqueta.slice(1, resumen.periodo.etiqueta.indexOf(' '))} · ${resumen.pesados} de ${resumen.total} pesados`}
-      </span>
+    <Link className="produccion-inicio__mitad" to={a}>
+      <span className="ilustracion ilustracion--chica">{dibujo}</span>
+      <span className="produccion-inicio__nombre">{nombre}</span>
+      <span className="produccion-inicio__valor">{valor}</span>
+      <span className="resumen__detalle">{detalle}</span>
     </Link>
   );
 }
 
-/** Los litros de hoy o del último día con ordeños, con la mini gráfica de 7 días. */
+/** Los litros de hoy o del último día con ordeños. */
 function MitadLeche({ hoy }: { hoy: string }) {
   const resumen = useLiveQuery(() => cargarResumenProduccion(hoy), [hoy]);
-  const maximo = resumen ? Math.max(...resumen.serie, 1) : 1;
   return (
-    <Link className="produccion-inicio__mitad" to="/produccion">
-      <span className="produccion-inicio__nombre">
-        <Cantinas tamano={30} />
-        Leche
-      </span>
-      {resumen && (
-        // Los 7 días como cantinas que se llenan; la del día resumido, llena de verde.
-        <span className="resumen__cantinas" aria-hidden="true">
-          {resumen.serie.map((litros, i) => (
-            <i key={i} style={{ height: `${Math.max(12, (litros / maximo) * 100)}%` }} />
-          ))}
-        </span>
-      )}
-      <span className="resumen__valor">{resumen === undefined ? '…' : resumen ? `${formatearLitros(resumen.litros)} L` : '—'}</span>
-      <span className="resumen__detalle">
-        {resumen === undefined ? '' : !resumen ? 'Sin ordeños registrados' : resumen.esHoy ? 'Hoy' : `Último ordeño: ${formatearFecha(resumen.fecha)}`}
-        {resumen && resumen.diferencia !== null && (
-          <>
-            {' · '}
-            <strong className={resumen.diferencia >= 0 ? 'resumen__sube' : 'resumen__baja'}>
-              {resumen.diferencia >= 0 ? '+' : '−'}
-              {formatearLitros(Math.abs(resumen.diferencia))} L
-            </strong>{' '}
-            {resumen.esHoy ? 'frente a ayer' : 'frente al día anterior'}
-          </>
-        )}
-      </span>
-    </Link>
+    <Mitad
+      a="/produccion"
+      dibujo={<Cantinas tamano={32} />}
+      nombre="Leche"
+      valor={resumen === undefined ? '…' : resumen ? `${formatearLitros(resumen.litros)} L` : '—'}
+      detalle={resumen === undefined ? '' : !resumen ? 'Sin ordeños registrados' : `Último ordeño: ${resumen.esHoy ? 'hoy' : formatearFecha(resumen.fecha)}`}
+    />
+  );
+}
+
+/** Los kilos ganados por los animales de ceba en el mes en curso o en el último mes con pesajes. */
+function MitadCarne({ hoy }: { hoy: string }) {
+  const resumen = useLiveQuery(() => cargarResumenCarne(hoy), [hoy]);
+  const kg = resumen?.kgGanados;
+  return (
+    <Mitad
+      a="/produccion-carne"
+      dibujo={<Filete tamano={34} />}
+      nombre="Carne"
+      valor={resumen === undefined ? '…' : kg != null ? `${kg < 0 ? '−' : ''}${formatearKg(Math.abs(kg))} kg` : '—'}
+      detalle={resumen === undefined ? '' : !resumen ? 'Sin pesajes de ceba' : `Último registro: ${resumen.ultimaFecha === hoy ? 'hoy' : formatearFecha(resumen.ultimaFecha)}`}
+    />
   );
 }
 

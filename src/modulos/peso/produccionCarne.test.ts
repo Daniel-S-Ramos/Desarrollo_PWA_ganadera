@@ -284,9 +284,9 @@ describe('PU-36 · 9. El resumen del inicio (sección 7)', () => {
     const a = await novillo('Z1');
     await novillo('Z2');
     await pesar(a.id, '2026-08-21', 330);
-    expect(await cargarResumenCarne(HOY)).toMatchObject({ periodo: { inicio: '2026-08-01' }, kgGanados: 30, pesados: 1, total: 2 });
+    expect(await cargarResumenCarne(HOY)).toMatchObject({ periodo: { inicio: '2026-08-01' }, kgGanados: 30, pesados: 1, total: 2, ultimaFecha: '2026-08-21' });
     await pesar(a.id, '2026-10-01', 350);
-    expect(await cargarResumenCarne(HOY)).toMatchObject({ periodo: { inicio: '2026-10-01' }, kgGanados: 20, pesados: 1, total: 2 });
+    expect(await cargarResumenCarne(HOY)).toMatchObject({ periodo: { inicio: '2026-10-01' }, kgGanados: 20, pesados: 1, total: 2, ultimaFecha: '2026-10-01' });
   });
 
   it('un primer pesaje cuenta como pesado, aunque todavía no haya kilos ganados', async () => {
@@ -438,5 +438,19 @@ describe('PU-36 · 14. Ciclo: estimación, orden y lote (sección 6 bis)', () =>
   it('sin animales con dos pesos, el lote no tiene kilos', async () => {
     await novillo('Z1', { peso_inicial: null });
     expect((await cargarCicloDeCeba(HOY)).kgGanados).toBeNull();
+  });
+});
+
+describe('PU-36 · 9b. El último registro del inicio (sección 7)', () => {
+  it('es el pesaje más reciente del mes entre los animales de ceba; no cuentan otros animales ni otros meses', async () => {
+    const a = await novillo('Z1');
+    const b = await novillo('Z2', { peso_inicial: null });
+    await pesar(a.id, '2026-10-03', 330);
+    await pesar(b.id, '2026-10-11', 280);
+    await pesar(a.id, '2026-09-28', 320);
+    const lechera = await animal('Z3', { sexo: 'hembra' });
+    await destino(lechera.id, 'leche', '2026-08-01');
+    await pesar(lechera.id, '2026-10-15', 420);
+    expect((await cargarResumenCarne(HOY))!.ultimaFecha).toBe('2026-10-11');
   });
 });

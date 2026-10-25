@@ -2699,52 +2699,73 @@ h3,
  * Producción de carne (documento técnico 34): la tarjeta «Producción» del inicio partida en dos y el lote
  * de ceba. Cada mitad es un enlace de al menos 64 px (3.10.4.2).
  * ------------------------------------------------------------------------------------------------- */
-.inicio__resumen--una {
-  grid-template-columns: minmax(0, 1fr);
-}
-.inicio__resumen--una .resumen:first-child {
-  min-height: 0;
-}
 .produccion-inicio {
-  min-height: 0;
-  padding: 12px 0 0;
+  padding: 14px 0 0;
 }
 .produccion-inicio__titulo {
-  margin: 0 14px 4px;
+  margin: 0 14px 6px;
   font-family: inherit;
 }
 .produccion-inicio__mitades {
   display: grid;
+  flex: 1;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .produccion-inicio__mitad {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 2px;
-  min-height: 132px;
-  padding: 8px 14px 14px;
+  min-height: 64px;
+  min-width: 0;
+  padding: 4px 8px 14px 14px;
   color: var(--texto);
   text-decoration: none;
 }
 .produccion-inicio__mitad + .produccion-inicio__mitad {
-  border-left: 2px solid var(--borde);
+  padding-left: 12px;
+  /* La línea divisoria no llega a los bordes, como en el modelo. */
+  background: linear-gradient(var(--borde), var(--borde)) left 4px top 0 / 1.5px calc(100% - 14px) no-repeat;
 }
 .produccion-inicio__mitad:focus-visible {
   outline: 3px solid var(--amarillo);
   outline-offset: -3px;
   border-radius: var(--radio);
 }
-.produccion-inicio__nombre {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--verde-oscuro);
-  font-family: var(--letra-titulo);
-  font-weight: 800;
-  font-size: 1.1rem;
+.produccion-inicio__mitad .ilustracion {
+  margin-bottom: 6px;
 }
-.produccion-inicio__mitad .resumen__valor {
-  font-size: 1.7rem;
+.produccion-inicio__nombre {
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.produccion-inicio__valor {
+  font-family: var(--letra-titulo);
+  font-weight: 900;
+  font-size: clamp(1.15rem, 5.2vw, 1.8rem);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.produccion-inicio__mitad .resumen__detalle {
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+/* El último acceso, si queda solo en su fila, va en horizontal (modelo del autor). */
+.accesos > .acceso:last-child:nth-child(odd) {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  min-height: 88px;
+}
+.accesos > .acceso:last-child:nth-child(odd) .acceso__textos {
+  margin-top: 0;
+}
+.acceso__textos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
 }
 .carne__lote p {
   margin: 0;

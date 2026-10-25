@@ -288,6 +288,8 @@ export interface ResumenCarne {
   kgGanados: number | null;
   pesados: number;
   total: number;
+  /** El pesaje más reciente del mes entre los animales que entran: el «último registro» del inicio. */
+  ultimaFecha: FechaPredio;
 }
 
 /**
@@ -297,7 +299,16 @@ export interface ResumenCarne {
 export function resumenCarne(datos: DatosCarne, hoy: FechaPredio): ResumenCarne | null {
   for (let d = 0; d > -MESES_RESUMEN - 1; d--) {
     const mes = produccionDelMes(datos, mesConsultado(hoy, d), hoy, null);
-    if (mes.pesados > 0) return { periodo: mes.periodo, kgGanados: mes.kgGanados, pesados: mes.pesados, total: mes.conTramo.length + mes.sinTramo.length };
+    if (mes.pesados === 0) continue;
+    const ids = new Set([...mes.conTramo, ...mes.sinTramo].map((a) => a.id));
+    const fechas = datos.pesajes.filter((p) => ids.has(p.animal_id) && p.fecha >= mes.periodo.inicio && p.fecha <= mes.periodo.fin && p.fecha <= hoy).map((p) => p.fecha);
+    return {
+      periodo: mes.periodo,
+      kgGanados: mes.kgGanados,
+      pesados: mes.pesados,
+      total: mes.conTramo.length + mes.sinTramo.length,
+      ultimaFecha: fechas.reduce((max, f) => (f > max ? f : max)),
+    };
   }
   return null;
 }

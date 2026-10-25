@@ -331,17 +331,17 @@ function SiluetaRuta({ color }: { color: string }) {
 }
 
 /**
- * Filete de carne con su borde de grasa y su hueso: la ceba y la producción de carne (pedido del autor,
- * 2026-10-24: «es lo que mejor entiende el propietario»; documento técnico 34, sección 7 bis).
+ * Filete de carne, al estilo del emoji: la ceba y la producción de carne (pedido del autor, 2026-10-24: «es
+ * lo que mejor entiende el propietario»; documento técnico 34, sección 7 bis).
  */
 export function Filete({ tamano = 44 }: Tamano) {
   return (
     <Dibujo ancho={tamano} vista="0 0 40 40">
-      <path d="M3 18C4 9 13 4 22 4.6 31.5 5.3 38 11 37.6 19.5 37.2 28.5 29.5 35 19.5 35.4 9.5 35.8 2 28 3 18z" fill="#f3dcc4" stroke="#b9805c" strokeWidth="1.4" />
-      <path d="M7 18.4C7.8 11.4 14.4 8 21.6 8.4 29 8.9 33.9 13.1 33.6 19.6 33.3 26.4 27.6 31.2 19.8 31.5 12 31.8 6.3 26 7 18.4z" fill="#b83227" />
-      <path d="M17 13.5c3 .8 5-.6 8 .4M10.5 22c2.8-.4 4.4 1.2 7.2.6M20 25.5c2.6.8 4.4-.4 7 .4M25.5 18.5c1.6 1 3.4.8 5 1.6" stroke="#ec958a" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-      <circle cx="13.5" cy="16" r="4" fill={BLANCO} stroke="#dcc3a8" strokeWidth="1.2" />
-      <circle cx="13.5" cy="16" r="1.6" fill="#e8cfb4" />
+      {/* Como el emoji del filete: el corte rojo, el borde de grasa claro por dentro y el hueso redondo. */}
+      <path d="M14 8C19 2.5 31 2.5 35.5 10 39 16 36.5 23 31 26.5 25 30.5 19 31 14 35 10.5 37.8 5.5 36 5 31.5 4.5 27 7 22.5 8.5 18 9.8 14 10.5 11 14 8Z" fill="#c4305a" stroke="#9e2347" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M14 8C19 2.5 31 2.5 35.5 10 39 16 36.5 23 31 26.5 25 30.5 19 31 14 35 10.5 37.8 5.5 36 5 31.5 4.5 27 7 22.5 8.5 18 9.8 14 10.5 11 14 8Z" transform="translate(21 19) scale(0.74) translate(-21 -19)" fill="none" stroke="#f7a8bf" strokeWidth="2.6" strokeLinejoin="round" />
+      <circle cx="23" cy="15" r="4.6" fill={BLANCO} />
+      <circle cx="23" cy="15" r="1.9" fill="#e8798f" />
     </Dibujo>
   );
 }

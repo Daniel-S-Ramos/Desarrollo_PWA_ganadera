@@ -174,33 +174,35 @@ Al tocar un animal, su ficha con la evolución desplegada, como en la vista por 
 ## 7. El inicio: una tarjeta «Producción» dividida en dos (decisión F, ajustada por el autor)
 
 El autor pidió **una sola tarjeta** con el título general **«Producción»**, dividida en **dos mitades**, cada
-una con su propio destino:
+una con su propio destino. En la prueba PE-40 (2026-10-24) entregó un modelo del inicio completo, que es el
+que se sigue:
 
 | Mitad | Muestra | Al tocarla |
 |---|---|---|
-| **Leche** | Los litros de hoy o del último día con ordeños y la diferencia frente al día anterior, como la tarjeta actual | `/produccion` (documento 23) |
-| **Carne** | Los kilos ganados del mes en curso o, si aún no hay pesajes, del último mes con pesajes, y cuántos animales se pesaron («Octubre · 12 de 30 pesados») | `/produccion-carne` |
+| **Leche** | Las cantinas en un círculo, «Leche», los litros de hoy o del último día con ordeños y «Último ordeño: 21 de octubre de 2026» (o «hoy») | `/produccion` (documento 23) |
+| **Carne** | El filete en un círculo, «Carne», los kilos ganados del mes en curso o, si aún no hay pesajes, del último mes con pesajes, y «Último registro:» con la fecha del pesaje más reciente de ese mes entre los animales de ceba | `/produccion-carne` |
 
-- Cada mitad es un enlace aparte, de al menos 64 px de alto (3.10.4.2), con su dibujo (cantinas y filete de carne) y
-  una línea divisoria entre las dos.
-- La tarjeta ocupa el ancho completo del resumen, debajo de **Pendientes**, para que las dos mitades tengan
-  espacio en un teléfono.
-- El acceso **«Producción de leche»** de «¿Qué deseas hacer?» se retira, porque la tarjeta ya lleva a las dos
-  producciones; dejarlo duplicaría el camino.
+- La tarjeta va **al lado de Pendientes**, en la misma fila de dos tarjetas que antes ocupaba la producción de
+  leche. Cada mitad es un enlace aparte, de al menos 64 px de alto (3.10.4.2), separadas por una línea.
+- Los kilos se escriben sin signo cuando son ganancia («180 kg») y con «−» cuando el lote perdió peso.
+- En **«¿Qué deseas hacer?»** quedan los dos accesos: **Producción de leche** («Consultar litros») y
+  **Producción de carne** («Consultar kilos», con el filete). Si el último acceso queda solo en su fila
+  (Medicamentos), se muestra en horizontal, con el dibujo a la izquierda, como en el modelo.
 - Colores de la Tabla 29 y contraste de 7 a 1 (PU-01).
 
-El **trabajador** no ve la tarjeta (sección 8): sigue viendo **Ordeño de hoy** en su lugar, como ahora.
+El **trabajador** no ve la tarjeta ni los accesos de producción (sección 8): sigue viendo **Ordeño de hoy**
+al lado de Pendientes, como ahora.
 
 ## 7 bis. El dibujo de la carne y de la ceba (pedido del autor)
 
 El autor pidió que la producción de carne se dibuje con un **filete de carne**, que es lo que mejor entiende
 el propietario, y que **todo dibujo de la ceba o de la producción de ceba en la aplicación sea ese mismo
-filete**. Se agrega `Filete` a `src/ui/componentes/Ilustraciones.tsx` (un corte de carne rojo con su borde de
-grasa, en los tonos de las demás ilustraciones) y se usa en:
+filete**. Se agrega `Filete` a `src/ui/componentes/Ilustraciones.tsx`, dibujado como el emoji del filete que el
+autor tomó de modelo (el corte rojo, el borde de grasa claro por dentro y el hueso redondo), y se usa en:
 
 | Lugar | Antes | Ahora |
 |---|---|---|
-| Mitad **Carne** de la tarjeta del inicio | — | Filete |
+| Mitad **Carne** de la tarjeta del inicio y acceso **Producción de carne** | — | Filete |
 | Letrero de la pantalla **Producción de carne** | — | Filete |
 | Ficha **Ceba** del filtro de categorías del listado | Matas de pasto (`Pasto`) | Filete |
 
@@ -250,7 +252,7 @@ arma el resultado en memoria, para que la pantalla se entere de los cambios (doc
 | 6 | Lote | Suma de kilos con pérdidas; promedio de ganancias diarias; «pesados de»; mensajes sin animales y sin pesajes |
 | 7 | Orden | Por ganancia diaria, desempates, orden inverso; sin pesaje siempre al final |
 | 8 | Valor vigente | Pesos corregidos y pesajes anulados |
-| 9 | Resumen del inicio | Mes en curso o último mes con pesajes; sin pesajes nunca |
+| 9 | Resumen del inicio | Mes en curso o último mes con pesajes; sin pesajes nunca; último registro = pesaje más reciente del mes entre los animales de ceba |
 | 10 | Permisos | Solo el propietario (`puedeUsar`, CU-07) |
 | 11 | Ciclo: animales | Solo activos con destino vigente ceba hoy; fuera retirados y los que cambiaron de destino |
 | 12 | Ciclo: cálculo | Peso inicial (compra, nacimiento o primer pesaje), último peso, kilos y ganancia del ciclo, lo que falta, avance |
