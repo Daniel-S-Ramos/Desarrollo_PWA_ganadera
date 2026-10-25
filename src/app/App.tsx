@@ -54,8 +54,11 @@ export function App() {
   useSincronizacionAutomatica(cerradura === 'abierta');
   const enInicio = useLocation().pathname === '/';
   const abierta = !!identidad && cerradura === 'abierta';
-  // El contador de Alertas en la barra inferior; la capa ui no lee los módulos.
-  const pendientes = useLiveQuery(() => (abierta ? cargarRecordatorios().then((grupos) => grupos.reduce((n, g) => n + g.recordatorios.length, 0)) : Promise.resolve(0)), [abierta]) ?? 0;
+  // El contador de Alertas en la barra inferior; la capa ui no lee los módulos. Mientras llega la carga inicial
+  // no se cuenta: con los datos a medias saldrían recordatorios falsos (69 en vez de 15 en el caso CP-01).
+  const cargaInicial = useCargaInicialCompleta();
+  const contar = abierta && cargaInicial === true;
+  const pendientes = useLiveQuery(() => (contar ? cargarRecordatorios().then((grupos) => grupos.reduce((n, g) => n + g.recordatorios.length, 0)) : Promise.resolve(0)), [contar]) ?? 0;
   // El aviso de RNF-15 se da solo en el inicio de sesión, cuando se escriben el correo y la contraseña; no se
   // repite en las demás pantallas (pedido del autor, 2026-10-24).
   const conAvisoAlmacenamiento = identidad === null;
@@ -150,7 +153,7 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
           <Routes>
             <Route path="/" element={<PantallaInicio identidad={identidad} alCerrar={alCerrar} cargaCompleta={cargaCompleta} />} />
             {/* Pestañas de la barra inferior (rediseño del 2026-10-22). */}
-            <Route path="/alertas" element={<PantallaAlertas identidad={identidad} />} />
+            <Route path="/alertas" element={<PantallaAlertas identidad={identidad} cargaCompleta={cargaCompleta} />} />
             <Route path="/cuenta" element={<PantallaCuenta identidad={identidad} alCerrar={alCerrar} />} />
             <Route
               path="/animales/nuevo"

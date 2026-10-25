@@ -26,6 +26,7 @@ etiqueta `v1.0`.
 | PI-01 | Esquema remoto: parámetros del propietario (verificación 21) | R3 | Tabla 30 | ✅ |
 | PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
 | R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
+| R6 | Pruebas funcionales (CP-01 a CP-41) · bloque 1 de acceso: 5 de 7 casos aprobados, 2 por ejecutar | 6.3 | RF-24 a RF-27 · CU-01 | 🔄 |
 
 ---
 
@@ -257,4 +258,33 @@ puede pasar de 100. Se quitó el tope del código. Al cierre, 33 de 33.
    del ingreso). En el computador no aparece porque Chrome concedió el almacenamiento persistente. Es lo esperado.
 2. En el computador apareció el aviso «La aplicación quedó guardada en este dispositivo y ya funciona sin
    conexión», propio de la primera visita en una ventana sin datos.
+
+## R6 · Pruebas funcionales (paso 6.3)
+
+Ejecución de los casos del [documento de casos de prueba](casos-de-prueba.md), secciones 4 a 13, sobre la vista
+previa de la rama `cierre` con los datos simulados. Criterios de la sección 2 de ese documento.
+
+### Bloque 1 · Acceso y perfiles (CP-01 a CP-07) · 2026-10-25
+
+| Caso | Perfil y dispositivo | Resultado obtenido | Estado | Evidencia |
+|---|---|---|---|---|
+| CP-01 | Propietario, Chrome del computador sin datos del sitio | Pidió correo y contraseña; tras definir el código, «Preparando este teléfono» con la barra (21 % → 93 %: usuarios y parámetros, 70 animales, 5.310 registros); al terminar, el inicio con 56 activos, ronda 0 de 15, leche 164 L, carne 473,2 kg y 15 pendientes | ✅ Aprobado con observación 1 | [21 %](evidencias/cierre/CP-01-01-carga-inicial-21.png) · [93 %](evidencias/cierre/CP-01-02-carga-inicial-93.png) · [inicio](evidencias/cierre/CP-01-03-inicio.png) |
+| CP-02 | Trabajador, iPhone en modo avión | Pidió solo el código («Hola, Daniel Ramos»); entró sin conexión con los datos: «Sin conexión», 15 pendientes, ordeño 0 de 15 | ✅ Aprobado | [código](evidencias/cierre/CP-02-01-solo-codigo-sin-conexion.png) · [inicio](evidencias/cierre/CP-02-02-inicio-sin-conexion.webp) |
+| CP-03 | Propietario, Chrome del computador | Cada intento informó los que quedan («Le queda 1 intento antes de tener que ingresar con su contraseña»); al quinto: «Se superaron los 5 intentos del código. Ingrese con su correo y contraseña» | ✅ Aprobado | [un intento](evidencias/cierre/CP-03-01-queda-un-intento.png) · [cinco](evidencias/cierre/CP-03-02-cinco-intentos.png) |
+| CP-04 | Sin sesión | Cubierto por PE-39 (2026-10-25) | ✅ Aprobado | Ver PE-39 |
+| CP-05 | Trabajador, iPhone | Inicio con Pendientes y «Ordeño de hoy», sin producción ni Correcciones recientes; ficha de 402 con «Registrar pesaje», «Ver evolución», «Registrar evento» y «Ver historial», y el destino (Ceba) **solo para consultar**, sin cambiarlo ni registrar la salida ni ver costos; la dirección `/produccion-carne` escrita a mano pidió el código y llevó al inicio | ✅ Aprobado con observación 2 | [inicio](evidencias/cierre/CP-05-01-inicio-trabajador.webp) · [ficha](evidencias/cierre/CP-05-02-ficha-402.webp) · [seguimiento](evidencias/cierre/CP-05-03-ficha-402-seguimiento.png) · [ruta](evidencias/cierre/CP-05-04-ruta-escrita.png) · [código](evidencias/cierre/CP-05-05-pide-codigo.png) |
+| CP-06 | — | Pendiente: capturas de la evolución del peso de 402 y del historial sanitario de 210 | ⬜ | — |
+| CP-07 | — | Pendiente: aviso al cerrar sesión con un registro pendiente | ⬜ | — |
+
+**Observaciones.**
+
+1. **Hallazgo corregido.** Durante la carga inicial la campana de Alertas marcaba **69** recordatorios y al
+   terminar bajó a 15: con los datos a medias, la aplicación derivaba recordatorios falsos (por ejemplo, vacas
+   «sin ordeño» cuyos ordeños aún no habían llegado). Ahora el contador y la pestaña Alertas esperan a que termine
+   la carga inicial; mientras tanto la pestaña dice «Los recordatorios aparecerán cuando termine de prepararse este
+   teléfono». El inicio ya no los mostraba durante la carga (muestra «Preparando este teléfono»). Cambio en
+   `App.tsx` y `PantallaAlertas.tsx`; 963 de 963 automáticas.
+2. Escribir una dirección en la barra recarga la aplicación, por eso pidió el código antes de redirigir: es el
+   comportamiento esperado del código de desbloqueo (documento técnico 07). El trabajador ve el destino como dato
+   de la ficha (HU-02, RF-05) pero no lo puede cambiar (CU-12 es del propietario, Tabla 27).
 
