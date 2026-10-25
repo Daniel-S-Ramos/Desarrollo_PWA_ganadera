@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { leerParametro } from '../../datos/parametros';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
-import { DIAS_PROMEDIO_POR_DEFECTO, formatearLitros } from '../../dominio/leche';
+import { DIAS_PROMEDIO_POR_DEFECTO, VARIACION_ATIPICA_POR_DEFECTO, formatearLitros } from '../../dominio/leche';
 import { etiquetaDia, sumarDias, type Agregacion } from '../../dominio/periodos';
 import { periodoComparado } from './comparacion';
 import { desplazamientoHasta, diaDeVaca, periodoDeVaca, registrosDe, vacasConsultables, type DiaDeVaca, type PeriodoDeVaca } from './produccion';
@@ -37,6 +37,7 @@ export function PantallaProduccion() {
   const vacaId = parametros.get('vaca') ?? vacas?.[0]?.id ?? null;
   const registros = useLiveQuery(() => (vacaId ? registrosDe(vacaId) : Promise.resolve([])), [vacaId]);
   const diasPromedio = useLiveQuery(() => leerParametro('dias_promedio_produccion'), []) ?? DIAS_PROMEDIO_POR_DEFECTO;
+  const variacionAtipica = useLiveQuery(() => leerParametro('variacion_atipica_leche'), []) ?? VARIACION_ATIPICA_POR_DEFECTO;
 
   if (!vacas) return <p className="texto-secundario">Cargando…</p>;
   if (vacas.length === 0) {
@@ -113,7 +114,7 @@ export function PantallaProduccion() {
       {!registros ? (
         <p className="texto-secundario">Cargando…</p>
       ) : agregacion === 'diaria' ? (
-        <DiaVaca chapeta={vaca.codigo_chapeta} dia={diaDeVaca(registros, sumarDias(hoy, desplazamiento), diasPromedio)} hoy={hoy} diasPromedio={diasPromedio} irA={irA} />
+        <DiaVaca chapeta={vaca.codigo_chapeta} dia={diaDeVaca(registros, sumarDias(hoy, desplazamiento), diasPromedio, variacionAtipica)} hoy={hoy} diasPromedio={diasPromedio} irA={irA} />
       ) : (
         <PeriodoVaca chapeta={vaca.codigo_chapeta} datos={periodoDeVaca(registros, periodoComparado(agregacion, hoy, desplazamiento), hoy)} agregacion={agregacion} irA={irA} />
       )}

@@ -92,14 +92,17 @@ una palabra según el porcentaje:
 | Diferencia con el promedio | Palabras | Aspecto |
 |---|---|---|
 | Hasta 10 %, por encima o por debajo | «Similar a su promedio» | Neutro |
-| Más de 10 % y hasta 25 % por debajo | «Por debajo de su promedio» | Neutro |
+| Más de 10 % y menos de 35 % por debajo | «Por debajo de su promedio» | Neutro |
 | Más de 10 % por encima | «Por encima de su promedio» | Neutro |
-| Más de 25 % por debajo | **«Muy por debajo de su promedio»** | Aviso de atención, sin bloquear |
+| **Desde 35 %** por debajo | **«Muy por debajo de su promedio»** | Aviso de atención, sin bloquear |
 
 Con un promedio de 0 (vaca secándose), cualquier valor positivo es «Por encima de su promedio» y 0 es
-«Similar». Los umbrales de 10 % y 25 % son de **presentación**, no un criterio veterinario; se ajustarán
-con el propietario si hace falta. La alerta de producción bajo el promedio de la Iteración 5 (CU-15)
-tendrá su propia regla.
+«Similar». El 10 % es de **presentación**. El umbral de «Muy por debajo» es la **variación atípica** de la
+Tabla 30, que corresponde al propietario: el diseño empezó con 25 % y **el propietario lo fijó en 35 % el
+2026-10-24** («desde el 35 %», así que el 35 % exacto ya cuenta). Vive en el parámetro
+`variacion_atipica_leche` (migración `20261024000200_parametros_del_propietario.sql`); si el parámetro aún
+no está en el teléfono, se usa ese mismo 35 %. Lo usan la ronda, la producción diaria por vaca y el
+recordatorio de producción bajo el promedio (documento 30, regla 3).
 
 ## 7. La vaca ya tiene registro en esa fecha (decisión F)
 
@@ -170,7 +173,7 @@ HU-04.2 (consultar la producción en periodos diario, semanal y mensual) se atie
 | 2 | Siguiente vaca | La primera sin registro en la fecha; ronda completa cuando no queda ninguna |
 | 3 | Litros | 0 a 60 con un decimal, coma o punto; el 0 se admite |
 | 4 | Promedio | Solo días con registro dentro de los 7 anteriores, sin la fecha; valores vigentes; sin registros, ninguno |
-| 5 | Palabras | Los umbrales de 10 % y 25 % y el promedio 0 |
+| 5 | Palabras | Los umbrales de 10 % y 35 % (el exacto cuenta), el parámetro del propietario y el promedio 0 |
 | 6 | Reemplazo | Crea la corrección con los dos valores y el motivo; mismo valor no escribe nada; sin confirmar no escribe |
 | 7 | Permisos | El trabajador no reemplaza al propietario ni a otro trabajador de otro día; el propietario reemplaza a cualquiera |
 | 8 | Valor vigente | La corrección más reciente prevalece en la ficha, la lista y el promedio |

@@ -52,8 +52,9 @@ Precisiones:
 - **Activo** es sin salida vigente (documento 29, sección 7). Un animal retirado no genera recordatorios.
 - Todo se calcula con **valores vigentes** y sin registros anulados (documento 26, sección 6): un ordeño anulado
   no cuenta como ordeño, y un destino anulado no cuenta como destino.
-- La regla 3 usa la misma comparación de la ronda, con el mismo umbral de presentación. La Tabla 30 deja la
-  «variación atípica» para definirla con el propietario; cuando la defina, se ajustará aquí.
+- La regla 3 usa la misma comparación de la ronda, con el mismo umbral: la «variación atípica» de la Tabla 30,
+  que el propietario fijó en **35 %** el 2026-10-24 (parámetro `variacion_atipica_leche`, documento 22,
+  sección 6.3).
 - La regla 3 no avisa sobre un ordeño viejo: si la vaca no tiene ordeño en los últimos días, ya avisa la regla 2.
 - La regla 5 es la única que no se refiere a un animal, y depende de la cola de cada teléfono: es lo único que
   dos teléfonos con la misma información pueden mostrar distinto, porque la cola es local.

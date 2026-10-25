@@ -8,7 +8,7 @@ import { consulta, unidadDeTrabajo } from '../../datos/repositorio';
 import { animalVigente, animalesVigentes, contarSalidasVigentes, leerVigentes, salidasVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
 import { fechaDelPredio } from '../../dominio/fechas';
-import { DIAS_PROMEDIO_POR_DEFECTO, promedioReciente, validarOrdeno, type ErroresOrdeno } from '../../dominio/leche';
+import { DIAS_PROMEDIO_POR_DEFECTO, promedioReciente, VARIACION_ATIPICA_POR_DEFECTO, validarOrdeno, type ErroresOrdeno } from '../../dominio/leche';
 import type { FechaPredio, Perfil, RegistroLocal, Uuid } from '../../dominio/tipos';
 import { PermisoDenegado, puedeCorregir, puedeCrear } from '../../sesion/permisos';
 import type { Identidad } from '../../sesion/token';
@@ -83,8 +83,15 @@ export function siguienteVaca(vacas: readonly VacaRonda[]): VacaRonda | null {
 }
 
 /** El promedio de la vaca en los días anteriores a la fecha, con valores vigentes (sección 6.2). */
-export async function promedioDe(animalId: Uuid, fecha: FechaPredio): Promise<{ dias: number; resultado: { promedio: number; registros: number } | null }> {
-  const [registros, parametro] = await Promise.all([consulta.produccion_leche.where('animal_id').equals(animalId).toArray(), leerParametro('dias_promedio_produccion')]);
+export async function promedioDe(
+  animalId: Uuid,
+  fecha: FechaPredio,
+): Promise<{ dias: number; resultado: { promedio: number; registros: number } | null; variacionAtipica: number }> {
+  const [registros, parametro, variacion] = await Promise.all([
+    consulta.produccion_leche.where('animal_id').equals(animalId).toArray(),
+    leerParametro('dias_promedio_produccion'),
+    leerParametro('variacion_atipica_leche'),
+  ]);
   const dias = parametro ?? DIAS_PROMEDIO_POR_DEFECTO;
   // Sin anulados y con los litros vigentes (documento técnico 26, sección 6.3).
   const resultado = promedioReciente(
@@ -92,7 +99,7 @@ export async function promedioDe(animalId: Uuid, fecha: FechaPredio): Promise<{ 
     fecha,
     dias,
   );
-  return { dias, resultado };
+  return { dias, resultado, variacionAtipica: variacion ?? VARIACION_ATIPICA_POR_DEFECTO };
 }
 
 /** ¿Puede este usuario reemplazar el registro existente? Es la regla de corrección de 3.9.5 (sección 7). */

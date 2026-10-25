@@ -5,7 +5,7 @@
 import { consulta } from '../../datos/repositorio';
 import { animalesVigentes, salidasVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
-import { compararConPromedio, promedioReciente, type Comparacion } from '../../dominio/leche';
+import { compararConPromedio, promedioReciente, VARIACION_ATIPICA_POR_DEFECTO, type Comparacion } from '../../dominio/leche';
 import { agregar, diasEntreInclusive, inicioDeSemana, sumarDias, type Agregacion, type FilaPeriodo, type Periodo } from '../../dominio/periodos';
 import type { FechaPredio, Uuid } from '../../dominio/tipos';
 import { compararChapetas } from '../consulta/listado';
@@ -55,7 +55,12 @@ export interface DiaDeVaca {
  * La producción de un día de la vaca (vista diaria, ajustada en PE-34): un día a la vez, con su comparación
  * frente al promedio y los ordeños más cercanos antes y después.
  */
-export function diaDeVaca(registros: readonly { fecha: FechaPredio; litros: number }[], fecha: FechaPredio, diasPromedio: number): DiaDeVaca {
+export function diaDeVaca(
+  registros: readonly { fecha: FechaPredio; litros: number }[],
+  fecha: FechaPredio,
+  diasPromedio: number,
+  variacionAtipica: number = VARIACION_ATIPICA_POR_DEFECTO,
+): DiaDeVaca {
   const delDia = registros.find((r) => r.fecha === fecha);
   const promedio = promedioReciente(registros, fecha, diasPromedio);
   const ordenados = [...registros].sort((a, b) => a.fecha.localeCompare(b.fecha));
@@ -65,7 +70,7 @@ export function diaDeVaca(registros: readonly { fecha: FechaPredio; litros: numb
     fecha,
     litros: delDia ? delDia.litros : null,
     promedio,
-    comparacion: delDia && promedio ? compararConPromedio(delDia.litros, promedio.promedio) : null,
+    comparacion: delDia && promedio ? compararConPromedio(delDia.litros, promedio.promedio, variacionAtipica) : null,
     anterior: anterior && { fecha: anterior.fecha, litros: anterior.litros },
     siguiente: siguiente && { fecha: siguiente.fecha, litros: siguiente.litros },
   };

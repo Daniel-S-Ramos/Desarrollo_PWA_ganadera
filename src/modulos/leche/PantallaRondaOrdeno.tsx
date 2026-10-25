@@ -142,7 +142,7 @@ function FormularioVaca({
   const errores = intentado && !validacion.ok ? validacion.errores : {};
   const litros = leerLitros(texto);
   const igual = existente !== null && litros !== null && litros === existente.litros;
-  const comparacion = litros !== null && promedio?.resultado ? compararConPromedio(litros, promedio.resultado.promedio) : null;
+  const comparacion = litros !== null && promedio?.resultado ? compararConPromedio(litros, promedio.resultado.promedio, promedio.variacionAtipica) : null;
   const bloqueado = guardando || !permitido || (existente !== null && !igual && !confirmado);
 
   async function guardar(e: FormEvent) {

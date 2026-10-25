@@ -53,6 +53,12 @@ Cada animal aporta, como mucho, **un tramo por mes**:
 | **Días** | Los días entre la fecha de referencia y la fecha final |
 | **Ganancia diaria** | Kilos ganados ÷ días, redondeada a un decimal, con la misma fórmula del documento 24 |
 
+**La ganancia diaria es un promedio, no un pesaje diario.** El propietario no pesa a diario: pesa cada mes o
+cada dos meses, cuando puede (2.2.7; la simulación del capítulo 3 supone seis pesajes al año). La ganancia
+diaria reparte los kilos ganados entre los días que pasaron entre los dos pesos: 15 kg en 30 días son 0,5 kg por
+día, aunque nadie haya pesado al animal en esos 30 días. Por eso se puede comparar con la meta del propietario
+(de 0,5 a 0,8 kg por día, documento 24, sección 8) cualquiera que sea la frecuencia de los pesajes.
+
 **Un tramo pertenece al mes de su pesaje final.** Si un animal se pesó el 15 de agosto y el 15 de octubre,
 octubre muestra «+48 kg en 61 días» y septiembre lo muestra «Sin pesaje este mes». Así ningún kilo se cuenta
 en dos meses y la suma de los meses es la ganancia real del animal.

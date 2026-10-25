@@ -152,9 +152,10 @@ describe('PU-23 · 4. Promedio (sección 6.2)', () => {
     const r = await ordeno(a.id, '2026-10-12', 10);
     await ordeno(a.id, '2026-10-04', 30);
     await crear('correccion', { entidad_afectada: 'produccion_leche', registro_id: r.id, tipo: 'correccion', campo: 'litros', valor_anterior: '10', valor_nuevo: '14', motivo: 'registro_duplicado', nota: null }, PROPIETARIO.usuario_id);
-    expect(await promedioDe(a.id, HOY)).toEqual({ dias: 7, resultado: { promedio: 14, registros: 1 } });
+    expect(await promedioDe(a.id, HOY)).toEqual({ dias: 7, resultado: { promedio: 14, registros: 1 }, variacionAtipica: 35 });
     await db.parametro.put({ clave: 'dias_promedio_produccion', valor: 10, unidad: 'días', descripcion: 'Periodo' });
-    expect(await promedioDe(a.id, HOY)).toEqual({ dias: 10, resultado: { promedio: 22, registros: 2 } });
+    await db.parametro.put({ clave: 'variacion_atipica_leche', valor: 40, unidad: '%', descripcion: 'Variación' });
+    expect(await promedioDe(a.id, HOY)).toEqual({ dias: 10, resultado: { promedio: 22, registros: 2 }, variacionAtipica: 40 });
   });
 });
 
@@ -164,12 +165,19 @@ describe('PU-23 · 5. Diferencia en palabras (sección 6.3)', () => {
     [11, 10, 'Similar a su promedio', false], // 10 % exacto
     [11.1, 10, 'Por encima de su promedio', false],
     [8.9, 10, 'Por debajo de su promedio', false],
-    [7.5, 10, 'Por debajo de su promedio', false], // 25 % exacto
-    [7.4, 10, 'Muy por debajo de su promedio', true],
+    [7.5, 10, 'Por debajo de su promedio', false], // 25 %: el umbral anterior ya no avisa
+    [6.6, 10, 'Por debajo de su promedio', false], // 34 %
+    [6.5, 10, 'Muy por debajo de su promedio', true], // 35 % exacto: «desde el 35 %», del propietario
+    [7.8, 12, 'Muy por debajo de su promedio', true], // 35 % exacto con decimales binarios
     [0, 0, 'Similar a su promedio', false],
     [3, 0, 'Por encima de su promedio', false],
   ])('%s litros con promedio %s → %s', (litros, promedio, palabras, atencion) => {
     expect(compararConPromedio(litros, promedio)).toMatchObject({ palabras, atencion });
+  });
+
+  it('el umbral lo da el parámetro del propietario', () => {
+    expect(compararConPromedio(7.5, 10, 25)).toMatchObject({ palabras: 'Muy por debajo de su promedio', atencion: true });
+    expect(compararConPromedio(6.5, 10, 40)).toMatchObject({ palabras: 'Por debajo de su promedio', atencion: false });
   });
 
   it('la diferencia en litros', () => {
