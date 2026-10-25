@@ -26,7 +26,7 @@ etiqueta `v1.0`.
 | PI-01 | Esquema remoto: parámetros del propietario (verificación 21) | R3 | Tabla 30 | ✅ |
 | PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
 | R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
-| R6 | Pruebas funcionales (CP-01 a CP-41) · bloque 1 de acceso: 5 de 7 casos aprobados, 2 por ejecutar | 6.3 | RF-24 a RF-27 · CU-01 | 🔄 |
+| R6 | Pruebas funcionales (CP-01 a CP-41) · bloque 1 de acceso: 7 de 7 aprobados | 6.3 | RF-24 a RF-27 · CU-01 | 🔄 |
 
 ---
 
@@ -273,8 +273,8 @@ previa de la rama `cierre` con los datos simulados. Criterios de la sección 2 d
 | CP-03 | Propietario, Chrome del computador | Cada intento informó los que quedan («Le queda 1 intento antes de tener que ingresar con su contraseña»); al quinto: «Se superaron los 5 intentos del código. Ingrese con su correo y contraseña» | ✅ Aprobado | [un intento](evidencias/cierre/CP-03-01-queda-un-intento.png) · [cinco](evidencias/cierre/CP-03-02-cinco-intentos.png) |
 | CP-04 | Sin sesión | Cubierto por PE-39 (2026-10-25) | ✅ Aprobado | Ver PE-39 |
 | CP-05 | Trabajador, iPhone | Inicio con Pendientes y «Ordeño de hoy», sin producción ni Correcciones recientes; ficha de 402 con «Registrar pesaje», «Ver evolución», «Registrar evento» y «Ver historial», y el destino (Ceba) **solo para consultar**, sin cambiarlo ni registrar la salida ni ver costos; la dirección `/produccion-carne` escrita a mano pidió el código y llevó al inicio | ✅ Aprobado con observación 2 | [inicio](evidencias/cierre/CP-05-01-inicio-trabajador.webp) · [ficha](evidencias/cierre/CP-05-02-ficha-402.webp) · [seguimiento](evidencias/cierre/CP-05-03-ficha-402-seguimiento.png) · [ruta](evidencias/cierre/CP-05-04-ruta-escrita.png) · [código](evidencias/cierre/CP-05-05-pide-codigo.png) |
-| CP-06 | — | Pendiente: capturas de la evolución del peso de 402 y del historial sanitario de 210 | ⬜ | — |
-| CP-07 | — | Pendiente: aviso al cerrar sesión con un registro pendiente | ⬜ | — |
+| CP-06 | Propietario, Chrome del computador | Cada pesaje de 402 dice «registrado por José Ramos» o «registrado por Daniel Ramos», y cada evento de 210 «Registrado por» José Ramos, Daniel Ramos o Fernando Pintor; la evolución muestra además la meta de 0,5 kg/día y marca el tramo de 0,4 kg/día «por debajo de la meta» | ✅ Aprobado | [evolución 402](evidencias/cierre/CP-06-01-evolucion-402-autores.png) · [historial 210](evidencias/cierre/CP-06-02-historial-210-autores.png) |
+| CP-07 | Trabajador, iPhone en modo avión | Un pesaje de 402 (479 kg, báscula) quedó «1 registro pendiente de enviar · Sin conexión»; al cerrar sesión: «Hay 1 registro sin enviar y no hay conexión. Si cierra la sesión ahora, se perderán», con **Cancelar** (principal) y **Cerrar sesión y descartar los registros**; se canceló y, al volver la señal, «✓ Todo enviado» | ✅ Aprobado con observación 3 | [pendiente](evidencias/cierre/CP-07-01-pesaje-pendiente.webp) · [aviso](evidencias/cierre/CP-07-02-aviso-cerrar-sesion.webp) · [enviado](evidencias/cierre/CP-07-03-enviado-al-reconectar.webp) |
 
 **Observaciones.**
 
@@ -287,4 +287,9 @@ previa de la rama `cierre` con los datos simulados. Criterios de la sección 2 d
 2. Escribir una dirección en la barra recarga la aplicación, por eso pidió el código antes de redirigir: es el
    comportamiento esperado del código de desbloqueo (documento técnico 07). El trabajador ve el destino como dato
    de la ficha (HU-02, RF-05) pero no lo puede cambiar (CU-12 es del propietario, Tabla 27).
+3. Sin conexión la aplicación no puede ofrecer «enviar antes de cerrar» (Tabla 31): por eso ofrece cancelar o
+   descartar, la variante sin señal del documento técnico 12. El pesaje de 479 kg en 3 días (3,3 kg/día) pidió la
+   confirmación de variación atípica y, entre báscula y cinta, la evolución advierte «Métodos distintos: compárese
+   con cautela». En el historial sanitario, los síntomas se ven al tocar el evento (CU-05, paso 4); se verifica en
+   CP-17.
 
