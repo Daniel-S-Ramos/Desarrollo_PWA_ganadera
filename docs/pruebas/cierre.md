@@ -18,7 +18,7 @@ etiqueta `v1.0`.
 | PU-12.7 | Barra de avance de la carga inicial | Rediseño | 3.7.6 · documento 17 | ✅ |
 | PU-16.7 | Cantidad de animales por estado en el listado | Rediseño | RF-06 · CU-03 | ✅ |
 | PU-35 | Contacto del administrador para recuperar la contraseña | 6.0b | RF-24 · CU-01 | ✅ |
-| PE-39 | Ayuda para recuperar la contraseña, en el navegador real | 6.0b | RF-24 · CU-01 | ⬜ Faltan las capturas |
+| PE-39 | Ayuda para recuperar la contraseña, en el navegador real | 6.0b | RF-24 · CU-01 | ✅ |
 | PU-36 | Producción de carne: por mes, ciclo completo y resumen del inicio | 6.0c | 2.2.7 · RF-13 · RF-14 · CU-09 · HU-05 | ✅ |
 | PI-01 | Esquema remoto: peso de finalización de la ceba (verificación 20) | 6.0c | Tabla 30 | ✅ |
 | PE-40 | Producción de carne en el navegador real, propietario y trabajador | 6.0c | 2.2.7 · CU-09 · Tabla 27 | ✅ |
@@ -118,8 +118,7 @@ decisiones del 2026-10-22 y 2026-10-23). El panel de categorías se aclaró de #
 | Estado | ✅ Aprobada |
 | Fecha | 2026-10-24 |
 
-**PE-39 queda pendiente:** faltan las capturas de la pantalla «¿Olvidó su contraseña?» en la vista previa, con
-el nombre **Daniel Ramos** en negrilla.
+La prueba manual en el navegador es PE-39 (más abajo).
 
 ## PU-36 · Producción de carne
 
@@ -233,4 +232,29 @@ puede pasar de 100. Se quitó el tope del código. Al cierre, 33 de 33.
 2. Los pesajes van cada 30 a 75 días porque el propietario no pesa a diario; por eso aparecen 11 recordatorios de
    pesaje (más de 30 días, Tabla 30), un resultado esperado del conjunto.
 3. Los eventos sanitarios no tienen dosis, para no inventar dosis veterinarias; las fichas no tienen fotos.
+
+## PE-39 · Ayuda para recuperar la contraseña
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar que desde el inicio de sesión se llega a la ayuda para recuperar la contraseña, que nombra al administrador (**Daniel Ramos**, en negrilla, tomado de `VITE_ADMIN_NOMBRE`) y que se vuelve al inicio de sesión |
+| Requerimiento | RF-24 · CU-01 · documento técnico 33 · caso CP-04 |
+| Tipo | Manual: ventana de incógnito en Chrome del computador y Chrome en un iPhone. Vista previa de la rama `cierre` |
+| Resultado obtenido | Aprobada |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-25 |
+
+| # | Acción | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Abrir la aplicación sin sesión | Inicio de sesión con el enlace **¿Olvidó su contraseña?** debajo de **Ingresar** | [computador](evidencias/cierre/PE-39-01-inicio-de-sesion.png) · [iPhone](evidencias/cierre/PE-39-04-iphone-inicio-de-sesion.png) |
+| 2 | Tocar el enlace | «Comuníquese con **Daniel Ramos**, que es el administrador del sistema. Él le asigna una contraseña nueva en pocos minutos y usted vuelve a ingresar aquí», con el botón **Volver al inicio de sesión** | [computador](evidencias/cierre/PE-39-02-ayuda-daniel-ramos.png) · [iPhone](evidencias/cierre/PE-39-05-iphone-ayuda.webp) |
+| 3 | **Volver al inicio de sesión** | De nuevo el inicio de sesión, vacío | [captura](evidencias/cierre/PE-39-03-volver.png) |
+
+**Observaciones.**
+
+1. En el iPhone la ayuda muestra también el aviso «Los datos de este teléfono no están protegidos»: es el aviso de
+   almacenamiento no persistente, que se muestra en las pantallas sin sesión (decisión del 2026-10-23: solo antes
+   del ingreso). En el computador no aparece porque Chrome concedió el almacenamiento persistente. Es lo esperado.
+2. En el computador apareció el aviso «La aplicación quedó guardada en este dispositivo y ya funciona sin
+   conexión», propio de la primera visita en una ventana sin datos.
 

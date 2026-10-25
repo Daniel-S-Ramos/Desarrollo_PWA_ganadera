@@ -4,7 +4,7 @@ Paso 6.2 del [plan](../../PLAN.md) (R5 de la ruta de cierre), apartado 1.6.3.7: 
 funcionales y no funcionales se diseñaron los casos de prueba, especificando para cada uno las condiciones
 iniciales, los datos de entrada, los pasos a ejecutar y el resultado esperado». Es un entregable de la Tabla 3.
 
-**Responsable:** Daniel Santiago Ramos Pintor · **Versión:** 1.0 (2026-10-24)
+**Responsable:** Daniel Santiago Ramos Pintor · **Versión:** 1.0 (2026-10-24), aprobada por el autor el 2026-10-25
 
 ## 1. Alcance
 
