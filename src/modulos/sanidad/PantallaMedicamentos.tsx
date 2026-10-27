@@ -11,7 +11,7 @@ import { FormularioMedicamento } from './FormularioMedicamento';
 import { EnlaceCorregir } from '../correcciones/MarcaCorreccion';
 import { ResolverConflictoMedicamento } from '../correcciones/ResolverConflicto';
 import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
-import { JeringaFrasco } from '../../ui/componentes/Ilustraciones';
+import { CaraVaca, JeringaFrasco } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Catálogo de medicamentos del predio (docs/tecnica/18-catalogo-de-medicamentos.md, sección 6).
@@ -54,11 +54,12 @@ export function PantallaMedicamentos({ identidad, puedeAgregar }: { identidad: I
               El propietario buscó aplicar un medicamento desde aquí (sesión C). El evento sanitario se registra en la
               ficha del animal (CU-04), así que el botón lleva a Animales con una guía en lugar de duplicar el registro.
             */}
-            <Link className="boton boton--principal boton--ancho boton--ilustrado" to="/animales?guia=medicamento">
+            <Link className="boton boton--principal boton--ancho boton--ilustrado boton--ilustrado-centrado" to="/animales?guia=medicamento">
+              {/* La cara de vaca de Animales: el botón lleva allá (pedido del autor, 2026-10-27). */}
               <span className="boton__ilustracion">
-                <JeringaFrasco tamano={30} />
+                <CaraVaca tamano={34} conFondo={false} />
               </span>
-              <span>Aplicar medicamento a un animal</span>
+              <span className="boton__texto">Aplicar medicamento a un animal</span>
             </Link>
             <button
               type="button"

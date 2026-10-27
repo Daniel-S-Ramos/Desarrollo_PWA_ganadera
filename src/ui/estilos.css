@@ -2792,3 +2792,11 @@ h3,
 .guia-medicamento .boton {
   margin-top: 12px;
 }
+
+/* Botón ilustrado con el texto centrado en el botón (Medicamentos → «Aplicar medicamento a un animal»): el texto
+   ocupa el resto y deja a la derecha el mismo ancho del dibujo, para quedar en el centro real. */
+.boton.boton--ilustrado-centrado .boton__texto {
+  flex: 1;
+  padding-right: 44px;
+  text-align: center;
+}
