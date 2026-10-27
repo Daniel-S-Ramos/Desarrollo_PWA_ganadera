@@ -1,4 +1,31 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
+
+/** La letra más pequeña a la que se reduce un título con una palabra larga (sigue siendo un título grande). */
+const LETRA_MINIMA = 18;
+
+/**
+ * Si una palabra del título no cabe en la placa («Medicamentos» en un teléfono de 375 px), reduce la letra hasta
+ * que quepa en lugar de partir la palabra; los demás títulos conservan su tamaño (sesión C, 2026-10-26).
+ */
+function useAjustarLetra(texto: ReactNode) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  useLayoutEffect(() => {
+    const titulo = ref.current;
+    if (!titulo) return;
+    const ajustar = () => {
+      titulo.style.fontSize = '';
+      let tamano = parseFloat(getComputedStyle(titulo).fontSize);
+      while (titulo.scrollWidth > titulo.clientWidth && tamano > LETRA_MINIMA) {
+        tamano -= 1;
+        titulo.style.fontSize = `${tamano}px`;
+      }
+    };
+    ajustar();
+    window.addEventListener('resize', ajustar);
+    return () => window.removeEventListener('resize', ajustar);
+  }, [texto]);
+  return ref;
+}
 
 /**
  * El título de una pantalla como un letrero de finca (modelo del autor, 2026-10-24): una placa verde claro de
@@ -7,6 +34,7 @@ import type { ReactNode } from 'react';
  * de la aplicación están. Verde oscuro sobre verde claro: 7,65 a 1 (3.10.4.1).
  */
 export function TituloPantalla({ dibujo, children }: { dibujo: ReactNode; children: ReactNode }) {
+  const tituloRef = useAjustarLetra(children);
   return (
     <div className="letrero">
       <svg className="letrero__destellos" viewBox="0 0 30 30" width="26" height="26" aria-hidden="true" focusable="false">
@@ -26,7 +54,9 @@ export function TituloPantalla({ dibujo, children }: { dibujo: ReactNode; childr
         </svg>
         <span className="letrero__tornillo letrero__tornillo--izquierdo" aria-hidden="true" />
         <span className="ilustracion letrero__dibujo">{dibujo}</span>
-        <h2 className="letrero__texto">{children}</h2>
+        <h2 className="letrero__texto" ref={tituloRef}>
+          {children}
+        </h2>
         <span className="letrero__tornillo letrero__tornillo--derecho" aria-hidden="true" />
       </div>
       {/* Tramo de cerca de corral: dos postes y dos travesaños de madera, con hojas detrás. */}

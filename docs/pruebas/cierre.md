@@ -26,7 +26,7 @@ etiqueta `v1.0`.
 | PI-01 | Esquema remoto: parámetros del propietario (verificación 21) | R3 | Tabla 30 | ✅ |
 | PI-03 | Políticas: regresión con chapetas libres de la serie de pruebas | R3 | Tabla 27 | ✅ |
 | R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
-| R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7; sesión A (consultas con el volumen de la finca): 13 de 13; falta la sesión C | 6.3 | RF-24 a RF-27 · CU-01 · consultas | 🔄 |
+| R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7; sesión A (consultas con el volumen de la finca): 13 de 13; sesión C con el propietario: CP-53 y CP-54 aprobados | 6.3 | RF-24 a RF-27 · CU-01 · consultas · RNF-02 · RNF-03 | ✅ |
 | R7 | Conectividad limitada (sesión B): CP-44, CP-45, CP-47 y CP-48 aprobados | 6.4 | RF-28 a RF-30 · RNF-05 · Tabla 34 | ✅ |
 
 ---
@@ -345,6 +345,62 @@ para provocar la baja que la versión 1 de los datos no traía.
    animales. Ahora va en la chapeta (`PantallaCorreccionesRecientes.tsx`, `consultaCorrecciones.ts` con los campos
    `chapeta` y `nombre`, PU-28 ampliada; `PantallaProduccion.tsx`). 963 de 963 automáticas, ejecutadas por el autor.
 
+### Sesión C · Pocos pasos y aprendizaje con una sola sesión (CP-53 y CP-54) · 2026-10-26
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Comprobar con una persona de la finca sin experiencia en aplicaciones de gestión que, tras una sola sesión de acompañamiento, registra sin ayuda un ordeño, un pesaje y un evento sanitario (RNF-02), y medir los toques de cada registro (RNF-03) |
+| Requerimiento | RNF-02 · RNF-03 · RNF-14 · casos CP-53 y CP-54 |
+| Participante | José Ramos Bernal, propietario; experiencia previa con aplicaciones de gestión: **ninguna**. En su propio teléfono y con su cuenta |
+| Acompañante | Daniel Ramos |
+| Tipo | Manual, con la [hoja de registro](evidencias/cierre/CP-53-54-sesion-c-hoja-completa.docx) llenada durante la sesión ([PDF](evidencias/cierre/CP-53-54-sesion-c-hoja-completa.pdf)) |
+| Resultado obtenido | Las tres tareas **sin ayuda**; todos los registros en el servidor a nombre del propietario ([validación](evidencias/cierre/CP-53-54-servidor.txt)) |
+| Estado | ✅ CP-54 aprobado · ✅ CP-53 aprobado con observación 1 |
+| Fecha | 2026-10-26 |
+
+**Acompañamiento.** Cada tema se mostró una vez, entre 10 y 25 segundos cada uno: ingreso y código (18 s), inicio
+(21 s), ronda de dos vacas (19 s), pesaje desde Alertas (14 s), evento desde la ficha (25 s) e indicador (10 s).
+
+| Tarea sin ayuda | Sin ayuda | Tiempo | Toques (referencia) | Observado | Evidencia |
+|---|---|---|---|---|---|
+| 1 · «Registre que hoy la vaca 207 dio 12 litros» | ✅ Sí | 26 s | 8 (unos 3) | Encontrar la vaca en la lista de la ronda le tomó trabajo | [captura](evidencias/cierre/CP-54-01-tarea1-ordeno-207.png) |
+| 2 · «Pese al novillo 435: 420 kilos, con la cinta» | ✅ Sí | 35 s | 13 (unos 7) | Entró por Producción de carne; el 435, sin pesaje en el mes, estaba al final de la lista. Encontrado el animal, el registro fue fácil | [captura](evidencias/cierre/CP-54-02-tarea2-pesaje-435.png) |
+| 3 · «Registre que hoy le aplicó la purga al novillo 402» | ✅ Sí | 42 s | 16 (unos 8) | Primero buscó aplicar el medicamento desde el acceso **Medicamentos**; al ver que solo registra el catálogo, fue a Animales, buscó el 402 y registró la purga (Ivermectina, 1,5 ml) | [captura](evidencias/cierre/CP-54-03-tarea3-purga-402.png) |
+
+Además, el propietario tomó por iniciativa propia una foto a la vaca 201 para comprobar que las imágenes se guardan:
+el servicio guardó la imagen y su versión reducida ([captura](evidencias/cierre/CP-54-04-foto-201.png)).
+
+**Opinión del propietario** (palabras anotadas por el acompañante):
+
+- «Es fácil hacer el registro gracias a las ilustraciones que tiene la aplicación, es fácil guiarse por esos dibujos;
+  el problema es que toma un poco de tiempo buscar el animal en ciertos apartados, ya que no todas las pantallas tienen
+  la opción de escribir el número de la chapeta.»
+- «El tamaño de los botones, el color de la pantalla y el tamaño de la letra están bien, los puedo leer sin problema.»
+- ¿La usaría en el potrero? «Sí, porque es bastante cómoda para escribir.»
+- ¿Qué le cambiaría? «Una barra de búsqueda para escribir el número de la chapeta en la mayoría de los apartados de
+  producción de carne y leche.»
+
+**Observaciones.**
+
+1. **Los toques fueron unas dos veces la referencia del diseño** (8, 13 y 16 frente a unos 3, 7 y 8). Ningún registro
+   necesitó texto libre (solo números y selecciones) y los tres se completaron sin ayuda, por lo que se aprueba CP-53
+   con observación: los toques de más se fueron en **ubicar el animal** en pantallas que no tienen buscador (la ronda y
+   la producción de carne) y en un **camino equivocado** (el acceso Medicamentos), no en el registro mismo. Se atienden
+   con las mejoras pedidas por el propietario (sección siguiente).
+2. Según el servidor, la tarea 1 se registró a las 20:04 y las tareas 2 y 3 a las 23:12 y 23:16 de la misma jornada.
+3. La hoja se imprimirá para la firma del propietario.
+
+**Mejoras pedidas por el propietario**, implementadas el 2026-10-26 como cambios de presentación y navegación, sin
+cambiar reglas (documentos técnicos 15, 18, 22 y 34; PU-16.8 y PU-19.6; 968 de 968 automáticas). Además, el título de
+cada pantalla ya no parte una palabra larga («Medicamen-tos» en un teléfono de 375 px): reduce la letra hasta que
+quepa.
+
+- Buscador por número de chapeta en la **ronda de ordeño** y en la **producción de carne**, y por nombre en
+  **Medicamentos**.
+- En **Medicamentos**, un botón **«Aplicar medicamento a un animal»** que lleve a Animales con la guía «Busque y
+  seleccione el animal al que desea aplicar algún medicamento», para registrar el evento desde su ficha sin crear otro
+  módulo.
+
 ## R7 · Conectividad limitada (paso 6.4)
 
 Sesión B del [documento de casos](casos-de-prueba.md), sección 14, con dos equipos: el trabajador (Daniel Ramos) en
@@ -379,4 +435,3 @@ está cubierto por PE-32 (chapeta en dos teléfonos), PI-03 (permisos en el serv
 
 **La sesión B queda completa: los cuatro escenarios aprobados. Con PE-32, PI-03, CP-02 y CP-07, los siete escenarios
 de la Tabla 34 quedan verificados.**
-

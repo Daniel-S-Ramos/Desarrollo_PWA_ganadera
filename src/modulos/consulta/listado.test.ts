@@ -3,7 +3,7 @@ import { db } from '../../datos/db';
 import { crear } from '../../datos/repositorio';
 import { uuidv7 } from '../../datos/uuidv7';
 import type { DatosNuevos } from '../../dominio/tipos';
-import { buscar, cargarFotoDeAnimal, cargarListado, compararChapetas, contarEstados, elegirFoto, type AnimalListado } from './listado';
+import { buscar, cargarFotoDeAnimal, filtrarPorChapeta, cargarListado, compararChapetas, contarEstados, elegirFoto, type AnimalListado } from './listado';
 
 /**
  * PU-16 · Listado (parte 2: búsqueda, filtro y foto de cada fila).
@@ -198,5 +198,19 @@ describe('PU-16 · 7. Cuántos animales hay en cada estado (2026-10-24)', () => 
     expect(contarEstados(hato)).toEqual({ activos: 3, retirados: 2, todos: 5 });
     for (const filtro of ['activos', 'retirados', 'todos'] as const) expect(buscar(hato, '', filtro).animales).toHaveLength(contarEstados(hato)[filtro]);
     expect(contarEstados([])).toEqual({ activos: 0, retirados: 0, todos: 0 });
+  });
+});
+
+describe('PU-16 · 8. Buscador por chapeta de la ronda y la producción de carne (sesión C, 2026-10-26)', () => {
+  const vacas = ['201', '207', '210', '2', 'A20'].map((codigo_chapeta) => ({ codigo_chapeta }));
+  it('por el inicio de la chapeta, con la misma regla del listado y sin cambiar el orden', () => {
+    expect(filtrarPorChapeta(vacas, '20').map((v) => v.codigo_chapeta)).toEqual(['201', '207']);
+    expect(filtrarPorChapeta(vacas, '0207').map((v) => v.codigo_chapeta)).toEqual(['207']);
+    expect(filtrarPorChapeta(vacas, 'a2').map((v) => v.codigo_chapeta)).toEqual(['A20']);
+    expect(filtrarPorChapeta(vacas, '99')).toEqual([]);
+  });
+
+  it('sin texto, todas', () => {
+    expect(filtrarPorChapeta(vacas, '  ')).toHaveLength(5);
   });
 });

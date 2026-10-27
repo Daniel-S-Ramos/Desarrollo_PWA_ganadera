@@ -132,10 +132,10 @@ conexión) y la marca por registro de HU-07.3; y ejecutar a mano los casos pendi
 | 6.0c | Producción de carne: por mes, ciclo completo hasta 500 kg, tarjeta «Producción» del inicio (pedido del autor, documento técnico 34) | ✅ |
 | 6.1 | Conjunto de datos simulados con el volumen de la Ganadería JR | ✅ |
 | 6.2 | Documento de casos de prueba | ✅ |
-| 6.3 | Pruebas funcionales de flujos completos | ⬜ |
+| 6.3 | Pruebas funcionales de flujos completos | ✅ |
 | 6.4 | Verificación en conectividad limitada | ✅ |
 | 6.5 | Despliegue del prototipo en un alojamiento con HTTPS (adelantado al paso 2.2b; aquí queda la versión final) | ⬜ |
-| 6.6 | Matriz de trazabilidad entre requerimientos y pruebas | 🔄 |
+| 6.6 | Matriz de trazabilidad entre requerimientos y pruebas | ✅ |
 | 6.7 | Insumos para el capítulo 4 del documento | ⬜ |
 
 ### Ruta de cierre (revisión del documento contra el desarrollo, 2026-10-24)
@@ -158,9 +158,9 @@ Se cierran en este orden; al terminar uno se marca aquí y en la tabla de arriba
 | R3 | Parámetros de la Tabla 30 sin valor | El propietario los definió el 2026-10-24: **ganancia diaria esperada de 0,5 a 0,8 kg/día** (se carga el mínimo, 0,5) y **variación atípica de la leche desde 35 %** (antes 25 % fijo en el código). Parámetros `ganancia_diaria_esperada` y `variacion_atipica_leche`, migración `20261024000200_parametros_del_propietario.sql`, PI-01 verificación 21. PI-01: 21 de 21; PI-03 (regresión): 11 de 11 | Tabla 30 · 3.10.4.6 | ✅ 2026-10-24 |
 | R4 | Datos simulados (6.1) | Generador y SQL listos (`supabase/datos-simulados/`, opción A: en el proyecto de la finca, que se vacía otra vez en R9). Cargado el 2026-10-24: 70 animales, 4.633 ordeños, 175 pesajes, 280 eventos (documentado en `docs/pruebas/cierre.md`) | 1.6.3.8 | ✅ 2026-10-24 |
 | R5 | Documento de casos de prueba (6.2) | `docs/pruebas/casos-de-prueba.md`: 56 casos (CP-01 a CP-56) con condiciones, datos del conjunto simulado, pasos y resultado esperado, y su relación con los 47 requerimientos. Aprobado por el autor | 1.6.3.7 | ✅ 2026-10-25 |
-| R6 | Pruebas funcionales de flujos completos (6.3) | Bloque 1 (acceso, CP-01 a CP-07) aprobado. Los casos sin cambios de lógica se cubren con su PE anterior (`casos-de-prueba.md`, sección 17, decisión del autor del 2026-10-25). Sesión A (consultas con el volumen de la finca) aprobada, 13 de 13, con tres hallazgos corregidos. Falta la **sesión C** (CP-53 pasos y CP-54, sesión de aprendizaje del RNF-02) | 1.6.3.9 · RNF-02 | 🔄 |
+| R6 | Pruebas funcionales de flujos completos (6.3) | Bloque 1 (acceso, CP-01 a CP-07) aprobado. Los casos sin cambios de lógica se cubren con su PE anterior (`casos-de-prueba.md`, sección 17, decisión del autor del 2026-10-25). Sesión A (consultas con el volumen de la finca) aprobada, 13 de 13, con tres hallazgos corregidos. Sesión C con el propietario aprobada el 2026-10-26 (CP-53 pasos y CP-54, sesión de aprendizaje del RNF-02) | 1.6.3.9 · RNF-02 | ✅ 2026-10-26 |
 | R7 | Conectividad limitada (6.4) | **Sesión B** con dos teléfonos: CP-44 (mismo animal), CP-45 (mismo ordeño), CP-47 (conexión cortada a mitad del envío) y CP-48 (teléfono dañado con pendientes); lo demás de la Tabla 34 ya está cubierto (PE-32, PI-03, CP-02, CP-07). Mantener activo Supabase durante la evaluación | 1.6.3.10 · Tabla 34 | ✅ 2026-10-25 · CP-44, 45, 47 y 48 aprobados |
-| R8 | Matriz de trazabilidad (6.6) | [`docs/pruebas/matriz-de-trazabilidad.md`](docs/pruebas/matriz-de-trazabilidad.md): los 47 requerimientos con sus pruebas (964 automáticas, PI-01 a PI-05, PE-01 a PE-40, CP de cierre). **44 de 47 cumplidos (93,6 %)**: los 32 RF; pendientes RNF-02, RNF-03 y RNF-14, que dependen de la sesión C. Se actualiza al hacerla | 1.6.3.11 | 🔄 2026-10-25 |
+| R8 | Matriz de trazabilidad (6.6) | [`docs/pruebas/matriz-de-trazabilidad.md`](docs/pruebas/matriz-de-trazabilidad.md): los 47 requerimientos con sus pruebas. **47 de 47 cumplidos (100 %)** tras la sesión C (RNF-03 con observación) | 1.6.3.11 | ✅ 2026-10-26 |
 | R9 | Despliegue final (6.5) | Repetir PI-01 a PI-04 como regresión; borrar del servicio Z900–Z999 con sus registros, los medicamentos de prueba («Prueba…», «Otro mas», «pp prueba») y la cuenta `pruebas@ganaderiajr.test`; PR de `cierre` a `main`; publicar en producción; etiqueta **v1.0** | Pendientes de diseño 6.x | ⬜ |
 | R10 | Insumos del capítulo 4 (6.7) | Resultados e informe de pruebas, hallazgos (500 kg frente a 600 kg; ayuda de contraseña; conflictos de chapeta; unicidades vigentes) y limitaciones (revocar un acceso no surte efecto sin conexión; iPhone sin WebP) | 1.6.3.11 · capítulo 4 | ⬜ |
 | R11 | Ajustes al documento de tesis | Las precisiones de «Pendientes para el documento» (más abajo), para que documento y aplicación coincidan | Desarrollo | ⬜ |

@@ -191,3 +191,11 @@ del propietario con ✓.
 
 - Documento de trabajo de grado: RF-10, RF-27, RF-28, RF-31; CU-06 (Tabla A6); HU-04 (Tabla B4);
   apartados 3.8.6, 3.9.5 y 3.10.4.4; Tablas 24, 27, 30, 31 y 32.
+
+## Ajuste de la sesión C (2026-10-26): buscador de vacas
+
+En la sesión con el propietario (caso CP-54), encontrar la vaca 207 en la lista de la ronda le tomó varios toques.
+A su pedido, la tarjeta «Vacas en producción» tiene un **buscador por número de chapeta** sobre la lista, con la
+misma regla del listado de animales (los ceros a la izquierda y las minúsculas no cuentan; `filtrarPorChapeta` en
+`src/modulos/consulta/listado.ts`, PU-16.8). Al tocar una vaca, el buscador se limpia y la pantalla sube al
+formulario. El orden de la lista y las reglas de la ronda no cambian.

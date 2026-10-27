@@ -1,12 +1,12 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useRef, useState, type ReactNode } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { NOMBRE_DESTINO } from '../../dominio/destino';
 import { describirEdad } from '../../dominio/edad';
 import type { Destino } from '../../dominio/tipos';
 import { fechaDelPredio } from '../../dominio/fechas';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
-import { IconoLupa } from '../../ui/componentes/Iconos';
+import { Buscador } from '../../ui/componentes/Buscador';
 import {
   Camion,
   Cantina,
@@ -73,6 +73,9 @@ const NOMBRE_FILTRO: Record<FiltroEstado, [string, string]> = {
  */
 export function PantallaListado({ puedeRegistrar, informacionIncompleta = false }: { puedeRegistrar: boolean; informacionIncompleta?: boolean }) {
   const navegar = useNavigate();
+  const [parametros] = useSearchParams();
+  const [guiaMedicamento, setGuiaMedicamento] = useState(() => parametros.get('guia') === 'medicamento');
+  const buscadorRef = useRef<HTMLInputElement>(null);
   const [texto, setTexto] = useState('');
   const [filtro, setFiltro] = useState<FiltroEstado>('activos');
   const [filtroDestino, setFiltroDestino] = useState<FiltroDestino>('todos');
@@ -97,8 +100,30 @@ export function PantallaListado({ puedeRegistrar, informacionIncompleta = false 
       <TituloPantalla dibujo={<CaraVaca tamano={40} conFondo={false} />}>Animales</TituloPantalla>
       <p className="texto-secundario listado__subtitulo">Busque y consulte sus animales registrados.</p>
 
+      {guiaMedicamento && (
+        // Llegada desde Medicamentos → «Aplicar medicamento a un animal» (pedido del propietario en la sesión C):
+        // el evento sanitario se registra desde la ficha del animal, así que se guía hasta allí. Va primero y, mientras
+        // está, no se ofrece registrar un animal, para que no distraiga.
+        <div className="aviso aviso--en-contenido aviso--neutro guia-medicamento" role="status">
+          <p>
+            <strong>Busque y seleccione el animal al que desea aplicar algún medicamento.</strong>
+          </p>
+          <p className="aviso__detalle">En su ficha, toque «Registrar evento».</p>
+          <button
+            type="button"
+            className="boton boton--principal boton--ancho"
+            onClick={() => {
+              setGuiaMedicamento(false);
+              buscadorRef.current?.focus();
+            }}
+          >
+            Continuar
+          </button>
+        </div>
+      )}
+
       {/* Registrar un animal, arriba: lo primero que se busca al llegar con un animal nuevo (pedido del autor). */}
-      {puedeRegistrar && (
+      {puedeRegistrar && !guiaMedicamento && (
         <Link className="boton boton--principal boton--ancho boton--ilustrado listado__registrar" to="/animales/nuevo">
           <span className="boton__ilustracion">
             <CaraVaca tamano={34} conFondo={false} />
@@ -112,24 +137,7 @@ export function PantallaListado({ puedeRegistrar, informacionIncompleta = false 
         <p className="aviso aviso--atencion aviso--en-contenido">La información del predio todavía está llegando a este teléfono.</p>
       )}
 
-      <label className="campo">
-        <span className="solo-lector">Buscar por chapeta</span>
-        <span className="campo__grupo campo__grupo--busqueda">
-          <span className="campo__icono campo__icono--claro" aria-hidden="true">
-            <IconoLupa />
-          </span>
-          <input
-            className="campo__chapeta"
-            type="search"
-            autoCapitalize="characters"
-            autoComplete="off"
-            spellCheck={false}
-            placeholder="Número de chapeta"
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-          />
-        </span>
-      </label>
+      <Buscador valor={texto} alCambiar={setTexto} etiqueta="Buscar por chapeta" marcador="Número de chapeta" campoRef={buscadorRef} />
 
       <div className="filtro-estados" role="group" aria-label="Estado">
         {ESTADOS.map((e) => {

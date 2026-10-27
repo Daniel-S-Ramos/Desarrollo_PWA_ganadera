@@ -57,6 +57,16 @@ export interface ResultadoBusqueda {
 }
 
 /**
+ * Los elementos cuya chapeta empieza por lo escrito, con la misma regla del listado (ceros a la izquierda y
+ * minúsculas no cuentan). Sin texto, todos. Para la ronda de ordeño y la producción de carne (pedido del
+ * propietario en la sesión C, 2026-10-26); el orden de la lista no cambia.
+ */
+export function filtrarPorChapeta<T extends { codigo_chapeta: string }>(lista: readonly T[], texto: string): T[] {
+  const buscada = normalizarChapeta(texto);
+  return buscada === '' ? [...lista] : lista.filter((x) => x.codigo_chapeta.startsWith(buscada));
+}
+
+/**
  * Filtra por estado, por destino (activos y todos) o por motivo de salida (retirados), y por el inicio de
  * la chapeta; la coincidencia exacta va primero y el resto en orden numérico (sección 2).
  */

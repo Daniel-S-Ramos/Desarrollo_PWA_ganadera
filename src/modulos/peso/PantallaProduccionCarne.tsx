@@ -4,7 +4,9 @@ import { Link } from 'react-router';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { formatearKg } from '../../dominio/peso';
 import { Filete } from '../../ui/componentes/Ilustraciones';
+import { Buscador } from '../../ui/componentes/Buscador';
 import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { filtrarPorChapeta } from '../consulta/listado';
 import { cargarCicloDeCeba, cargarProduccionDelMes, describirEstimacion, type AnimalCiclo, type AnimalDelMes } from './produccionCarne';
 
 /** «+24», «−3», «0»: con el signo menos tipográfico. */
@@ -27,6 +29,8 @@ function fechaCorta(fecha: string | null): string {
  */
 export function PantallaProduccionCarne() {
   const [vista, setVista] = useState<'mes' | 'ciclo'>('mes');
+  // Para encontrar un animal sin recorrer la lista (pedido del propietario en la sesión C, 2026-10-26).
+  const [texto, setTexto] = useState('');
   return (
     <div className="formulario produccion">
       <Link className="enlace" to="/">
@@ -41,13 +45,14 @@ export function PantallaProduccionCarne() {
           Ciclo completo
         </button>
       </div>
-      {vista === 'mes' ? <VistaMes /> : <VistaCiclo />}
+      <Buscador valor={texto} alCambiar={setTexto} etiqueta="Buscar un animal por chapeta" marcador="Número de chapeta" />
+      {vista === 'mes' ? <VistaMes texto={texto} /> : <VistaCiclo texto={texto} />}
     </div>
   );
 }
 
 /** Un mes a la vez, como lo pide el apartado 2.2.7 (secciones 3 a 6). */
-function VistaMes() {
+function VistaMes({ texto }: { texto: string }) {
   const [hoy] = useState(() => fechaDelPredio());
   const [desplazamiento, setDesplazamiento] = useState(0);
   const [orden, setOrden] = useState<'mayor' | 'menor'>('mayor');
@@ -55,6 +60,9 @@ function VistaMes() {
   const anterior = () => setDesplazamiento((d) => d - 1);
   const maximo = Math.max(0, ...(mes?.conTramo.map((a) => a.tramo!.gananciaDiaria) ?? []));
   const total = mes ? mes.conTramo.length + mes.sinTramo.length : 0;
+  const conTramo = mes ? filtrarPorChapeta(mes.conTramo, texto) : [];
+  const sinTramo = mes ? filtrarPorChapeta(mes.sinTramo, texto) : [];
+  const sinCoincidencias = texto.trim() !== '' && total > 0 && conTramo.length + sinTramo.length === 0;
 
   return (
     <>
@@ -97,19 +105,20 @@ function VistaMes() {
                   {orden === 'mayor' ? 'De menor a mayor' : 'De mayor a menor'}
                 </button>
               </section>
+              {sinCoincidencias && <p className="texto-secundario">Ningún animal de ceba de este mes tiene una chapeta que empiece así.</p>}
               <ul className="produccion__filas">
-                {mes.conTramo.map((a) => (
+                {conTramo.map((a) => (
                   <FilaMes key={a.id} animal={a} maximo={maximo} meta={mes.meta} />
                 ))}
               </ul>
             </>
           )}
 
-          {mes.sinTramo.length > 0 && (
+          {sinTramo.length > 0 && (
             <section className="tarjeta">
               <h2>Sin pesaje este mes</h2>
               <ul className="produccion__filas">
-                {mes.sinTramo.map((a) => (
+                {sinTramo.map((a) => (
                   <FilaMes key={a.id} animal={a} maximo={maximo} meta={mes.meta} />
                 ))}
               </ul>
@@ -175,7 +184,7 @@ function FilaMes({ animal: a, maximo, meta }: { animal: AnimalDelMes; maximo: nu
 }
 
 /** El lote de ceba de hoy, de la llegada al predio al peso de finalización (sección 6 bis). */
-function VistaCiclo() {
+function VistaCiclo({ texto }: { texto: string }) {
   const [hoy] = useState(() => fechaDelPredio());
   const ciclo = useLiveQuery(() => cargarCicloDeCeba(hoy), [hoy]);
   if (!ciclo) return <p className="texto-secundario">Cargando…</p>;
@@ -204,7 +213,7 @@ function VistaCiclo() {
         )}
       </section>
       <ul className="produccion__filas">
-        {ciclo.animales.map((a) => (
+        {filtrarPorChapeta(ciclo.animales, texto).map((a) => (
           <FilaCiclo key={a.id} animal={a} pesoFinal={ciclo.pesoFinal} />
         ))}
       </ul>

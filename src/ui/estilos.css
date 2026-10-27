@@ -2523,7 +2523,8 @@ h3,
   font-weight: 900;
   font-size: clamp(1.55rem, 7.2vw, 2.25rem);
   line-height: 1.1;
-  overflow-wrap: anywhere;
+  /* Las palabras no se parten: si una no cabe, TituloPantalla reduce la letra (sesión C, 2026-10-26). */
+  overflow-wrap: normal;
   /* El nombre centrado en la placa (pedido del autor, 2026-10-24). */
   flex: 1;
   text-align: center;
@@ -2779,4 +2780,15 @@ h3,
   background: var(--verde-oscuro);
   color: var(--blanco);
   font-weight: 700;
+}
+
+/* Mejoras de la sesión C (2026-10-26): Medicamentos con dos acciones y la guía que llega a Animales. */
+.medicamentos__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 12px 0;
+}
+.guia-medicamento .boton {
+  margin-top: 12px;
 }

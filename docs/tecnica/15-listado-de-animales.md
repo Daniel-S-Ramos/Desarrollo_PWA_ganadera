@@ -229,3 +229,11 @@ no registrada y registrarla desde ahí; repetir sin señal.
 
 - Documento de trabajo de grado: RF-05, RF-06, RF-28; CU-03 (Tabla A3); HU-02 (Tabla B2); apartados
   3.8.10, 3.10.4.2 – 3.10.4.4 y 3.11.1; Tablas 22, 25, 27 y 28.
+
+## Ajuste de la sesión C (2026-10-26): guía para aplicar un medicamento
+
+Con `?guia=medicamento` (desde Medicamentos → «Aplicar medicamento a un animal»), el listado muestra primero la guía
+«Busque y seleccione el animal al que desea aplicar algún medicamento. En su ficha, toque "Registrar evento"», con el
+botón **Continuar**, que la cierra y pone el cursor en el buscador. Mientras la guía está, no se ofrece «Registrar
+animal», para que no distraiga. El buscador del listado pasó a ser el componente `Buscador`
+(`src/ui/componentes/Buscador.tsx`), que usan también la ronda, la producción de carne y Medicamentos.

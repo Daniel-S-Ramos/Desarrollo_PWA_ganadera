@@ -282,3 +282,10 @@ ni puede abrir la ruta.
 
 - Documento de trabajo de grado: apartado 2.2.7; RF-13, RF-14, RF-28; CU-08, CU-09; HU-05; apartado 3.11.4;
   Tabla 27; Tabla 30; simulación del capítulo 3.
+
+## Ajuste de la sesión C (2026-10-26): buscador de animales
+
+En la sesión con el propietario, el novillo 435 (sin pesaje en el mes) estaba al final de la lista y le costó
+encontrarlo. A su pedido, debajo de «Por mes / Ciclo completo» hay un **buscador por número de chapeta** que filtra
+las listas de las dos vistas (con y sin pesaje en el mes, y el ciclo). El resumen del lote sigue contando a todos
+los animales; solo cambia lo que se lista. Misma regla del listado de animales (PU-16.8).

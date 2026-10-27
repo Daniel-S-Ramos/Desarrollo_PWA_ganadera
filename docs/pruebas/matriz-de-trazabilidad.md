@@ -4,7 +4,7 @@ Paso 6.6 del [plan](../../PLAN.md) (R8 de la ruta de cierre), apartado 1.6.3.11:
 ejecutadas con los requerimientos definidos en la primera fase, con el fin de determinar el grado de cumplimiento
 alcanzado por el prototipo». Es un entregable de la Tabla 3.
 
-**Responsable:** Daniel Santiago Ramos Pintor · **Corte:** 2026-10-25 (commit `5173101`)
+**Responsable:** Daniel Santiago Ramos Pintor · **Corte:** 2026-10-26 (con la sesión C)
 
 ## 1. Fuentes
 
@@ -13,10 +13,10 @@ alcanzado por el prototipo». Es un entregable de la Tabla 3.
 | Unitarias, automáticas | **964** en 36 grupos (PU-01 a PU-36) | 964 de 964 aprobadas | [Informe del 2026-10-25](resultados/2026-10-25_021625_5173101.md) |
 | Integración, contra Supabase | PI-01 (esquema, 21 verificaciones), PI-02 (gancho del token), PI-03 (políticas, 11), PI-04 (sincronización de extremo a extremo), PI-05 (fotografías) | Todas aprobadas | Documentos de cada iteración y [`cierre.md`](cierre.md) |
 | Manuales, en el navegador real | PE-01 a PE-40, una por paso del desarrollo | Todas aprobadas | [`fase-0-entorno.md`](fase-0-entorno.md), [`iteracion-1.md`](iteracion-1.md) a [`iteracion-5.md`](iteracion-5.md), [`cierre.md`](cierre.md) |
-| Funcionales y de conectividad, con los datos simulados | CP-01 a CP-56 del [documento de casos](casos-de-prueba.md): 24 ejecutados en la evaluación y el resto cubiertos por su PE (sección 17) | 24 de 24 ejecutados aprobados; 2 por ejecutar (sesión C) | [`cierre.md`](cierre.md), R6 y R7 |
+| Funcionales y de conectividad, con los datos simulados | CP-01 a CP-56 del [documento de casos](casos-de-prueba.md): 26 ejecutados en la evaluación (incluida la sesión C con el propietario) y el resto cubiertos por su PE (sección 17) | 26 de 26 aprobados | [`cierre.md`](cierre.md), R6 y R7 |
 
 Notación de la columna CP: **✅** ejecutado y aprobado en la evaluación; *cub.* cubierto por una PE anterior sin cambios
-de lógica (casos de prueba, sección 17); **⬜** por ejecutar.
+de lógica (casos de prueba, sección 17).
 
 ## 2. Requerimientos funcionales
 
@@ -60,8 +60,8 @@ de lógica (casos de prueba, sección 17); **⬜** por ejecutar.
 | Req. | Prioridad | Qué exige | Evidencia | Estado |
 |---|---|---|---|---|
 | RNF-01 | Imprescindible | Controles para el campo | PU-01 (18, contraste ≥ 7:1 de la paleta); controles de 64 px (3.10.4.2) revisados pantalla por pantalla en el rediseño; CP-52 *cub.* | ✅ Cumplido |
-| RNF-02 | Importante | Registrar tras una sola sesión de acompañamiento | CP-54 (sesión C) | ⬜ **Pendiente** de la sesión con un usuario de la finca |
-| RNF-03 | Imprescindible | Pocos pasos, listas y valores predeterminados | Por diseño: la ronda pide solo los litros y pasa sola a la siguiente vaca (PE-27, CP-45); fecha de hoy predeterminada en todos los registros; catálogos como listas (PE-23, PE-25). Falta la medición de toques de CP-53 | ⬜ **Pendiente** de la medición (sesión C) |
+| RNF-02 | Importante | Registrar tras una sola sesión de acompañamiento | CP-54 ✅: el propietario, sin experiencia previa en aplicaciones de gestión, hizo las tres tareas sin ayuda tras una sesión de unos 2 minutos de demostración (sesión C, 2026-10-26) | ✅ Cumplido |
+| RNF-03 | Imprescindible | Pocos pasos, listas y valores predeterminados | Por diseño: la ronda pide solo los litros y pasa sola a la siguiente vaca (PE-27, CP-45); fecha de hoy predeterminada; catálogos como listas (PE-23, PE-25). CP-53 ✅ con observación: ningún registro necesitó texto libre; los toques (8, 13 y 16) fueron unas dos veces la referencia por ubicar el animal en pantallas sin buscador, que se agregó a pedido del propietario | ✅ Cumplido con observación |
 | RNF-04 | Imprescindible | No perder lo registrado sin conexión | PU-05 (escritura y cola en una transacción), PU-13 (14); PE-16, PE-22; CP-07 ✅, CP-43 *cub.* | ✅ Cumplido |
 | RNF-05 | Importante | Restaurar ante la pérdida del dispositivo | PU-11, PU-18 (14); PI-04; PE-21; CP-48 ✅ | ✅ Cumplido |
 | RNF-06 | Imprescindible | Ningún registro se modifica ni elimina | PI-01 v2, PI-03 v11 (ni el propietario modifica ni elimina); PU-27; CP-41 ✅ | ✅ Cumplido |
@@ -72,7 +72,7 @@ de lógica (casos de prueba, sección 17); **⬜** por ejecutar.
 | RNF-11 | Imprescindible | Instalable sin tienda | PE-08, PE-11; CP-50 *cub.* | ✅ Cumplido |
 | RNF-12 | Importante | Fotos comprimidas | PU-15; PI-05; PE-18; CP-55 *cub.* | ✅ Cumplido |
 | RNF-13 | Importante | Módulos independientes | PE-02 (estructura por capas, Tabla 20); `src/modulos/` por ámbito funcional; CP-56 *cub.* | ✅ Cumplido |
-| RNF-14 | Imprescindible | Cubrir todos los imprescindibles | Los 18 RF imprescindibles cumplidos; de los 10 RNF imprescindibles, 9 cumplidos y RNF-03 pendiente de medición | ⬜ **Pendiente** de RNF-03 |
+| RNF-14 | Imprescindible | Cubrir todos los imprescindibles | Los 18 RF imprescindibles y los 10 RNF imprescindibles cumplidos | ✅ Cumplido |
 | RNF-15 | Imprescindible | Almacenamiento persistente y aviso si se niega | PU-06 (19); PE-12, PE-18 (Android lo concede al instalar); PE-39 obs. 1 (el aviso en Safari) | ✅ Cumplido |
 
 ## 4. Grado de cumplimiento
@@ -80,18 +80,19 @@ de lógica (casos de prueba, sección 17); **⬜** por ejecutar.
 | Grupo | Total | Cumplidos | Pendientes | Grado |
 |---|---|---|---|---|
 | Requerimientos funcionales | 32 | **32** | 0 | **100 %** |
-| Requerimientos no funcionales | 15 | 12 | 3 (RNF-02, RNF-03, RNF-14) | 80 % |
-| **Todos** | **47** | **44** | **3** | **93,6 %** |
+| Requerimientos no funcionales | 15 | **15** | 0 | **100 %** |
+| **Todos** | **47** | **47** | **0** | **100 %** |
 
 | Prioridad (Tabla 10) | Total | Cumplidos | Pendientes |
 |---|---|---|---|
-| Imprescindibles | 28 | 26 | RNF-03 y RNF-14 (que depende de RNF-03) |
-| Importantes | 16 | 15 | RNF-02 |
+| Imprescindibles | 28 | 28 | — |
+| Importantes | 16 | 16 | — |
 | Deseables | 3 | 3 | — |
 
-Los tres pendientes dependen de **una sola actividad**: la sesión C (CP-53 y CP-54) con una persona de la finca sin
-experiencia en la aplicación. Ninguno es una función sin construir: RNF-02 y RNF-03 son cualidades de uso que el
-documento exige evidenciar con un usuario real. Al aprobarse la sesión, el grado pasa a **47 de 47 (100 %)**.
+Los tres requerimientos que quedaron pendientes al primer corte (RNF-02, RNF-03 y RNF-14) se cumplieron con la sesión C
+del 2026-10-26: el propietario, sin experiencia en aplicaciones de gestión, registró un ordeño, un pesaje y un evento
+sanitario sin ayuda tras una sola sesión de acompañamiento, sin escribir texto libre. RNF-03 queda con una observación:
+los toques fueron unas dos veces la referencia por ubicar al animal, lo que motivó agregar buscadores.
 
 ## 5. Hallazgos de la evaluación
 
@@ -104,6 +105,7 @@ Defectos encontrados al ejecutar los casos, todos corregidos y con su prueba:
 | CP-27 | Fechas del ciclo de ceba sin el año: una compra del año anterior parecía posterior a un pesaje | El año se muestra cuando no es el actual |
 | Sesión A | El número del animal en Correcciones recientes y en la producción por vaca no iba en la chapeta | Chapeta amarilla en ambos |
 | Sesión B | Pedido del autor: el aviso del medicamento debía decir la dosis de la vez anterior | Agregada como dato del historial (Tabla 30), PU-22.8 |
+| Sesión C | El propietario tardó en ubicar al animal en la ronda y en la producción de carne, y buscó aplicar el medicamento desde el acceso Medicamentos | Buscadores por chapeta (y por nombre en Medicamentos) y botón «Aplicar medicamento a un animal» que lleva a Animales con una guía |
 
 ## 6. Relación con el documento
 

@@ -8,6 +8,8 @@ import { EnlaceCorregir } from '../correcciones/MarcaCorreccion';
 import { cargarRonda, promedioDe, puedeReemplazar, registrarOrdeno, siguienteVaca, type VacaRonda } from './ronda';
 import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
 import { Cantina } from '../../ui/componentes/Ilustraciones';
+import { Buscador } from '../../ui/componentes/Buscador';
+import { filtrarPorChapeta } from '../consulta/listado';
 
 /**
  * Ronda de ordeño (CU-06, HU-04). Especificación: docs/tecnica/22-ronda-de-ordeno.md, secciones 4 a 7.
@@ -20,6 +22,7 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
   const [parametros] = useSearchParams();
   const [elegida, setElegida] = useState<string | null>(() => parametros.get('vaca'));
   const [ultimo, setUltimo] = useState<string | null>(null);
+  const [texto, setTexto] = useState('');
   const vacas = useLiveQuery(() => cargarRonda(fecha), [fecha]);
 
   if (!vacas) return <p className="texto-secundario">Cargando…</p>;
@@ -42,6 +45,7 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
 
   const actual = vacas.find((v) => v.animal_id === elegida) ?? siguienteVaca(vacas);
   const registradas = vacas.filter((v) => v.existente).length;
+  const visibles = filtrarPorChapeta(vacas, texto);
 
   return (
     <div className="formulario ronda">
@@ -93,8 +97,11 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
         <h2>
           Vacas en producción · {registradas} de {vacas.length}
         </h2>
+        {/* Para encontrar una vaca sin recorrer la lista (pedido del propietario en la sesión C). */}
+        <Buscador valor={texto} alCambiar={setTexto} etiqueta="Buscar una vaca por chapeta" marcador="Número de chapeta" />
+        {visibles.length === 0 && <p className="texto-secundario">Ninguna vaca en producción tiene una chapeta que empiece así.</p>}
         <ul className="ronda__lista">
-          {vacas.map((v) => (
+          {visibles.map((v) => (
             <li key={v.animal_id}>
               <button
                 type="button"
@@ -103,6 +110,9 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
                 onClick={() => {
                   setElegida(v.animal_id);
                   setUltimo(null);
+                  setTexto('');
+                  // El formulario de la vaca está arriba de la lista.
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >
                 <span className="ronda__chapeta chapeta">{v.codigo_chapeta}</span>

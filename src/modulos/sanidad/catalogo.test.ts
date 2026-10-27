@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../datos/db';
 import { leerParametro } from '../../datos/parametros';
 import { uuidv7 } from '../../datos/uuidv7';
-import { compararMedicamentos, normalizarNombre, sonParecidos, validarMedicamento, type FormularioMedicamento } from '../../dominio/medicamentos';
+import { compararMedicamentos, filtrarPorNombre, normalizarNombre, sonParecidos, validarMedicamento, type FormularioMedicamento } from '../../dominio/medicamentos';
 import type { Identidad } from '../../sesion/token';
 import { buscarCoincidencias, crearMedicamento, listarCatalogo } from './catalogo';
 
@@ -156,5 +156,20 @@ describe('PU-19 · 7. Permisos (Tabla 27)', () => {
     const r = await crearMedicamento(formulario({ nombre: 'Prueba vitamina' , tipo: 'vitamina' }), TRABAJADOR);
     expect(r.ok && r.medicamento).toMatchObject({ autor_id: TRABAJADOR.usuario_id, estado_sync: 'pendiente' });
     expect((await crearMedicamento(formulario(), PROPIETARIO)).ok).toBe(true);
+  });
+});
+
+describe('PU-19 · 6. Buscador por nombre (sesión C, 2026-10-26)', () => {
+  const catalogo = ['Ivermectina 1%', 'Edo Albendazol 25% Co', 'Complejo B de All Vet', 'Oxitetraciclina'].map((nombre) => ({ nombre }));
+  it('por cualquier parte del nombre, sin mayúsculas, tildes ni espacios repetidos', () => {
+    expect(filtrarPorNombre(catalogo, 'IVER').map((m) => m.nombre)).toEqual(['Ivermectina 1%']);
+    expect(filtrarPorNombre(catalogo, 'albendázol').map((m) => m.nombre)).toEqual(['Edo Albendazol 25% Co']);
+    expect(filtrarPorNombre(catalogo, 'all   vet').map((m) => m.nombre)).toEqual(['Complejo B de All Vet']);
+    expect(filtrarPorNombre(catalogo, 'ina').map((m) => m.nombre)).toEqual(['Ivermectina 1%', 'Oxitetraciclina']);
+    expect(filtrarPorNombre(catalogo, 'penicilina')).toEqual([]);
+  });
+
+  it('sin texto, todos', () => {
+    expect(filtrarPorNombre(catalogo, '')).toHaveLength(4);
   });
 });
