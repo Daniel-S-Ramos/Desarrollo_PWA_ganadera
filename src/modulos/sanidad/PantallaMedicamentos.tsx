@@ -5,10 +5,13 @@ import { TIPOS_MEDICAMENTO } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
 import { listarCatalogo } from './catalogo';
-import { NOMBRE_TIPO } from '../../dominio/medicamentos';
+import { filtrarPorNombre, NOMBRE_TIPO } from '../../dominio/medicamentos';
+import { Buscador } from '../../ui/componentes/Buscador';
 import { FormularioMedicamento } from './FormularioMedicamento';
 import { EnlaceCorregir } from '../correcciones/MarcaCorreccion';
 import { ResolverConflictoMedicamento } from '../correcciones/ResolverConflicto';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { CaraVaca, JeringaFrasco } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Catálogo de medicamentos del predio (docs/tecnica/18-catalogo-de-medicamentos.md, sección 6).
@@ -18,15 +21,17 @@ export function PantallaMedicamentos({ identidad, puedeAgregar }: { identidad: I
   const catalogo = useLiveQuery(() => listarCatalogo(), []);
   const [agregando, setAgregando] = useState(false);
   const [ultimo, setUltimo] = useState<string | null>(null);
+  const [texto, setTexto] = useState('');
 
   if (!catalogo) return <p className="texto-secundario">Cargando…</p>;
+  const visibles = filtrarPorNombre(catalogo, texto);
 
   return (
     <div className="listado">
       <Link className="enlace" to="/">
         ← Volver al inicio
       </Link>
-      <p className="titulo-seccion">Medicamentos</p>
+      <TituloPantalla dibujo={<JeringaFrasco tamano={34} />}>Medicamentos</TituloPantalla>
       <p className="texto-secundario">
         {catalogo.length === 1 ? '1 medicamento' : `${catalogo.length} medicamentos`} en el catálogo del predio.
       </p>
@@ -44,19 +49,39 @@ export function PantallaMedicamentos({ identidad, puedeAgregar }: { identidad: I
         />
       ) : (
         puedeAgregar && (
-          <button type="button" className="boton boton--principal boton--ancho" onClick={() => {
-              setUltimo(null);
-              setAgregando(true);
-            }}>
-            Agregar medicamento
-          </button>
+          <div className="medicamentos__acciones">
+            {/*
+              El propietario buscó aplicar un medicamento desde aquí (sesión C). El evento sanitario se registra en la
+              ficha del animal (CU-04), así que el botón lleva a Animales con una guía en lugar de duplicar el registro.
+            */}
+            <Link className="boton boton--principal boton--ancho boton--ilustrado boton--ilustrado-centrado" to="/animales?guia=medicamento">
+              {/* La cara de vaca de Animales: el botón lleva allá (pedido del autor, 2026-10-27). */}
+              <span className="boton__ilustracion">
+                <CaraVaca tamano={34} conFondo={false} />
+              </span>
+              <span className="boton__texto">Aplicar medicamento a un animal</span>
+            </Link>
+            <button
+              type="button"
+              className="boton boton--secundario boton--ancho"
+              onClick={() => {
+                setUltimo(null);
+                setAgregando(true);
+              }}
+            >
+              Agregar medicamento al catálogo
+            </button>
+          </div>
         )
       )}
 
       {catalogo.length === 0 && !agregando && <p>Todavía no hay medicamentos. Agregue los que se usan en el predio.</p>}
 
+      {catalogo.length > 0 && <Buscador valor={texto} alCambiar={setTexto} etiqueta="Buscar un medicamento" marcador="Nombre del medicamento" porChapeta={false} />}
+      {catalogo.length > 0 && visibles.length === 0 && <p className="texto-secundario">Ningún medicamento del catálogo se llama así.</p>}
+
       {TIPOS_MEDICAMENTO.map((tipo) => {
-        const delTipo = catalogo.filter((m) => m.tipo === tipo);
+        const delTipo = visibles.filter((m) => m.tipo === tipo);
         if (delTipo.length === 0) return null;
         return (
           <section key={tipo} className="tarjeta">

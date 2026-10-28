@@ -209,3 +209,46 @@ describe('PU-10 · 11. Sesión vencida', () => {
     expect((await operacionesPendientes())[0]?.intentos).toBe(0);
   });
 });
+
+describe('PU-10 · 12. Un solo ordeño vigente por vaca y día (documento técnico 32, sección 4)', () => {
+  const anulacion = (registroId: Uuid) => ({ id: uuidv7(), entidad_afectada: 'produccion_leche', registro_id: registroId, tipo: 'anulacion', motivo: 'animal_equivocado' });
+
+  it('frente a un anulado y uno vigente, el duplicado se convierte en corrección del vigente', async () => {
+    const vaca = servicio.sembrar('animal', { id: uuidv7(), codigo_chapeta: '012' });
+    const anulado = servicio.sembrar('produccion_leche', { id: uuidv7(), animal_id: vaca.id, fecha: '2026-10-08', litros: 4 });
+    servicio.sembrar('correccion', anulacion(anulado.id));
+    const vigente = servicio.sembrar('produccion_leche', { id: uuidv7(), animal_id: vaca.id, fecha: '2026-10-08', litros: 6.5 });
+    await crear('produccion_leche', { animal_id: vaca.id, fecha: '2026-10-08', litros: 7 }, TRABAJADOR);
+
+    await subir(servicio);
+
+    expect(servicio.filas('correccion').at(-1)).toMatchObject({ registro_id: vigente.id, campo: 'litros', valor_anterior: '6.5', valor_nuevo: '7' });
+    expect(await contarPendientes()).toBe(0);
+  });
+
+  it('un ordeño con los litros corregidos sigue vigente: el duplicado se convierte en corrección', async () => {
+    const vaca = servicio.sembrar('animal', { id: uuidv7(), codigo_chapeta: '012' });
+    const vigente = servicio.sembrar('produccion_leche', { id: uuidv7(), animal_id: vaca.id, fecha: '2026-10-08', litros: 6.5 });
+    servicio.sembrar('correccion', { id: uuidv7(), entidad_afectada: 'produccion_leche', registro_id: vigente.id, tipo: 'correccion', campo: 'litros', motivo: 'error_digitacion' });
+    const local = await crear('produccion_leche', { animal_id: vaca.id, fecha: '2026-10-08', litros: 7 }, TRABAJADOR);
+
+    await subir(servicio);
+
+    expect(servicio.filas('produccion_leche').map((o) => o.id)).toEqual([vigente.id]);
+    expect(await db.produccion_leche.get(local.id)).toBeUndefined();
+  });
+
+  it('frente a un ordeño anulado, el nuevo se acepta como ordeño', async () => {
+    const vaca = servicio.sembrar('animal', { id: uuidv7(), codigo_chapeta: '012' });
+    const anulado = servicio.sembrar('produccion_leche', { id: uuidv7(), animal_id: vaca.id, fecha: '2026-10-08', litros: 4 });
+    servicio.sembrar('correccion', anulacion(anulado.id));
+    const local = await crear('produccion_leche', { animal_id: vaca.id, fecha: '2026-10-08', litros: 7 }, TRABAJADOR);
+
+    await subir(servicio);
+
+    expect(servicio.filas('produccion_leche').map((o) => o.id)).toEqual([anulado.id, local.id]);
+    expect(await buscarEn(servicio, vaca.id)).toEqual({ id: local.id, litros: 7 });
+  });
+});
+
+const buscarEn = (s: ServicioSimulado, animalId: Uuid) => s.buscarOrdeno(animalId, '2026-10-08');

@@ -11,7 +11,8 @@ export const NOMBRE_DESTINO: Record<Destino, string> = {
   reproductora: 'Reproductora',
   leche: 'Producción de leche',
   ceba: 'Ceba',
-  venta: 'Venta',
+  // «Para venta»: es un plan, no la venta; el animal vendido es un retirado (2026-10-22).
+  venta: 'Para venta',
   sacrificio: 'Sacrificio',
 };
 

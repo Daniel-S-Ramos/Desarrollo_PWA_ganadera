@@ -6,6 +6,8 @@ import { fechaDelPredio } from '../../dominio/fechas';
 import { CONCEPTOS_MOVIMIENTO, type ConceptoMovimiento } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { cargarParaCosto, registrarCosto, type ContextoCosto } from './costos';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Billete } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Registrar un costo del animal (RF-20, HU-16.1), solo el propietario. Especificación:
@@ -66,9 +68,9 @@ function Formulario({ contexto, identidad }: { contexto: ContextoCosto; identida
       <Link className="enlace" to={`/animales/${animal.id}`}>
         ← Volver a la ficha
       </Link>
-      <p className="titulo-seccion">Registrar costo</p>
+      <TituloPantalla dibujo={<Billete />}>Registrar costo</TituloPantalla>
       <p className="evento__animal">
-        Animal <strong className="registrado__chapeta">{animal.codigo_chapeta}</strong> · {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'}
+        Animal <strong className="registrado__chapeta chapeta">{animal.codigo_chapeta}</strong> · {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'}
       </p>
       {errorRegistro && (
         <p className="campo__error" role="alert">

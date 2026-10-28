@@ -22,6 +22,10 @@ export interface EntradaCorreccion {
   id: Uuid;
   /** «Z921 · Vacuna Prueba Aftosa del 14 de octubre de 2026», «Medicamento Prueba Florfenicol LA». */
   titulo: string;
+  /** La chapeta del animal del registro, si tiene; la pantalla la muestra en la chapeta amarilla. */
+  chapeta: string | null;
+  /** El título sin la chapeta: «Pesaje del 21 de octubre de 2026». */
+  nombre: string;
   /** «Dosis: antes 1, ahora 2,5» o «Anulado». */
   cambio: string;
   anulacion: boolean;
@@ -186,11 +190,13 @@ function describir(
   const registro = original ? (aplicarATodos(tabla, [original], correcciones)[0]!.registro as unknown as Record<string, unknown>) : null;
 
   let titulo = 'Un registro que no está en este teléfono';
-  if (registro && tabla === 'medicamento') titulo = `Medicamento ${String(registro['nombre'])}`;
+  let chapeta: string | null = null;
+  let nombre = titulo;
+  if (registro && tabla === 'medicamento') nombre = titulo = `Medicamento ${String(registro['nombre'])}`;
   else if (registro) {
     const animal = animalDe(tabla, registro);
-    const chapeta = animal ? referencia.animales.get(animal) : undefined;
-    const nombre = nombreDelRegistro(tabla, registro, referencia.medicamentos);
+    chapeta = (animal ? referencia.animales.get(animal) : undefined) ?? null;
+    nombre = nombreDelRegistro(tabla, registro, referencia.medicamentos);
     titulo = chapeta ? `${chapeta} · ${nombre}` : nombre;
   }
 
@@ -203,6 +209,8 @@ function describir(
   return {
     id: c.id,
     titulo,
+    chapeta,
+    nombre,
     cambio,
     anulacion,
     motivo: `${NOMBRE_MOTIVO[c.motivo]}${c.nota ? ` · ${c.nota}` : ''}`,

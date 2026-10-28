@@ -2,6 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router';
 import type { Identidad } from '../../sesion/token';
 import { cargarConflictos } from './conflictos';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Libreta } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Registros en conflicto de este teléfono: qué es cada uno, por qué y adónde ir para resolverlo (documento
@@ -16,7 +18,7 @@ export function PantallaConflictos({ identidad }: { identidad: Identidad }) {
       <Link className="enlace" to="/">
         ← Volver al inicio
       </Link>
-      <p className="titulo-seccion">Registros en conflicto</p>
+      <TituloPantalla dibujo={<Libreta />}>Registros en conflicto</TituloPantalla>
       {conflictos.length === 0 ? (
         <p className="aviso aviso--correcto aviso--en-contenido">✓ No hay registros en conflicto en este teléfono.</p>
       ) : (

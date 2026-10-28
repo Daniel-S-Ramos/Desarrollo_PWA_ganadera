@@ -76,6 +76,8 @@ async function repeticionDe(animalId: Uuid, medicamentoId: Uuid, fecha: FechaPre
 export interface VerificacionRepeticion {
   repeticion: Repeticion<EventoLocal>;
   medicamento: string;
+  /** La unidad del medicamento, para decir la dosis de la aplicación anterior (pedido del autor, 2026-10-25). */
+  unidad: string | undefined;
   intervalo: number;
   /** Quién registró la aplicación que se muestra (HU-15). */
   autor: string | null;
@@ -94,6 +96,7 @@ export async function verificarRepeticion(animalId: Uuid, medicamentoId: Uuid | 
   return {
     repeticion,
     medicamento: medicamento?.nombre ?? '',
+    unidad: medicamento?.unidad,
     intervalo,
     autor: repeticion.nivel === 'ninguno' ? null : (autor?.nombre ?? 'un usuario que ya no está en el predio'),
   };

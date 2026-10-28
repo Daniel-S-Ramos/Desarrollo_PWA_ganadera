@@ -25,6 +25,8 @@ import {
 import { formatearPesos, NOMBRE_MOTIVO_SALIDA } from '../../dominio/salida';
 import { NOMBRE_CONCEPTO } from '../../dominio/economia';
 import { MarcaCorreccion, mostrarValor, useNombresDeReferencia, useUsuarios } from './MarcaCorreccion';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Lapiz } from '../../ui/componentes/Ilustraciones';
 
 const NOMBRE_ENTIDAD: Record<EntidadConCorreccion, string> = {
   evento_sanitario: 'Evento sanitario',
@@ -105,7 +107,7 @@ function Corregir({ entidad, id, identidad }: { entidad: EntidadConCorreccion; i
       <button type="button" className="enlace" onClick={volver}>
         ← Volver
       </button>
-      <p className="titulo-seccion">Corregir o anular</p>
+      <TituloPantalla dibujo={<Lapiz />}>Corregir o anular</TituloPantalla>
       <section className="tarjeta">
         <h2>{NOMBRE_ENTIDAD[entidad]}</h2>
         <p>{resumen(entidad, v.registro as unknown as Record<string, unknown>, nombres)}</p>
@@ -213,10 +215,10 @@ function Corregir({ entidad, id, identidad }: { entidad: EntidadConCorreccion; i
       )}
 
       {f.operacion === 'anular' && entidad === 'produccion_leche' && (
-        // Sección 7: el ordeño anulado impide otro de esa vaca ese día.
+        // Documento técnico 32, sección 5: anulado, la vaca vuelve a quedar pendiente ese día en la ronda.
         <p className="aviso aviso--atencion aviso--en-contenido">
-          Esta vaca no podrá tener otro ordeño el {formatearFecha(String((v.registro as RegistroLocal<'produccion_leche'>).fecha))}. Si el error es la cantidad, corrija los litros en
-          lugar de anular.
+          La vaca volverá a quedar pendiente en la ronda del {formatearFecha(String((v.registro as RegistroLocal<'produccion_leche'>).fecha))}. Si el error es la cantidad, corrija los
+          litros en lugar de anular.
         </p>
       )}
 

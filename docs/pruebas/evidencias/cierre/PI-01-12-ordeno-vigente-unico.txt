@@ -1,0 +1,13 @@
+PI-01 · Esquema remoto · verificación 19 (paso 6.0)
+Fecha: 2026-10-22 · migración 20261022000100_ordeno_vigente_unico.sql aplicada con npm run db:push
+Comando: npm run prueba:pi-01
+
+Verificaciones 1 a 18: APROBADA (la 6, «segundo ordeño de la misma vaca en la misma fecha se rechaza», sigue
+aprobada con el disparador: código 23505).
+
+ n  | verificacion                                                                                                             | resultado | detalle
+----+--------------------------------------------------------------------------------------------------------------------------+-----------+------------------------------------
+ 6  | Un segundo ordeño de la misma vaca en la misma fecha se rechaza                                                          | APROBADA  | código: 23505
+ 19 | Un solo ordeño vigente por vaca y día: el segundo se rechaza, el reenvío se ignora y, anulado el primero, se admite otro | APROBADA  | códigos: OK, 23505, OK, OK, OK, 23505
+
+Resultado: 19 de 19 aprobadas.

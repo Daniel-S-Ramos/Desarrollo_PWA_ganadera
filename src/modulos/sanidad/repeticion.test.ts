@@ -177,6 +177,15 @@ describe('PU-22 · 8. Lo que muestra el aviso (sección 3)', () => {
     expect(v).toMatchObject({ medicamento: 'Prueba Aftosa', intervalo: 2, autor: 'Daniel Ramos', repeticion: { nivel: 'advertencia', aplicacion: { fecha: '2026-10-13', estado_sync: 'pendiente' } } });
   });
 
+  it('la dosis vigente de la aplicación anterior y la unidad del medicamento (pedido del autor, 2026-10-25)', async () => {
+    const [a, aftosa] = await Promise.all([animal('Z920'), medicamento('Prueba Aftosa', 2)]);
+    const e = await crear('evento_sanitario', { animal_id: a.id, fecha: '2026-10-13', tipo: 'vacuna', medicamento_id: aftosa.id, dosis: 1.5, costo: null, sintomas: null }, TRABAJADOR.usuario_id);
+    expect(await verificarRepeticion(a.id, aftosa.id, HOY)).toMatchObject({ unidad: 'ml', repeticion: { aplicacion: { dosis: 1.5 } } });
+    // Con la dosis corregida, la vigente.
+    await crear('correccion', { entidad_afectada: 'evento_sanitario', registro_id: e.id, tipo: 'correccion', campo: 'dosis', valor_anterior: '1.5', valor_nuevo: '2', motivo: 'error_digitacion', nota: null }, PROPIETARIO.usuario_id);
+    expect(await verificarRepeticion(a.id, aftosa.id, HOY)).toMatchObject({ repeticion: { aplicacion: { dosis: 2 } } });
+  });
+
   it('sin aplicaciones no hay autor; si el autor ya no está, se dice', async () => {
     const [a, aftosa] = await Promise.all([animal('Z920'), medicamento('Prueba Aftosa')]);
     expect((await verificarRepeticion(a.id, aftosa.id, HOY))?.autor).toBeNull();

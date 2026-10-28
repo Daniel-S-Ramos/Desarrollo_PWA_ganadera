@@ -32,6 +32,11 @@ declare
   becerro   uuid := gen_random_uuid();
   salida1   uuid := gen_random_uuid();
   compra1   uuid := gen_random_uuid();
+  ordeno1   uuid := gen_random_uuid();
+  -- Chapetas libres de la serie de pruebas Z900–Z999, de la más alta hacia abajo: la prueba no choca con los
+  -- animales que el autor crea a mano en la misma serie (PI-01 falló el 2026-10-24 por un Z901 de PE-40).
+  ch        text[] := array(select 'Z' || g from generate_series(999, 900, -1) g
+                             where not exists (select 1 from public.animal a where a.codigo_chapeta = 'Z' || g) limit 8);
   codigos   text[];
   ok        boolean;
   valor     text;
@@ -86,16 +91,16 @@ begin
 
     -- -------------------------------------------------------------- 4. Clave primaria e idempotencia
     insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta)
-    values (vaca, usuario, now(), 'Z901', 'hembra', true);
+    values (vaca, usuario, now(), ch[1], 'hembra', true);
     codigos := array[
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true)', vaca, usuario, ahora, 'Z902', 'hembra')),
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true) on conflict (id) do nothing', vaca, usuario, ahora, 'Z902', 'hembra'))];
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true)', vaca, usuario, ahora, ch[2], 'hembra')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true) on conflict (id) do nothing', vaca, usuario, ahora, ch[2], 'hembra'))];
     select count(*) into cuenta from public.animal where id = vaca;
     r := r || jsonb_build_object('n',4,'v','Mismo id: se rechaza; con ON CONFLICT DO NOTHING se ignora sin error (3.7.8)',
            'ok', codigos = array['23505','OK'] and cuenta = 1, 'd', 'inserción repetida: ' || codigos[1] || ' · con ON CONFLICT: ' || codigos[2] || ' · filas con ese id: ' || cuenta);
 
     -- -------------------------------------------------------------- 5. Chapeta única
-    valor := pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true)', gen_random_uuid(), usuario, ahora, 'Z901', 'macho'));
+    valor := pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L, %L, %s, %L, %L, true)', gen_random_uuid(), usuario, ahora, ch[1], 'macho'));
     r := r || jsonb_build_object('n',5,'v','Un segundo animal con la misma chapeta se rechaza','ok', valor = '23505','d','código: ' || valor);
 
     -- -------------------------------------------------------------- 6. Un ordeño por vaca y fecha
@@ -111,9 +116,9 @@ begin
       -- peso cero
       pg_temp.intentar(format('insert into public.pesaje (id, autor_id, creado_en, animal_id, fecha, peso, metodo) values (%L,%L,%s,%L,%L,0,%L)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-06', 'cinta')),
       -- sexo inválido
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L,%L,%s,%L,%L,true)', gen_random_uuid(), usuario, ahora, 'Z903', 'otro')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L,%L,%s,%L,%L,true)', gen_random_uuid(), usuario, ahora, ch[3], 'otro')),
       -- padre interno y externo a la vez
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, padre_id, padre_externo) values (%L,%L,%s,%L,%L,true,%L,%L)', gen_random_uuid(), usuario, ahora, 'Z904', 'macho', vaca, 'Toro del vecino')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, padre_id, padre_externo) values (%L,%L,%s,%L,%L,true,%L,%L)', gen_random_uuid(), usuario, ahora, ch[4], 'macho', vaca, 'Toro del vecino')),
       -- parto con cría viva sin cría
       pg_temp.intentar(format('insert into public.parto (id, autor_id, creado_en, madre_id, fecha, resultado) values (%L,%L,%s,%L,%L,%L)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-06', 'cria_viva')),
       -- venta sin valor
@@ -156,20 +161,21 @@ begin
 
     -- -------------------------------------------------------------- 12. Formato de la chapeta
     -- El servicio solo admite la numeración del predio, normalizada (docs/tecnica/13-registro-de-animal.md, sección 8).
-    -- Las chapetas de prueba usan la serie Z900 a Z999, reservada para pruebas.
+    -- Las chapetas de prueba usan la serie Z900 a Z999, reservada para pruebas; las variantes se arman con una
+    -- chapeta libre de esa serie (ch[5]).
     codigos := array(
       select pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (%L,%L,%s,%L,%L,true)', gen_random_uuid(), usuario, ahora, c, 'hembra'))
-        from unnest(array['z905', 'Z 905', '0905', 'O905', 'Z0', 'ZZ1', 'Z1000', '10000', 'Z905']) with ordinality as t(c, i)
+        from unnest(array[lower(ch[5]), 'Z ' || substr(ch[5], 2), '0' || substr(ch[5], 2), 'O' || substr(ch[5], 2), 'Z0', 'ZZ1', 'Z1000', '10000', ch[5]]) with ordinality as t(c, i)
        order by i);
-    r := r || jsonb_build_object('n',12,'v','Chapeta: se rechazan minúscula, espacio, cero inicial, letra O, cero, dos letras y fuera de rango; Z905 se admite',
+    r := r || jsonb_build_object('n',12,'v','Chapeta: se rechazan minúscula, espacio, cero inicial, letra O, cero, dos letras y fuera de rango; una chapeta libre de la serie Z9xx se admite',
            'ok', codigos = array['23514','23514','23514','23514','23514','23514','23514','23514','OK'],
            'd', 'códigos: ' || array_to_string(codigos, ', '));
 
     -- -------------------------------------------------------------- 13. Madre de una sola forma
     -- Como el padre (3.8.8), la madre es del predio o externa, nunca las dos cosas.
     codigos := array[
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, madre_id, madre_externa) values (%L,%L,%s,%L,%L,true,%L,%L)', gen_random_uuid(), usuario, ahora, 'Z906', 'hembra', vaca, 'Vaca del vecino')),
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, madre_externa) values (%L,%L,%s,%L,%L,true,%L)', gen_random_uuid(), usuario, ahora, 'Z907', 'hembra', 'Vaca del vecino'))];
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, madre_id, madre_externa) values (%L,%L,%s,%L,%L,true,%L,%L)', gen_random_uuid(), usuario, ahora, ch[6], 'hembra', vaca, 'Vaca del vecino')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, madre_externa) values (%L,%L,%s,%L,%L,true,%L)', gen_random_uuid(), usuario, ahora, ch[7], 'hembra', 'Vaca del vecino'))];
     r := r || jsonb_build_object('n',13,'v','Madre del predio y externa a la vez se rechaza; solo externa se admite',
            'ok', codigos = array['23514','OK'], 'd', 'ambas: ' || codigos[1] || ' · solo externa: ' || codigos[2]);
 
@@ -187,7 +193,7 @@ begin
     -- Un animal se registra sin la chapeta puesta, y su colocación se admite una sola vez
     -- (docs/tecnica/25-parto-y-control-reproductivo.md, sección 7.1).
     codigos := array[
-      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, chapeta_puesta) values (%L,%L,%s,%L,%L,true,false)', becerro, usuario, ahora, 'Z908', 'macho')),
+      pg_temp.intentar(format('insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta, chapeta_puesta) values (%L,%L,%s,%L,%L,true,false)', becerro, usuario, ahora, ch[8], 'macho')),
       pg_temp.intentar(format('insert into public.colocacion_chapeta (id, autor_id, creado_en, animal_id, fecha) values (%L,%L,%s,%L,current_date)', gen_random_uuid(), usuario, ahora, becerro)),
       pg_temp.intentar(format('insert into public.colocacion_chapeta (id, autor_id, creado_en, animal_id, fecha) values (%L,%L,%s,%L,current_date)', gen_random_uuid(), usuario, ahora, becerro))];
     select count(*) into cuenta from public.parametro p where p.clave = 'dias_recordar_chapeta' and p.valor = 90;
@@ -233,6 +239,37 @@ begin
     r := r || jsonb_build_object('n',18,'v','Una sola compra vigente: la segunda se rechaza, el reenvío se ignora y, anulada la primera, se admite otra',
            'ok', codigos = array['OK','23505','OK','OK','OK','OK'],
            'd', 'códigos: ' || array_to_string(codigos, ', '));
+
+    -- -------------------------------------------------------------- 19. Un solo ordeño vigente
+    -- Un segundo ordeño de la vaca ese día se rechaza mientras el primero esté vigente; el reenvío se ignora;
+    -- anulado el primero, se admite otro; y un tercero, con el segundo vigente, se rechaza
+    -- (docs/tecnica/32-ordeno-vigente-unico.md, sección 2).
+    codigos := array[
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,8)', ordeno1, usuario, ahora, vaca, '2026-10-08')),
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,9)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-08')),
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,8) on conflict (id) do nothing', ordeno1, usuario, ahora, vaca, '2026-10-08')),
+      pg_temp.intentar(format('insert into public.correccion (id, autor_id, creado_en, entidad_afectada, registro_id, tipo, motivo) values (%L,%L,%s,%L,%L,%L,%L)', gen_random_uuid(), usuario, ahora, 'produccion_leche', ordeno1, 'anulacion', 'animal_equivocado')),
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,9)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-08')),
+      pg_temp.intentar(format('insert into public.produccion_leche (id, autor_id, creado_en, animal_id, fecha, litros) values (%L,%L,%s,%L,%L,10)', gen_random_uuid(), usuario, ahora, vaca, '2026-10-08'))];
+    r := r || jsonb_build_object('n',19,'v','Un solo ordeño vigente por vaca y día: el segundo se rechaza, el reenvío se ignora y, anulado el primero, se admite otro',
+           'ok', codigos = array['OK','23505','OK','OK','OK','23505'],
+           'd', 'códigos: ' || array_to_string(codigos, ', '));
+
+    -- -------------------------------------------------------------- 20. Peso de finalización de la ceba
+    -- El parámetro de 500 kg está cargado (docs/tecnica/34-produccion-de-carne.md, sección 6 bis).
+    select count(*) into cuenta from public.parametro p where p.clave = 'peso_final_ceba' and p.valor = 500;
+    r := r || jsonb_build_object('n',20,'v','Peso de finalización de la ceba cargado: 500 kg',
+           'ok', cuenta = 1,
+           'd', 'parámetro: ' || cuenta);
+
+    -- -------------------------------------------------------------- 21. Parámetros del propietario
+    -- Ganancia diaria esperada de 0,5 kg/día y variación atípica de la leche de 35 %
+    -- (docs/tecnica/24-pesaje-y-evolucion.md, sección 8; docs/tecnica/22-ronda-de-ordeno.md, sección 6.3).
+    select count(*) into cuenta from public.parametro p
+     where (p.clave = 'ganancia_diaria_esperada' and p.valor = 0.5) or (p.clave = 'variacion_atipica_leche' and p.valor = 35);
+    r := r || jsonb_build_object('n',21,'v','Parámetros del propietario cargados: ganancia de 0,5 kg/día y variación atípica de 35 %',
+           'ok', cuenta = 2,
+           'd', 'parámetros: ' || cuenta || ' de 2');
 
     -- Revertir todo lo insertado. Solo sobrevive la variable r con los resultados.
     raise exception using errcode = 'P0099', message = 'REVERTIR';

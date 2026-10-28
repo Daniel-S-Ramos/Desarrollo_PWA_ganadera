@@ -15,6 +15,8 @@ import {
 import { MOTIVOS_SALIDA } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { cargarParaSalida, registrarSalida, type ContextoSalida } from './salidas';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Camion } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Registrar la salida del animal del predio (CU-13, HU-11), solo el propietario. Especificación:
@@ -80,10 +82,10 @@ function Formulario({ contexto, identidad }: { contexto: ContextoSalida; identid
     // Sección 6 (CU-13, paso 6): el resumen antes de guardar.
     return (
       <div className="formulario">
-        <p className="titulo-seccion">Confirmar la salida</p>
+        <TituloPantalla dibujo={<Camion />}>Confirmar la salida</TituloPantalla>
         <div className="tarjeta">
           <p>
-            <strong className="registrado__chapeta">{animal.codigo_chapeta}</strong> sale del predio por{' '}
+            <strong className="registrado__chapeta chapeta">{animal.codigo_chapeta}</strong> sale del predio por{' '}
             <strong>{NOMBRE_MOTIVO_SALIDA[revision.motivo].toLowerCase()}</strong>.
           </p>
           <p>{describirSalida({ ...revision, observacion: revision.observacion ?? null }, hembra)}</p>
@@ -107,9 +109,9 @@ function Formulario({ contexto, identidad }: { contexto: ContextoSalida; identid
       <Link className="enlace" to={`/animales/${animal.id}`}>
         ← Volver a la ficha
       </Link>
-      <p className="titulo-seccion">Registrar salida</p>
+      <TituloPantalla dibujo={<Camion />}>Registrar salida</TituloPantalla>
       <p className="evento__animal">
-        Animal <strong className="registrado__chapeta">{animal.codigo_chapeta}</strong> · {hembra ? 'Hembra' : 'Macho'}
+        Animal <strong className="registrado__chapeta chapeta">{animal.codigo_chapeta}</strong> · {hembra ? 'Hembra' : 'Macho'}
       </p>
 
       {/* Sección 5 (CU-13, paso 2): el último peso como referencia; el de venta no se precarga. */}

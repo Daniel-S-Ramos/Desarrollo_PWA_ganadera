@@ -4,6 +4,8 @@ import { Link } from 'react-router';
 import type { Uuid } from '../../dominio/tipos';
 import { DistintivoSync } from '../../ui/componentes/DistintivoSync';
 import { cargarCorreccionesRecientes, POR_PAGINA, type EntradaCorreccion } from './consultaCorrecciones';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Libreta } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Correcciones recientes, solo para el propietario (CU-18, RF-32, HU-17.5). Especificación:
@@ -22,7 +24,7 @@ export function PantallaCorreccionesRecientes() {
       <Link className="enlace" to="/">
         ← Volver al inicio
       </Link>
-      <p className="titulo-seccion">Correcciones recientes</p>
+      <TituloPantalla dibujo={<Libreta />}>Correcciones recientes</TituloPantalla>
 
       {totalDelPredio === 0 ? (
         <p>Todavía no hay correcciones ni anulaciones en el predio.</p>
@@ -75,7 +77,15 @@ export function PantallaCorreccionesRecientes() {
 function Entrada({ entrada: e }: { entrada: EntradaCorreccion }) {
   const contenido = (
     <>
-      <span className="correcciones__titulo">{e.titulo}</span>
+      <span className="correcciones__titulo">
+        {e.chapeta ? (
+          <>
+            <span className="chapeta">{e.chapeta}</span> {e.nombre}
+          </>
+        ) : (
+          e.titulo
+        )}
+      </span>
       <span className={e.anulacion ? 'correcciones__cambio correcciones__cambio--anulado' : 'correcciones__cambio'}>{e.cambio}</span>
       <span className="texto-secundario">{e.motivo}</span>
       <span className="texto-secundario">

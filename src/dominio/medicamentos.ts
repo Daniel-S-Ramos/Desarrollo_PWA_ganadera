@@ -27,6 +27,15 @@ export function normalizarNombre(nombre: string): string {
  * (sección 4). Es una ayuda para quien registra, no una regla: dos nombres parecidos pueden ser
  * productos distintos.
  */
+/**
+ * Los medicamentos cuyo nombre contiene lo escrito, sin distinguir mayúsculas, tildes ni espacios repetidos
+ * (la forma de comparación de la sección 3). Sin texto, todos. Pedido del propietario en la sesión C, 2026-10-26.
+ */
+export function filtrarPorNombre<T extends { nombre: string }>(lista: readonly T[], texto: string): T[] {
+  const buscado = normalizarNombre(texto);
+  return buscado === '' ? [...lista] : lista.filter((m) => normalizarNombre(m.nombre).includes(buscado));
+}
+
 export function sonParecidos(a: string, b: string): boolean {
   const x = normalizarNombre(a);
   const y = normalizarNombre(b);

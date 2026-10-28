@@ -4,6 +4,8 @@ import { Link } from 'react-router';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
 import { formatearLitros } from '../../dominio/leche';
 import { cargarComparacion, type TipoPeriodo, type VacaComparada } from './comparacion';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Cantinas } from '../../ui/componentes/Ilustraciones';
 
 const PERIODOS: [TipoPeriodo, string][] = [
   ['diaria', 'Día'],
@@ -36,7 +38,7 @@ export function PantallaComparacion() {
       <Link className="enlace" to="/produccion">
         ← Volver a la producción
       </Link>
-      <p className="titulo-seccion">Comparación entre vacas</p>
+      <TituloPantalla dibujo={<Cantinas tamano={32} />}>Comparación entre vacas</TituloPantalla>
 
       <div className="opciones opciones--tres" role="group" aria-label="Periodo">
         {PERIODOS.map(([clave, nombre]) => (
@@ -139,7 +141,7 @@ function FilaVaca({ vaca: v, maximo, tipo }: { vaca: VacaComparada; maximo: numb
       <Link className="comparacion__enlace" to={`/produccion?vaca=${v.id}`}>
         <div className="produccion__texto">
           <span className="produccion__etiqueta">
-            {v.codigo_chapeta}
+            <span className="chapeta">{v.codigo_chapeta}</span>
             {v.retirada ? ' · Retirada' : ''}
           </span>
           {v.promedio === null ? (

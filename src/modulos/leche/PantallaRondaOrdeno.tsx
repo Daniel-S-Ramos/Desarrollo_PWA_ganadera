@@ -6,6 +6,10 @@ import { compararConPromedio, formatearLitros, leerLitros, validarOrdeno } from 
 import type { Identidad } from '../../sesion/token';
 import { EnlaceCorregir } from '../correcciones/MarcaCorreccion';
 import { cargarRonda, promedioDe, puedeReemplazar, registrarOrdeno, siguienteVaca, type VacaRonda } from './ronda';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Cantina } from '../../ui/componentes/Ilustraciones';
+import { Buscador } from '../../ui/componentes/Buscador';
+import { filtrarPorChapeta } from '../consulta/listado';
 
 /**
  * Ronda de ordeño (CU-06, HU-04). Especificación: docs/tecnica/22-ronda-de-ordeno.md, secciones 4 a 7.
@@ -18,6 +22,7 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
   const [parametros] = useSearchParams();
   const [elegida, setElegida] = useState<string | null>(() => parametros.get('vaca'));
   const [ultimo, setUltimo] = useState<string | null>(null);
+  const [texto, setTexto] = useState('');
   const vacas = useLiveQuery(() => cargarRonda(fecha), [fecha]);
 
   if (!vacas) return <p className="texto-secundario">Cargando…</p>;
@@ -40,13 +45,14 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
 
   const actual = vacas.find((v) => v.animal_id === elegida) ?? siguienteVaca(vacas);
   const registradas = vacas.filter((v) => v.existente).length;
+  const visibles = filtrarPorChapeta(vacas, texto);
 
   return (
     <div className="formulario ronda">
       <Link className="enlace" to="/">
         ← Volver al inicio
       </Link>
-      <p className="titulo-seccion">Ronda de ordeño</p>
+      <TituloPantalla dibujo={<Cantina tamano={34} />}>Ronda de ordeño</TituloPantalla>
 
       <label className="campo">
         <span>Fecha del ordeño</span>
@@ -91,8 +97,11 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
         <h2>
           Vacas en producción · {registradas} de {vacas.length}
         </h2>
+        {/* Para encontrar una vaca sin recorrer la lista (pedido del propietario en la sesión C). */}
+        <Buscador valor={texto} alCambiar={setTexto} etiqueta="Buscar una vaca por chapeta" marcador="Número de chapeta" />
+        {visibles.length === 0 && <p className="texto-secundario">Ninguna vaca en producción tiene una chapeta que empiece así.</p>}
         <ul className="ronda__lista">
-          {vacas.map((v) => (
+          {visibles.map((v) => (
             <li key={v.animal_id}>
               <button
                 type="button"
@@ -101,10 +110,13 @@ export function PantallaRondaOrdeno({ identidad }: { identidad: Identidad }) {
                 onClick={() => {
                   setElegida(v.animal_id);
                   setUltimo(null);
+                  setTexto('');
+                  // El formulario de la vaca está arriba de la lista.
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >
-                <span className="ronda__chapeta">{v.codigo_chapeta}</span>
-                <span>{v.existente ? (v.existente.anulado ? 'Anulado' : `✓ ${formatearLitros(v.existente.litros)} litros`) : 'Sin registro'}</span>
+                <span className="ronda__chapeta chapeta">{v.codigo_chapeta}</span>
+                <span>{v.existente ? `✓ ${formatearLitros(v.existente.litros)} litros` : 'Sin registro'}</span>
               </button>
             </li>
           ))}
@@ -135,25 +147,12 @@ function FormularioVaca({
   const promedio = useLiveQuery(() => promedioDe(vaca.animal_id, fecha), [vaca.animal_id, fecha]);
 
   const { existente } = vaca;
-  // Documento técnico 26, sección 7: un ordeño anulado impide otro de esa vaca ese día.
-  if (existente?.anulado) {
-    return (
-      <div className="tarjeta formulario">
-        <h2 className="ronda__titulo">
-          Vaca <span className="registrado__chapeta">{vaca.codigo_chapeta}</span>
-        </h2>
-        <p className="aviso aviso--atencion aviso--en-contenido">
-          El ordeño de {vaca.codigo_chapeta} del {formatearFecha(fecha)} fue anulado: no admite otro registro ese día.
-        </p>
-      </div>
-    );
-  }
   const permitido = !existente || puedeReemplazar(identidad, existente);
   const validacion = validarOrdeno(texto, fecha, hoy);
   const errores = intentado && !validacion.ok ? validacion.errores : {};
   const litros = leerLitros(texto);
   const igual = existente !== null && litros !== null && litros === existente.litros;
-  const comparacion = litros !== null && promedio?.resultado ? compararConPromedio(litros, promedio.resultado.promedio) : null;
+  const comparacion = litros !== null && promedio?.resultado ? compararConPromedio(litros, promedio.resultado.promedio, promedio.variacionAtipica) : null;
   const bloqueado = guardando || !permitido || (existente !== null && !igual && !confirmado);
 
   async function guardar(e: FormEvent) {
@@ -186,7 +185,7 @@ function FormularioVaca({
   return (
     <form className="tarjeta formulario" onSubmit={guardar} noValidate>
       <h2 className="ronda__titulo">
-        Vaca <span className="registrado__chapeta">{vaca.codigo_chapeta}</span>
+        Vaca <span className="registrado__chapeta chapeta chapeta--grande">{vaca.codigo_chapeta}</span>
       </h2>
 
       {/* Sección 6.2: el promedio reciente, para comparar durante el ordeño. */}

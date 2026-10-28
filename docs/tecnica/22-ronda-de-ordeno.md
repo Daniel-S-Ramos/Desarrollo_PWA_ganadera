@@ -92,14 +92,17 @@ una palabra según el porcentaje:
 | Diferencia con el promedio | Palabras | Aspecto |
 |---|---|---|
 | Hasta 10 %, por encima o por debajo | «Similar a su promedio» | Neutro |
-| Más de 10 % y hasta 25 % por debajo | «Por debajo de su promedio» | Neutro |
+| Más de 10 % y menos de 35 % por debajo | «Por debajo de su promedio» | Neutro |
 | Más de 10 % por encima | «Por encima de su promedio» | Neutro |
-| Más de 25 % por debajo | **«Muy por debajo de su promedio»** | Aviso de atención, sin bloquear |
+| **Desde 35 %** por debajo | **«Muy por debajo de su promedio»** | Aviso de atención, sin bloquear |
 
 Con un promedio de 0 (vaca secándose), cualquier valor positivo es «Por encima de su promedio» y 0 es
-«Similar». Los umbrales de 10 % y 25 % son de **presentación**, no un criterio veterinario; se ajustarán
-con el propietario si hace falta. La alerta de producción bajo el promedio de la Iteración 5 (CU-15)
-tendrá su propia regla.
+«Similar». El 10 % es de **presentación**. El umbral de «Muy por debajo» es la **variación atípica** de la
+Tabla 30, que corresponde al propietario: el diseño empezó con 25 % y **el propietario lo fijó en 35 % el
+2026-10-24** («desde el 35 %», así que el 35 % exacto ya cuenta). Vive en el parámetro
+`variacion_atipica_leche` (migración `20261024000200_parametros_del_propietario.sql`); si el parámetro aún
+no está en el teléfono, se usa ese mismo 35 %. Lo usan la ronda, la producción diaria por vaca y el
+recordatorio de producción bajo el promedio (documento 30, regla 3).
 
 ## 7. La vaca ya tiene registro en esa fecha (decisión F)
 
@@ -109,6 +112,9 @@ tendrá su propia regla.
 | Con registro y **puede reemplazarlo** | «Ya hay un registro de Z930 para el 14 de octubre de 2026: **12,5 litros**, registrado por Daniel Ramos. El valor nuevo lo reemplazará», con la casilla **Confirmo el reemplazo** | Con la casilla marcada, se crea una **corrección** (sección 7.1). Sin marcarla, Guardar está inhabilitado |
 | Con registro y el valor nuevo es **igual** al vigente | «Ya tiene ese valor» | No se guarda nada; la ronda pasa a la siguiente |
 | Con registro y **no puede reemplazarlo** (CU-06, 3b) | «No puede reemplazar este registro: la enmienda corresponde al propietario» | No se guarda; Guardar inhabilitado |
+
+**Registro de esa fecha** es el ordeño **vigente** de la vaca ese día: un ordeño anulado no cuenta, y con él la
+vaca vuelve a aparecer **Sin registro** (documento técnico 32, paso 6.0).
 
 **Quién puede reemplazar** es la regla de corrección del apartado 3.9.5 (`puedeCorregir`, documento
 08, sección 4): el propietario, cualquier registro; el trabajador, solo los creados por un trabajador en
@@ -167,7 +173,7 @@ HU-04.2 (consultar la producción en periodos diario, semanal y mensual) se atie
 | 2 | Siguiente vaca | La primera sin registro en la fecha; ronda completa cuando no queda ninguna |
 | 3 | Litros | 0 a 60 con un decimal, coma o punto; el 0 se admite |
 | 4 | Promedio | Solo días con registro dentro de los 7 anteriores, sin la fecha; valores vigentes; sin registros, ninguno |
-| 5 | Palabras | Los umbrales de 10 % y 25 % y el promedio 0 |
+| 5 | Palabras | Los umbrales de 10 % y 35 % (el exacto cuenta), el parámetro del propietario y el promedio 0 |
 | 6 | Reemplazo | Crea la corrección con los dos valores y el motivo; mismo valor no escribe nada; sin confirmar no escribe |
 | 7 | Permisos | El trabajador no reemplaza al propietario ni a otro trabajador de otro día; el propietario reemplaza a cualquiera |
 | 8 | Valor vigente | La corrección más reciente prevalece en la ficha, la lista y el promedio |
@@ -185,3 +191,11 @@ del propietario con ✓.
 
 - Documento de trabajo de grado: RF-10, RF-27, RF-28, RF-31; CU-06 (Tabla A6); HU-04 (Tabla B4);
   apartados 3.8.6, 3.9.5 y 3.10.4.4; Tablas 24, 27, 30, 31 y 32.
+
+## Ajuste de la sesión C (2026-10-26): buscador de vacas
+
+En la sesión con el propietario (caso CP-54), encontrar la vaca 207 en la lista de la ronda le tomó varios toques.
+A su pedido, la tarjeta «Vacas en producción» tiene un **buscador por número de chapeta** sobre la lista, con la
+misma regla del listado de animales (los ceros a la izquierda y las minúsculas no cuentan; `filtrarPorChapeta` en
+`src/modulos/consulta/listado.ts`, PU-16.8). Al tocar una vaca, el buscador se limpia y la pantalla sube al
+formulario. El orden de la lista y las reglas de la ronda no cambian.

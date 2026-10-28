@@ -223,3 +223,14 @@ existente, que un nombre parecido muestra la sugerencia y que lo creado llega al
 ## Referencias
 
 - Documento de trabajo de grado: RF-09; CU-04; apartados 3.8.9 y 3.10.4.4; Tablas 24, 27, 28, 30 y 31.
+
+## Ajustes de la sesión C (2026-10-26)
+
+- **Buscador por nombre.** Filtra el catálogo por cualquier parte del nombre, sin distinguir mayúsculas, tildes ni
+  espacios repetidos (la forma de comparación de la sección 3; `filtrarPorNombre` en `src/dominio/medicamentos.ts`,
+  PU-19.6). Pedido del propietario.
+- **«Aplicar medicamento a un animal».** En la sesión, el propietario buscó aplicar la purga desde este acceso. El
+  registro sanitario es de la ficha del animal (CU-04, documento 20), así que en lugar de duplicarlo aquí, el botón
+  lleva a Animales con la guía «Busque y seleccione el animal al que desea aplicar algún medicamento. En su ficha,
+  toque "Registrar evento"»; **Continuar** cierra la guía y deja el cursor en el buscador (documento 15). El botón
+  de agregar pasa a llamarse «Agregar medicamento al catálogo», para que no se confunda con aplicar.

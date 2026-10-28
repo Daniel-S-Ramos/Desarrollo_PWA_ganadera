@@ -71,7 +71,12 @@ export interface Comparacion {
 }
 
 export const UMBRAL_SIMILAR = 0.1;
-export const UMBRAL_MUY_POR_DEBAJO = 0.25;
+/**
+ * Variación atípica de la producción (Tabla 30): el porcentaje por debajo del promedio desde el cual la
+ * vaca se marca «Muy por debajo». Lo fijó el propietario el 2026-10-24 en 35 %; vive en el parámetro
+ * `variacion_atipica_leche` y este valor solo se usa si el parámetro aún no está en el teléfono.
+ */
+export const VARIACION_ATIPICA_POR_DEFECTO = 35;
 
 /** «14,5»: la coma decimal de Colombia. */
 export function formatearLitros(valor: number): string {
@@ -79,7 +84,7 @@ export function formatearLitros(valor: number): string {
 }
 
 /** La diferencia con el promedio en litros y en palabras (sección 6.3). Umbrales de presentación. */
-export function compararConPromedio(litros: number, promedio: number): Comparacion {
+export function compararConPromedio(litros: number, promedio: number, variacionAtipica: number = VARIACION_ATIPICA_POR_DEFECTO): Comparacion {
   const delta = Math.round((litros - promedio) * 10) / 10;
   const cantidad = `${formatearLitros(Math.abs(delta))} ${Math.abs(delta) === 1 ? 'litro' : 'litros'}`;
   const diferencia = delta === 0 ? 'Igual a su promedio' : `${cantidad} ${delta < 0 ? 'menos' : 'más'} que su promedio`;
@@ -87,7 +92,8 @@ export function compararConPromedio(litros: number, promedio: number): Comparaci
   if (promedio === 0) return { diferencia, palabras: litros > 0 ? 'Por encima de su promedio' : 'Similar a su promedio', atencion: false };
   const proporcion = (litros - promedio) / promedio;
   if (Math.abs(proporcion) <= UMBRAL_SIMILAR) return { diferencia, palabras: 'Similar a su promedio', atencion: false };
-  if (proporcion < -UMBRAL_MUY_POR_DEBAJO) return { diferencia, palabras: 'Muy por debajo de su promedio', atencion: true };
+  // «Desde el 35 %»: el porcentaje exacto ya cuenta (redondeado para no depender de los decimales binarios).
+  if (Math.round(proporcion * 1000) / 10 <= -variacionAtipica) return { diferencia, palabras: 'Muy por debajo de su promedio', atencion: true };
   if (proporcion < 0) return { diferencia, palabras: 'Por debajo de su promedio', atencion: false };
   return { diferencia, palabras: 'Por encima de su promedio', atencion: false };
 }

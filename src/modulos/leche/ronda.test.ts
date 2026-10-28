@@ -152,9 +152,10 @@ describe('PU-23 · 4. Promedio (sección 6.2)', () => {
     const r = await ordeno(a.id, '2026-10-12', 10);
     await ordeno(a.id, '2026-10-04', 30);
     await crear('correccion', { entidad_afectada: 'produccion_leche', registro_id: r.id, tipo: 'correccion', campo: 'litros', valor_anterior: '10', valor_nuevo: '14', motivo: 'registro_duplicado', nota: null }, PROPIETARIO.usuario_id);
-    expect(await promedioDe(a.id, HOY)).toEqual({ dias: 7, resultado: { promedio: 14, registros: 1 } });
+    expect(await promedioDe(a.id, HOY)).toEqual({ dias: 7, resultado: { promedio: 14, registros: 1 }, variacionAtipica: 35 });
     await db.parametro.put({ clave: 'dias_promedio_produccion', valor: 10, unidad: 'días', descripcion: 'Periodo' });
-    expect(await promedioDe(a.id, HOY)).toEqual({ dias: 10, resultado: { promedio: 22, registros: 2 } });
+    await db.parametro.put({ clave: 'variacion_atipica_leche', valor: 40, unidad: '%', descripcion: 'Variación' });
+    expect(await promedioDe(a.id, HOY)).toEqual({ dias: 10, resultado: { promedio: 22, registros: 2 }, variacionAtipica: 40 });
   });
 });
 
@@ -164,12 +165,19 @@ describe('PU-23 · 5. Diferencia en palabras (sección 6.3)', () => {
     [11, 10, 'Similar a su promedio', false], // 10 % exacto
     [11.1, 10, 'Por encima de su promedio', false],
     [8.9, 10, 'Por debajo de su promedio', false],
-    [7.5, 10, 'Por debajo de su promedio', false], // 25 % exacto
-    [7.4, 10, 'Muy por debajo de su promedio', true],
+    [7.5, 10, 'Por debajo de su promedio', false], // 25 %: el umbral anterior ya no avisa
+    [6.6, 10, 'Por debajo de su promedio', false], // 34 %
+    [6.5, 10, 'Muy por debajo de su promedio', true], // 35 % exacto: «desde el 35 %», del propietario
+    [7.8, 12, 'Muy por debajo de su promedio', true], // 35 % exacto con decimales binarios
     [0, 0, 'Similar a su promedio', false],
     [3, 0, 'Por encima de su promedio', false],
   ])('%s litros con promedio %s → %s', (litros, promedio, palabras, atencion) => {
     expect(compararConPromedio(litros, promedio)).toMatchObject({ palabras, atencion });
+  });
+
+  it('el umbral lo da el parámetro del propietario', () => {
+    expect(compararConPromedio(7.5, 10, 25)).toMatchObject({ palabras: 'Muy por debajo de su promedio', atencion: true });
+    expect(compararConPromedio(6.5, 10, 40)).toMatchObject({ palabras: 'Por debajo de su promedio', atencion: false });
   });
 
   it('la diferencia en litros', () => {
@@ -279,5 +287,42 @@ describe('PU-23 · 9. Un registro que llega entre la vista y el guardado (secci�
     expect(await registrarOrdeno(a.id, HOY, '12', PROPIETARIO, false, HOY, AHORA)).toEqual({ ok: false, requiereConfirmacion: true });
     expect(await db.produccion_leche.count()).toBe(1);
     expect(await db.correccion.count()).toBe(0);
+  });
+});
+
+/** Anula un ordeño, como desde Corregir o anular. */
+const anularOrdeno = (id: string) =>
+  crear('correccion', { entidad_afectada: 'produccion_leche', registro_id: id, tipo: 'anulacion', campo: null, valor_anterior: null, valor_nuevo: null, motivo: 'animal_equivocado', nota: null }, PROPIETARIO.usuario_id);
+
+describe('PU-23 · 10. Un solo ordeño vigente por vaca y día (documento técnico 32)', () => {
+  it('con el ordeño del día anulado, la vaca queda sin registro y es la siguiente pendiente', async () => {
+    const a = await animal('Z1');
+    const b = await animal('Z2');
+    await ordeno(b.id, HOY, 9);
+    await anularOrdeno((await ordeno(a.id, HOY, 10)).id);
+    const vacas = await cargarRonda(HOY);
+    expect(vacas.find((v) => v.animal_id === a.id)?.existente).toBeNull();
+    expect(siguienteVaca(vacas)?.animal_id).toBe(a.id);
+  });
+
+  it('con el anterior anulado se registra un ordeño nuevo, que la ronda muestra', async () => {
+    const a = await animal('Z1');
+    await anularOrdeno((await ordeno(a.id, HOY, 10)).id);
+    expect(await registrarOrdeno(a.id, HOY, '12', TRABAJADOR, false, HOY, AHORA)).toEqual({ ok: true, resultado: 'registrado' });
+    expect(await db.produccion_leche.count()).toBe(2);
+    const [vaca] = await cargarRonda(HOY);
+    expect(vaca?.existente).toMatchObject({ litros: 12, autor: 'Daniel Ramos' });
+  });
+
+  it('con un anulado y uno vigente, la ronda muestra el vigente y el reemplazo se hace sobre él', async () => {
+    const a = await animal('Z1');
+    const viejo = await ordeno(a.id, HOY, 10);
+    await anularOrdeno(viejo.id);
+    const nuevo = await ordeno(a.id, HOY, 12);
+    expect((await cargarRonda(HOY))[0]?.existente).toMatchObject({ litros: 12, registro: { id: nuevo.id } });
+    expect(await registrarOrdeno(a.id, HOY, '13', PROPIETARIO, false, HOY, AHORA)).toEqual({ ok: false, requiereConfirmacion: true });
+    expect(await registrarOrdeno(a.id, HOY, '13', PROPIETARIO, true, HOY, AHORA)).toEqual({ ok: true, resultado: 'reemplazado' });
+    expect((await db.correccion.toArray()).filter((c) => c.tipo === 'correccion')).toEqual([expect.objectContaining({ registro_id: nuevo.id, valor_anterior: '12', valor_nuevo: '13' })]);
+    expect(await db.produccion_leche.count()).toBe(2);
   });
 });

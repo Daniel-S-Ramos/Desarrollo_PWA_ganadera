@@ -123,14 +123,16 @@ La ficha ya presenta como «Último peso» el pesaje más reciente (documento 16
 ## 8. La meta de ganancia diaria (decisión F, Tabla 30)
 
 La ganancia diaria esperada «se definirá con el propietario, según la raza y el plan de alimentación de
-cada lote» (Tabla 30); hoy no tiene valor. Se lee del parámetro `ganancia_diaria_esperada`:
+cada lote» (Tabla 30). **El propietario la definió el 2026-10-24:** espera que un animal de ceba gane **de 0,5
+a 0,8 kg por día**. Se carga el mínimo, **0,5 kg por día**, porque es el punto por debajo del cual la ganancia
+le preocupa (migración `20261024000200_parametros_del_propietario.sql`). Se lee del parámetro
+`ganancia_diaria_esperada`:
 
-- **Sin valor en el teléfono** (situación actual): no se muestra ningún aviso de meta.
+- **Sin valor en el teléfono** (antes de la carga inicial): no se muestra ningún aviso de meta.
 - **Con valor**: cuando la ganancia diaria frente al pesaje anterior queda por debajo, aparece en el
   registro, sin bloquear: «Por debajo de la meta de 0,5 kg por día», y la evolución señala esos tramos.
 
-Cuando el propietario dé la cifra, se carga con una migración que inserta el parámetro; la aplicación no
-cambia.
+La producción de carne usa la misma meta para la marca «Bajo lo esperado» (documento 34, sección 4).
 
 ## 9. Relación con los requerimientos
 

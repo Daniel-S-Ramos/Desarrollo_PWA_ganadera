@@ -1,0 +1,20 @@
+Sesión C · Validación en el servidor (2026-10-26, consulta de solo lectura después de la sesión)
+
+Registros con fecha de hoy, con su autor y la hora de registro (hora de Colombia, según el teléfono):
+
+tipo     chapeta  valor                              autor        perfil        hora
+ordeño   201      15 L                               José Ramos   propietario   19:55   (acompañamiento)
+ordeño   202      14 L                               José Ramos   propietario   19:55   (acompañamiento)
+pesaje   410      420 kg, cinta                      José Ramos   propietario   19:57   (acompañamiento)
+evento   434      purga · Ivermectina · 1,5 ml       José Ramos   propietario   19:58   (acompañamiento)
+ordeño   207      12 L                               José Ramos   propietario   20:04   (tarea 1)
+pesaje   435      420 kg, cinta                      José Ramos   propietario   23:12   (tarea 2)
+evento   402      purga · Ivermectina · 1,5 ml       José Ramos   propietario   23:16   (tarea 3)
+
+Fotografía:
+foto     201      costado izquierdo                  José Ramos   propietario   2026-10-26 20:51
+archivos en Storage (fotografias/<animal>/):
+  01a17b0e-14b0-7000-84b6-4b9826b5b21e.webp            393.326 bytes
+  01a17b0e-14b0-7000-84b6-4b9826b5b21e-reducida.webp    25.860 bytes
+
+Todos los registros de la sesión están a nombre de la cuenta del propietario.

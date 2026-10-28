@@ -130,11 +130,21 @@ describe('PU-32 · 3. Producción bajo el promedio (regla 3)', () => {
   const base = { animales: [vaca], destinos: [destino(vaca.id, 'leche', '2026-09-01')] };
 
   it('muy por debajo avisa, con los litros y el promedio; solo por debajo no', () => {
-    const muy = delTipo(derivarRecordatorios(datos({ ...base, ordenos: [...previos, { animal_id: vaca.id, fecha: '2026-10-20', litros: 8 }] }), HOY), 'produccion_bajo_promedio');
-    expect(muy).toMatchObject([{ litros: 8, promedio: 12, desde: '2026-10-20' }]);
-    expect(textoRecordatorio(muy[0]!)).toBe('8 litros el 20 de octubre de 2026: muy por debajo de su promedio (12 litros)');
+    // 7,8 de 12 es 35 % menos: el umbral del propietario (Tabla 30).
+    const muy = delTipo(derivarRecordatorios(datos({ ...base, ordenos: [...previos, { animal_id: vaca.id, fecha: '2026-10-20', litros: 7.8 }] }), HOY), 'produccion_bajo_promedio');
+    expect(muy).toMatchObject([{ litros: 7.8, promedio: 12, desde: '2026-10-20' }]);
+    expect(textoRecordatorio(muy[0]!)).toBe('7,8 litros el 20 de octubre de 2026: muy por debajo de su promedio (12 litros)');
     expect(destinoRecordatorio(muy[0]!)).toBe(`/produccion?vaca=${vaca.id}`);
     expect(delTipo(derivarRecordatorios(datos({ ...base, ordenos: [...previos, { animal_id: vaca.id, fecha: '2026-10-20', litros: 10 }] }), HOY), 'produccion_bajo_promedio')).toEqual([]);
+    // 8 de 12 (33 %) avisaba con el umbral anterior del 25 %; con el 35 % ya no.
+    expect(delTipo(derivarRecordatorios(datos({ ...base, ordenos: [...previos, { animal_id: vaca.id, fecha: '2026-10-20', litros: 8 }] }), HOY), 'produccion_bajo_promedio')).toEqual([]);
+  });
+
+  it('el umbral es el parámetro variacion_atipica_leche', () => {
+    const conOcho = (variacion: number) =>
+      delTipo(derivarRecordatorios(datos({ ...base, parametros: { ...PARAMETROS_POR_DEFECTO, variacion_atipica_leche: variacion }, ordenos: [...previos, { animal_id: vaca.id, fecha: '2026-10-20', litros: 8 }] }), HOY), 'produccion_bajo_promedio');
+    expect(conOcho(30)).toHaveLength(1);
+    expect(conOcho(35)).toEqual([]);
   });
 
   it('un ordeño más viejo que el umbral no avisa: de eso se encarga la regla 2', () => {

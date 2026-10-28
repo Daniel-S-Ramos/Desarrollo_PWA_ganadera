@@ -7,6 +7,8 @@ import { compararConAnterior, describirComparacion, formatearKg, leerPeso, NOMBR
 import { METODOS_PESAJE, type RegistroLocal } from '../../dominio/tipos';
 import type { Identidad } from '../../sesion/token';
 import { cargarParaPesaje, metaDeGanancia, registrarPesaje } from './pesajes';
+import { TituloPantalla } from '../../ui/componentes/TituloPantalla';
+import { Bascula } from '../../ui/componentes/Ilustraciones';
 
 /**
  * Registrar un pesaje (CU-08, HU-05). Especificación: docs/tecnica/24-pesaje-y-evolucion.md, secciones 2 a 6.
@@ -86,9 +88,9 @@ function Formulario({ animal, identidad }: { animal: RegistroLocal<'animal'>; id
       <Link className="enlace" to={`/animales/${animal.id}`}>
         ← Volver a la ficha
       </Link>
-      <p className="titulo-seccion">Registrar pesaje</p>
+      <TituloPantalla dibujo={<Bascula />}>Registrar pesaje</TituloPantalla>
       <p className="evento__animal">
-        Animal <strong className="registrado__chapeta">{animal.codigo_chapeta}</strong> · {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'}
+        Animal <strong className="registrado__chapeta chapeta">{animal.codigo_chapeta}</strong> · {animal.sexo === 'hembra' ? 'Hembra' : 'Macho'}
       </p>
       {errores.animal && (
         <p className="campo__error" role="alert">

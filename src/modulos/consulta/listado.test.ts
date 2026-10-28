@@ -3,7 +3,7 @@ import { db } from '../../datos/db';
 import { crear } from '../../datos/repositorio';
 import { uuidv7 } from '../../datos/uuidv7';
 import type { DatosNuevos } from '../../dominio/tipos';
-import { buscar, cargarListado, compararChapetas, elegirFoto, type AnimalListado } from './listado';
+import { buscar, cargarFotoDeAnimal, filtrarPorChapeta, cargarListado, compararChapetas, contarEstados, elegirFoto, type AnimalListado } from './listado';
 
 /**
  * PU-16 · Listado (parte 2: búsqueda, filtro y foto de cada fila).
@@ -18,6 +18,7 @@ function animal(codigo: string, retirado = false): AnimalListado {
     fecha_nacimiento: null,
     fecha_nacimiento_exacta: false,
     retirado,
+    motivoSalida: retirado ? 'venta' : null,
     chapetaPendiente: false,
     destino: null,
     estado_sync: 'sincronizado',
@@ -148,6 +149,68 @@ describe('PU-16 · 5b. Carga del listado desde la base local', () => {
     const ocho = listado.find((a) => a.codigo_chapeta === '8')!;
     expect(siete).toMatchObject({ retirado: false, estado_sync: 'pendiente', fecha_nacimiento: '2025-10-13' });
     expect(siete.foto?.size).toBe(30);
-    expect(ocho).toMatchObject({ retirado: true, foto: null });
+    expect(ocho).toMatchObject({ retirado: true, motivoSalida: 'venta', foto: null });
+    expect(siete.motivoSalida).toBeNull();
+  });
+
+  it('la foto de un animal, para los recordatorios: la reducida principal, o null si no hay', async () => {
+    const conFoto = await crear('animal', datos('7'), autor);
+    const sinFoto = await crear('animal', datos('8'), autor);
+    const lateral = await crear('fotografia', { animal_id: conFoto.id, tipo: 'izquierdo' }, autor);
+    const frontal = await crear('fotografia', { animal_id: conFoto.id, tipo: 'frontal' }, autor);
+    await db.imagen.add({ fotografia_id: lateral.id, animal_id: conFoto.id, reducida: new Blob([new Uint8Array(10)]), completa: null });
+    await db.imagen.add({ fotografia_id: frontal.id, animal_id: conFoto.id, reducida: new Blob([new Uint8Array(20)]), completa: null });
+    expect((await cargarFotoDeAnimal(conFoto.id))?.size).toBe(elegirFoto([{ id: lateral.id, tipo: 'izquierdo' }, { id: frontal.id, tipo: 'frontal' }], new Map([[lateral.id, new Blob([new Uint8Array(10)])], [frontal.id, new Blob([new Uint8Array(20)])]]))?.size);
+    expect(await cargarFotoDeAnimal(sinFoto.id)).toBeNull();
+  });
+});
+
+describe('PU-16 · 6. Los retirados por motivo de salida (2026-10-22)', () => {
+  const retirado = (codigo: string, motivoSalida: AnimalListado['motivoSalida'], destino: AnimalListado['destino'] = null): AnimalListado => ({
+    ...animal(codigo, true),
+    motivoSalida,
+    destino,
+  });
+  const HATO_SALIDAS = [
+    retirado('1', 'venta', 'leche'),
+    retirado('2', 'muerte', 'venta'),
+    retirado('3', 'perdida_robo'),
+    retirado('4', 'venta'),
+    { ...animal('5'), destino: 'venta' as const },
+  ];
+
+  it('con los retirados se filtra por el motivo, no por el destino', () => {
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'retirados', 'todos', 'venta'))).toEqual(['1', '4']);
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'retirados', 'todos', 'muerte'))).toEqual(['2']);
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'retirados', 'todos', 'perdida_robo'))).toEqual(['3']);
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'retirados', 'venta', 'todos'))).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('con los activos y con todos se filtra por el destino y el motivo no cuenta', () => {
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'activos', 'venta', 'muerte'))).toEqual(['5']);
+    expect(chapetas(buscar(HATO_SALIDAS, '', 'todos', 'venta', 'venta'))).toEqual(['2', '5']);
+  });
+});
+
+describe('PU-16 · 7. Cuántos animales hay en cada estado (2026-10-24)', () => {
+  it('activos, retirados y todos; coinciden con lo que muestra cada filtro', () => {
+    const hato = [animal('1'), animal('2', true), animal('3'), animal('4', true), animal('5')];
+    expect(contarEstados(hato)).toEqual({ activos: 3, retirados: 2, todos: 5 });
+    for (const filtro of ['activos', 'retirados', 'todos'] as const) expect(buscar(hato, '', filtro).animales).toHaveLength(contarEstados(hato)[filtro]);
+    expect(contarEstados([])).toEqual({ activos: 0, retirados: 0, todos: 0 });
+  });
+});
+
+describe('PU-16 · 8. Buscador por chapeta de la ronda y la producción de carne (sesión C, 2026-10-26)', () => {
+  const vacas = ['201', '207', '210', '2', 'A20'].map((codigo_chapeta) => ({ codigo_chapeta }));
+  it('por el inicio de la chapeta, con la misma regla del listado y sin cambiar el orden', () => {
+    expect(filtrarPorChapeta(vacas, '20').map((v) => v.codigo_chapeta)).toEqual(['201', '207']);
+    expect(filtrarPorChapeta(vacas, '0207').map((v) => v.codigo_chapeta)).toEqual(['207']);
+    expect(filtrarPorChapeta(vacas, 'a2').map((v) => v.codigo_chapeta)).toEqual(['A20']);
+    expect(filtrarPorChapeta(vacas, '99')).toEqual([]);
+  });
+
+  it('sin texto, todas', () => {
+    expect(filtrarPorChapeta(vacas, '  ')).toHaveLength(5);
   });
 });

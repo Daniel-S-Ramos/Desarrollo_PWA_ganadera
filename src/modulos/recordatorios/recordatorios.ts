@@ -9,7 +9,7 @@
 import { consulta, crear, operacionesPendientes } from '../../datos/repositorio';
 import { destinoVigente } from '../../dominio/destino';
 import { fechaDelPredio, formatearFecha } from '../../dominio/fechas';
-import { compararConPromedio, DIAS_PROMEDIO_POR_DEFECTO, formatearLitros, promedioReciente } from '../../dominio/leche';
+import { compararConPromedio, DIAS_PROMEDIO_POR_DEFECTO, formatearLitros, promedioReciente, VARIACION_ATIPICA_POR_DEFECTO } from '../../dominio/leche';
 import { diasEntreInclusive, sumarDias } from '../../dominio/periodos';
 import type { FechaPredio, RegistroLocal, TipoRecordatorio, Uuid } from '../../dominio/tipos';
 import { soloVigentes } from '../../dominio/vigente';
@@ -39,6 +39,7 @@ export const PARAMETROS_POR_DEFECTO = {
   dias_sin_transmitir: 3,
   dias_promedio_produccion: DIAS_PROMEDIO_POR_DEFECTO,
   dias_recordar_chapeta: DIAS_CHAPETA_POR_DEFECTO,
+  variacion_atipica_leche: VARIACION_ATIPICA_POR_DEFECTO,
 } as const;
 export type Parametros = Record<keyof typeof PARAMETROS_POR_DEFECTO, number>;
 
@@ -133,7 +134,7 @@ export function derivarRecordatorios(d: DatosRecordatorios, hoy: FechaPredio): G
       if (diasEntre(desde, hoy) > p.dias_sin_ordeno) lista.push({ ...base, tipo: 'sin_registro_ordeno', desde, dias: diasEntre(desde, hoy), nunca: !ultimo });
       if (ultimo && diasEntre(ultimo.fecha, hoy) <= p.dias_sin_ordeno) {
         const promedio = promedioReciente(registros, ultimo.fecha, p.dias_promedio_produccion);
-        if (promedio && compararConPromedio(ultimo.litros, promedio.promedio).atencion) {
+        if (promedio && compararConPromedio(ultimo.litros, promedio.promedio, p.variacion_atipica_leche).atencion) {
           lista.push({ ...base, tipo: 'produccion_bajo_promedio', desde: ultimo.fecha, dias: diasEntre(ultimo.fecha, hoy), litros: ultimo.litros, promedio: Math.round(promedio.promedio * 10) / 10 });
         }
       }
@@ -226,6 +227,7 @@ export async function cargarRecordatorios(hoy: FechaPredio = fechaDelPredio()): 
         dias_sin_transmitir: valor('dias_sin_transmitir'),
         dias_promedio_produccion: valor('dias_promedio_produccion'),
         dias_recordar_chapeta: valor('dias_recordar_chapeta'),
+        variacion_atipica_leche: valor('variacion_atipica_leche'),
       },
     },
     hoy,

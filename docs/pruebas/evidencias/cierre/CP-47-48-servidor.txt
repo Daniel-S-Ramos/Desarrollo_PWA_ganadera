@@ -1,0 +1,13 @@
+CP-47 y CP-48 · Comprobación en el servidor (2026-10-25, consultas de solo lectura después de la sesión B)
+
+Ordeños con fecha de hoy (25 de octubre de 2026):
+  ordenos_hoy       15
+  vacas_distintas   15
+  vigentes          15
+  → un solo ordeño por vaca: el envío interrumpido no duplicó nada (la vaca 203, enviada desde dos equipos en
+    CP-45, quedó con un ordeño y una corrección).
+
+Pesajes del 412 con fecha de hoy:
+  pesajes_412_hoy   0
+  → el pesaje registrado sin conexión en el iPhone antes de borrar sus datos (435 kg) no llegó al servicio:
+    se perdió solo lo que no alcanzó a enviarse (Tabla 34, escenario 3).

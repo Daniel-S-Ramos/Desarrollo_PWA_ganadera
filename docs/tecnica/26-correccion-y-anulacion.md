@@ -131,7 +131,12 @@ vigentes, la marca de corregido y la de anulado. Lo usan:
   historial sigue visible porque «ocultarlos impediría explicar por qué se registró otro evento en su lugar»
   (3.9.5).
 
-## 7. El límite del ordeño anulado (decisión G)
+## 7. El límite del ordeño anulado (decisión G) — resuelto en el paso 6.0
+
+> **Resuelto** por el [documento técnico 32](32-ordeno-vigente-unico.md): la unicidad pasó a ser del ordeño
+> **vigente** por vaca y día (disparador, migración `20261022000100_ordeno_vigente_unico.sql`). Anulado el
+> ordeño, la vaca vuelve a quedar pendiente en la ronda y admite otro. Se conserva el texto original como
+> registro de la decisión.
 
 El servicio admite un ordeño por vaca y fecha **contando los anulados** (la restricción está en la tabla, no
 en el valor vigente). Por eso:

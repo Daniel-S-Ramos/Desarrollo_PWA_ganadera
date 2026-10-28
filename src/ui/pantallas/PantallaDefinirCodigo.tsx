@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { definirCodigo, validarCodigo } from '../../sesion/desbloqueo';
+import { MarcoCodigo } from '../componentes/MarcoCodigo';
 
 /**
  * Definición del código de desbloqueo tras el ingreso con credenciales
@@ -41,38 +42,43 @@ export function PantallaDefinirCodigo({ alDefinir }: { alDefinir: () => void }) 
   }
 
   return (
-    <form className="formulario" onSubmit={enviar}>
-      <p className="titulo-seccion">{paso === 'elegir' ? 'Elija su código de desbloqueo' : 'Repita su código'}</p>
-      <p className="texto-secundario">
-        {paso === 'elegir'
+    <MarcoCodigo
+      ilustracion={paso === 'elegir' ? 'cerrado' : 'listo'}
+      titulo={paso === 'elegir' ? 'Elija su código de desbloqueo' : 'Repita su código'}
+      explicacion={
+        paso === 'elegir'
           ? 'De 4 a 6 dígitos. Se le pedirá cada vez que abra la aplicación en este teléfono. No es la contraseña de su cuenta.'
-          : 'Escríbalo otra vez para confirmar.'}
-      </p>
+          : 'Escríbalo otra vez para confirmar.'
+      }
+    >
+      <form className="formulario" onSubmit={enviar}>
+        <label className="campo">
+          <span>Código</span>
+          <input
+            key={paso}
+            className="campo__codigo"
+            type="password"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={6}
+            placeholder="●●●●●●"
+            required
+            autoFocus
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
+          />
+        </label>
 
-      <label className="campo">
-        <span>Código</span>
-        <input
-          className="campo__codigo"
-          type="password"
-          inputMode="numeric"
-          autoComplete="off"
-          maxLength={6}
-          required
-          autoFocus
-          value={codigo}
-          onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
-        />
-      </label>
+        {error && (
+          <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
+            <p>⚠ {error}</p>
+          </div>
+        )}
 
-      {error && (
-        <div className="aviso aviso--atencion aviso--en-contenido" role="alert">
-          <p>⚠ {error}</p>
-        </div>
-      )}
-
-      <button className="boton boton--principal boton--ancho" type="submit" disabled={guardando}>
-        {guardando ? 'Guardando…' : paso === 'elegir' ? 'Continuar' : 'Guardar código'}
-      </button>
-    </form>
+        <button className="boton boton--principal boton--ancho" type="submit" disabled={guardando}>
+          {guardando ? 'Guardando…' : paso === 'elegir' ? 'Continuar' : 'Guardar código'}
+        </button>
+      </form>
+    </MarcoCodigo>
   );
 }

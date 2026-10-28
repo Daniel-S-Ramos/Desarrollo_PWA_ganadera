@@ -10,7 +10,7 @@ import { consulta, reducidasLocales } from '../../datos/repositorio';
 import { animalesVigentes, salidasVigentes, vigentes } from '../../datos/vigentes';
 import { destinoVigente } from '../../dominio/destino';
 import { vistaPrincipal } from '../../dominio/fotografias';
-import type { Destino, EstadoSync, FechaPredio, Sexo, Uuid } from '../../dominio/tipos';
+import type { Destino, EstadoSync, FechaPredio, MotivoSalida, Sexo, Uuid } from '../../dominio/tipos';
 import { idsConChapetaPendiente } from '../identificacion/chapetaPendiente';
 import { errorDeChapeta, normalizarChapeta } from '../identificacion/registroAnimal';
 
@@ -22,6 +22,8 @@ export interface AnimalListado {
   fecha_nacimiento: FechaPredio | null;
   fecha_nacimiento_exacta: boolean;
   retirado: boolean;
+  /** Motivo de la salida vigente (venta, muerte, pérdida o robo); null si sigue en el predio. */
+  motivoSalida: MotivoSalida | null;
   /** Registrado sin la chapeta física y aún sin colocación (documento técnico 25, sección 7.3). */
   chapetaPendiente: boolean;
   /** Destino vigente, o null si no tiene (documento 19, sección 6). */
@@ -35,6 +37,11 @@ export interface AnimalListado {
 export type FiltroEstado = 'activos' | 'retirados' | 'todos';
 /** Las fichas del filtro por destino: todos, uno de los seis o los que no tienen (documento 19, sección 6). */
 export type FiltroDestino = 'todos' | Destino | 'sin_destino';
+/**
+ * Las fichas con los retirados: todos o un motivo de salida. Con los retirados el destino no sirve para
+ * encontrar los vendidos (el destino «venta» es un plan, no la venta): se filtra por el motivo (2026-10-22).
+ */
+export type FiltroSalida = 'todos' | MotivoSalida;
 
 /** Orden numérico de las chapetas: 9 antes que 10, A2 antes que A10, los números antes que las letras. */
 export function compararChapetas(a: string, b: string): number {
@@ -50,20 +57,32 @@ export interface ResultadoBusqueda {
 }
 
 /**
- * Filtra por estado, por destino y por el inicio de la chapeta; la coincidencia exacta va primero y
- * el resto en orden numérico (sección 2).
+ * Los elementos cuya chapeta empieza por lo escrito, con la misma regla del listado (ceros a la izquierda y
+ * minúsculas no cuentan). Sin texto, todos. Para la ronda de ordeño y la producción de carne (pedido del
+ * propietario en la sesión C, 2026-10-26); el orden de la lista no cambia.
+ */
+export function filtrarPorChapeta<T extends { codigo_chapeta: string }>(lista: readonly T[], texto: string): T[] {
+  const buscada = normalizarChapeta(texto);
+  return buscada === '' ? [...lista] : lista.filter((x) => x.codigo_chapeta.startsWith(buscada));
+}
+
+/**
+ * Filtra por estado, por destino (activos y todos) o por motivo de salida (retirados), y por el inicio de
+ * la chapeta; la coincidencia exacta va primero y el resto en orden numérico (sección 2).
  */
 export function buscar(
   animales: readonly AnimalListado[],
   texto: string,
   filtro: FiltroEstado,
   filtroDestino: FiltroDestino = 'todos',
+  filtroSalida: FiltroSalida = 'todos',
 ): ResultadoBusqueda {
   const buscada = normalizarChapeta(texto);
+  const porDestino = (a: AnimalListado) =>
+    filtroDestino === 'todos' || (filtroDestino === 'sin_destino' ? a.destino === null : a.destino === filtroDestino);
+  const porSalida = (a: AnimalListado) => filtroSalida === 'todos' || a.motivoSalida === filtroSalida;
   const porEstado = animales.filter(
-    (a) =>
-      (filtro === 'todos' || (filtro === 'retirados') === a.retirado) &&
-      (filtroDestino === 'todos' || (filtroDestino === 'sin_destino' ? a.destino === null : a.destino === filtroDestino)),
+    (a) => (filtro === 'todos' || (filtro === 'retirados') === a.retirado) && (filtro === 'retirados' ? porSalida(a) : porDestino(a)),
   );
   // No hace falta una regla aparte para poner la exacta primero: todas empiezan por lo buscado y son
   // más largas que la exacta, así que el orden numérico ya la deja primera (4 antes que 40, A1 antes que A10).
@@ -102,7 +121,8 @@ export async function cargarListado(): Promise<AnimalListado[]> {
     reducidasLocales(),
     consulta.colocacion_chapeta.toArray(),
   ]);
-  const retirados = new Set(salidas.map((s) => s.animal_id));
+  const motivos = new Map(salidas.map((s) => [s.animal_id, s.motivo]));
+  const retirados = new Set(motivos.keys());
   const pendientes = idsConChapetaPendiente(animales, colocaciones, retirados);
   const fotosPorAnimal = new Map<Uuid, typeof fotografias>();
   const destinosPorAnimal = new Map<Uuid, typeof destinos>();
@@ -116,10 +136,24 @@ export async function cargarListado(): Promise<AnimalListado[]> {
     fecha_nacimiento: a.fecha_nacimiento,
     fecha_nacimiento_exacta: a.fecha_nacimiento_exacta,
     retirado: retirados.has(a.id),
+    motivoSalida: motivos.get(a.id) ?? null,
     chapetaPendiente: pendientes.has(a.id),
     destino: destinoVigente(destinosPorAnimal.get(a.id) ?? [])?.destino ?? null,
     estado_sync: a.estado_sync,
     ...(a.detalle_conflicto ? { detalle_conflicto: a.detalle_conflicto } : {}),
     foto: elegirFoto(fotosPorAnimal.get(a.id) ?? [], reducidas),
   }));
+}
+
+/** La foto reducida de un animal, con la misma elección que el listado; null si no hay ninguna en el teléfono. */
+export function cargarFotoDeAnimal(animalId: Uuid): Promise<Blob | null> {
+  return Promise.all([consulta.fotografia.where('animal_id').equals(animalId).toArray(), reducidasLocales()]).then(([fotografias, reducidas]) =>
+    elegirFoto(fotografias, reducidas),
+  );
+}
+
+/** Cuántos animales hay en cada estado, para los botones del listado (pedido del autor, 2026-10-24). */
+export function contarEstados(animales: readonly Pick<AnimalListado, 'retirado'>[]): Record<FiltroEstado, number> {
+  const retirados = animales.filter((a) => a.retirado).length;
+  return { activos: animales.length - retirados, retirados, todos: animales.length };
 }

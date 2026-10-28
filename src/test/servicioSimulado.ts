@@ -2,7 +2,7 @@
  * Servicio remoto simulado en memoria para las pruebas del motor de sincronización.
  *
  * Imita lo que importa del servicio real: inserción que ignora un identificador existente, las
- * restricciones de unicidad (chapeta y ordeño por vaca y fecha), la clave foránea hacia animal,
+ * restricciones de unicidad (chapeta y un ordeño vigente por vaca y fecha), la clave foránea hacia animal,
  * la marca recibido_en asignada por el servicio y la consulta ordenada por (recibido_en, id).
  * Cada prueba puede forzar respuestas: falla de red, rechazo de política, sesión vencida.
  */
@@ -59,8 +59,9 @@ export class ServicioSimulado implements ServicioRemoto {
     if (tabla === 'animal' && filas.some((f) => f['codigo_chapeta'] === fila['codigo_chapeta'])) {
       return { ok: false, codigo: '23505', estado: 409, mensaje: 'duplicate key value violates unique constraint "animal_codigo_chapeta_key"' };
     }
-    if (tabla === 'produccion_leche' && filas.some((f) => f['animal_id'] === fila['animal_id'] && f['fecha'] === fila['fecha'])) {
-      return { ok: false, codigo: '23505', estado: 409, mensaje: 'duplicate key value violates unique constraint "produccion_leche_una_por_vaca_y_fecha"' };
+    // Documento técnico 32: un solo ordeño vigente (no anulado) por vaca y fecha, como el disparador.
+    if (tabla === 'produccion_leche' && this.ordenosVigentes(fila['animal_id'] as Uuid, fila['fecha'] as string).length > 0) {
+      return { ok: false, codigo: '23505', estado: 409, mensaje: 'La vaca ya tiene un ordeño vigente ese día' };
     }
     const animalId = fila['animal_id'] as Uuid | undefined;
     if (animalId && tabla !== 'animal' && !this.filas('animal').some((a) => a.id === animalId)) {
@@ -89,8 +90,17 @@ export class ServicioSimulado implements ServicioRemoto {
     return filtradas.slice(0, limite);
   }
 
+  private ordenosVigentes(animalId: Uuid, fecha: string): FilaRemota[] {
+    const anulados = new Set(
+      this.filas('correccion')
+        .filter((c) => c['entidad_afectada'] === 'produccion_leche' && c['tipo'] === 'anulacion')
+        .map((c) => c['registro_id']),
+    );
+    return this.filas('produccion_leche').filter((o) => o['animal_id'] === animalId && o['fecha'] === fecha && !anulados.has(o.id));
+  }
+
   async buscarOrdeno(animalId: Uuid, fecha: string) {
-    const f = this.filas('produccion_leche').find((o) => o['animal_id'] === animalId && o['fecha'] === fecha);
+    const [f] = this.ordenosVigentes(animalId, fecha);
     return f ? { id: f.id, litros: Number(f['litros']) } : null;
   }
 

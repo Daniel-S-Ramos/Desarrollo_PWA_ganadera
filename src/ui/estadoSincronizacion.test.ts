@@ -4,7 +4,7 @@ import { crear } from '../datos/repositorio';
 import { uuidv7 } from '../datos/uuidv7';
 import { sincronizar, suscribirseAlMotor, type EstadoMotor } from '../sync/motor';
 import { ServicioSimulado } from '../test/servicioSimulado';
-import { describirBarra, describirDistintivo, haceCuanto, type SituacionSincronizacion } from './estadoSincronizacion';
+import { describirBarra, describirDistintivo, haceCuanto, porcentajeDeCarga, type SituacionSincronizacion } from './estadoSincronizacion';
 
 /**
  * PU-12 · Indicador de sincronización (apartados 3.7.4 y 3.10.4.5, Tablas 22 y 31, RF-30).
@@ -178,5 +178,25 @@ describe('PU-12 · 6. Avisos del motor', () => {
     expect(ultimo).toMatchObject({ sincronizando: false, avance: null });
     expect(ultimo.ultima?.estado).toBe('completa');
     expect(ultimo.ultimaEn).toBeInstanceOf(Date);
+  });
+});
+
+describe('PU-12 · 7. Barra de avance de la carga inicial (documento 17, sección 4)', () => {
+  const avance = (referencia: boolean, tabla: string | null) => ({ referencia, tabla, animales: 0, registros: 0 }) as Parameters<typeof porcentajeDeCarga>[0];
+
+  it('fuera de una descarga no hay barra; antes de los datos de referencia, 0 %', () => {
+    expect(porcentajeDeCarga(null)).toBeNull();
+    expect(porcentajeDeCarga(undefined)).toBeNull();
+    expect(porcentajeDeCarga(avance(false, null))).toBe(0);
+  });
+
+  it('cuenta por etapas: la referencia y cada tabla, en su orden; la tabla en curso cuenta como empezada', () => {
+    // 13 tablas del predio + la referencia = 14 etapas.
+    expect(porcentajeDeCarga(avance(true, null))).toBe(7);
+    expect(porcentajeDeCarga(avance(true, 'medicamento'))).toBe(7);
+    expect(porcentajeDeCarga(avance(true, 'animal'))).toBe(14);
+    expect(porcentajeDeCarga(avance(true, 'produccion_leche'))).toBe(50);
+    expect(porcentajeDeCarga(avance(true, 'correccion'))).toBe(93);
+    expect(porcentajeDeCarga(avance(true, 'b'), ['a', 'b', 'c'])).toBe(50);
   });
 });

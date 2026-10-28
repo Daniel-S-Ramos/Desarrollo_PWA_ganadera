@@ -66,6 +66,10 @@ declare
   pt_hace3   uuid := gen_random_uuid();
   pt_hace30  uuid := gen_random_uuid();
   c          text[];
+  -- Chapetas libres de la serie de pruebas Z900–Z999, de la más alta hacia abajo: la prueba no choca con los
+  -- animales que el autor crea a mano en la misma serie (PI-01 falló el 2026-10-24 por un Z901 de PE-40).
+  ch        text[] := array(select 'Z' || g from generate_series(999, 900, -1) g
+                             where not exists (select 1 from public.animal a where a.codigo_chapeta = 'Z' || g) limit 6);
   v          int[];
   correccion constant text := 'insert into public.correccion (id, autor_id, creado_en, entidad_afectada, registro_id, tipo, campo, valor_anterior, valor_nuevo, motivo) values (gen_random_uuid(), %L, %L, ''pesaje'', %L, ''correccion'', ''peso'', ''650'', ''6.5'', ''error_digitacion'')';
   animal_de  constant text := 'insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta) values (gen_random_uuid(), %L, now(), %L, ''hembra'', true)';
@@ -78,7 +82,7 @@ begin
     insert into public.usuario (id, nombre, perfil) values
       (p, 'Propietario PI-03', 'propietario'), (t, 'Trabajador PI-03', 'trabajador'), (t2, 'Trabajador 2 PI-03', 'trabajador');
     insert into public.animal (id, autor_id, creado_en, codigo_chapeta, sexo, fecha_nacimiento_exacta)
-      values (vaca, p, now(), 'Z911', 'hembra', true);
+      values (vaca, p, now(), ch[1], 'hembra', true);
     insert into public.pesaje (id, autor_id, creado_en, animal_id, fecha, peso, metodo) values
       (pp_hoy,    p,  now(),                      vaca, current_date, 300, 'cinta'),
       (pt2_hoy,   t2, now(),                      vaca, current_date, 301, 'cinta'),
@@ -90,9 +94,9 @@ begin
 
     -- ------------------------------------------------------------ 1. Autoría
     c := array[
-      pg_temp.como('authenticated', p, format(animal_de, p, 'Z912')),
-      pg_temp.como('authenticated', t, format(animal_de, t, 'Z913')),
-      pg_temp.como('authenticated', t, format(animal_de, p, 'Z914'))];
+      pg_temp.como('authenticated', p, format(animal_de, p, ch[2])),
+      pg_temp.como('authenticated', t, format(animal_de, t, ch[3])),
+      pg_temp.como('authenticated', t, format(animal_de, p, ch[4]))];
     r := r || jsonb_build_object('n',1,'v','Cada perfil registra con su propia autoría; nadie registra a nombre de otro',
            'ok', c = array['OK','OK','42501'], 'd', 'propietario: ' || c[1] || ' · trabajador: ' || c[2] || ' · trabajador a nombre del propietario: ' || c[3]);
 
@@ -156,7 +160,7 @@ begin
            'ok', c = array['OK','OK'], 'd', 'de un trabajador hace 30 días: ' || c[1] || ' · de otro trabajador hoy: ' || c[2]);
 
     -- ------------------------------------------------------------ 9. Cuenta sin perfil
-    c := array[pg_temp.como('authenticated', sp, format(animal_de, sp, 'Z915'))];
+    c := array[pg_temp.como('authenticated', sp, format(animal_de, sp, ch[5]))];
     v := array[pg_temp.contar_como('authenticated', sp, 'select count(*) from public.animal')];
     r := r || jsonb_build_object('n',9,'v','Una cuenta sin perfil no registra ni lee información del predio',
            'ok', c[1] = '42501' and v[1] = 0, 'd', 'registrar: ' || c[1] || ' · animales que ve: ' || v[1]);
@@ -164,7 +168,7 @@ begin
     -- ------------------------------------------------------------ 10. Visitante sin sesión
     c := array[
       pg_temp.como('anon', null, 'select count(*) from public.animal'),
-      pg_temp.como('anon', null, format(animal_de, p, 'Z916'))];
+      pg_temp.como('anon', null, format(animal_de, p, ch[6]))];
     r := r || jsonb_build_object('n',10,'v','Sin sesión no se lee ni se registra nada',
            'ok', c = array['42501','42501'], 'd', 'leer: ' || c[1] || ' · registrar: ' || c[2]);
 

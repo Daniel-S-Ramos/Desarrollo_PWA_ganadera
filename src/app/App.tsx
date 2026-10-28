@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { PantallaFicha } from '../modulos/consulta/PantallaFicha';
 import { PantallaConflictos } from '../modulos/correcciones/PantallaConflictos';
 import { PantallaCorreccionesRecientes } from '../modulos/correcciones/PantallaCorreccionesRecientes';
 import { PantallaCorregir } from '../modulos/correcciones/PantallaCorregir';
 import { PantallaListado } from '../modulos/consulta/PantallaListado';
-import { Recordatorios } from '../modulos/recordatorios/SeccionRecordatorios';
 import { PantallaRegistrarAnimal } from '../modulos/identificacion/PantallaRegistrarAnimal';
 import { PantallaComparacion } from '../modulos/leche/PantallaComparacion';
 import { PantallaProduccion } from '../modulos/leche/PantallaProduccion';
 import { PantallaRondaOrdeno } from '../modulos/leche/PantallaRondaOrdeno';
+import { PantallaProduccionCarne } from '../modulos/peso/PantallaProduccionCarne';
 import { PantallaRegistrarPesaje } from '../modulos/peso/PantallaRegistrarPesaje';
 import { PantallaRegistrarParto } from '../modulos/reproduccion/PantallaRegistrarParto';
 import { PantallaRegistrarSalida } from '../modulos/salida/PantallaRegistrarSalida';
@@ -28,11 +28,18 @@ import { restaurarSesionLocal } from '../sesion/sesionLocal';
 import type { Identidad } from '../sesion/token';
 import { AvisoAlmacenamiento } from '../ui/componentes/AvisoAlmacenamiento';
 import { BarraEstado } from '../ui/componentes/BarraEstado';
-import { ConfirmacionCierre } from '../ui/componentes/ConfirmacionCierre';
-import { PreparandoTelefono, RegistroEnEspera } from '../ui/componentes/PreparandoTelefono';
+import { RegistroEnEspera } from '../ui/componentes/PreparandoTelefono';
 import { useCargaInicialCompleta } from '../ui/useEstadoMotor';
 import { PantallaDefinirCodigo } from '../ui/pantallas/PantallaDefinirCodigo';
 import { PantallaDesbloqueo } from '../ui/pantallas/PantallaDesbloqueo';
+import { IconoPersona } from '../ui/componentes/Iconos';
+import { Montanas } from '../ui/componentes/Ilustraciones';
+import { NavegacionInferior } from '../ui/componentes/NavegacionInferior';
+import { PantallaAlertas } from '../modulos/inicio/PantallaAlertas';
+import { PantallaCuenta } from '../modulos/inicio/PantallaCuenta';
+import { PantallaInicio } from '../modulos/inicio/PantallaInicio';
+import { cargarRecordatorios } from '../modulos/recordatorios/recordatorios';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { PantallaInicioSesion } from '../ui/pantallas/PantallaInicioSesion';
 import { useAlmacenamiento } from '../ui/useAlmacenamiento';
 
@@ -45,22 +52,45 @@ export function App() {
   const { identidad, cerradura, ingresar, desbloquear, salirAlIngreso } = useSesion();
   const [avisoIngreso, setAvisoIngreso] = useState<string | null>(null);
   useSincronizacionAutomatica(cerradura === 'abierta');
+  const enInicio = useLocation().pathname === '/';
+  const abierta = !!identidad && cerradura === 'abierta';
+  // El contador de Alertas en la barra inferior; la capa ui no lee los módulos. Mientras llega la carga inicial
+  // no se cuenta: con los datos a medias saldrían recordatorios falsos (69 en vez de 15 en el caso CP-01).
+  const cargaInicial = useCargaInicialCompleta();
+  const contar = abierta && cargaInicial === true;
+  const pendientes = useLiveQuery(() => (contar ? cargarRecordatorios().then((grupos) => grupos.reduce((n, g) => n + g.recordatorios.length, 0)) : Promise.resolve(0)), [contar]) ?? 0;
+  // El aviso de RNF-15 se da solo en el inicio de sesión, cuando se escriben el correo y la contraseña; no se
+  // repite en las demás pantallas (pedido del autor, 2026-10-24).
+  const conAvisoAlmacenamiento = identidad === null;
 
   return (
     <div className="marco">
       <header className="encabezado">
-        <h1>Ganadería JR</h1>
+        <div className="encabezado__marca">
+          {/* El logo oficial: el mismo ícono de la aplicación instalada (public/favicon.svg). Decorativo: el nombre va al lado. */}
+          <img className="encabezado__logo" src="/pwa-192x192.png" alt="" width={192} height={192} />
+          <div>
+            <h1>Ganadería JR</h1>
+            {identidad && cerradura === 'abierta' && enInicio && <span className="encabezado__subtitulo">Panel principal</span>}
+          </div>
+        </div>
         {identidad && cerradura === 'abierta' && (
           <span className="encabezado__usuario">
-            {identidad.nombre}
-            <br />
-            {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
+            <span>
+              {identidad.nombre}
+              <br />
+              {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
+            </span>
+            <span className="encabezado__avatar" aria-hidden="true">
+              <IconoPersona />
+            </span>
           </span>
         )}
+        <Montanas />
       </header>
 
       <main className="contenido">
-        <AvisoAlmacenamiento persistencia={almacenamiento.persistencia} />
+        {conAvisoAlmacenamiento && <AvisoAlmacenamiento persistencia={almacenamiento.persistencia} />}
 
         {identidad === undefined && <p className="texto-secundario">Cargando…</p>}
 
@@ -104,7 +134,10 @@ export function App() {
 
       <AvisoActualizacion />
 
-      <BarraEstado espacio={almacenamiento.espacio} conSesion={!!identidad && cerradura === 'abierta'} />
+      <div className="pie-fijo">
+        <BarraEstado espacio={almacenamiento.espacio} conSesion={abierta} />
+        {abierta && identidad && <NavegacionInferior conAnimales={puedeUsar(identidad.perfil, 'CU-03')} pendientes={pendientes} />}
+      </div>
     </div>
   );
 }
@@ -118,7 +151,10 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
   const puedeRegistrar = puedeUsar(identidad.perfil, 'CU-02') && cargaCompleta === true;
   return (
           <Routes>
-            <Route path="/" element={<Inicio identidad={identidad} alCerrar={alCerrar} cargaCompleta={cargaCompleta} />} />
+            <Route path="/" element={<PantallaInicio identidad={identidad} alCerrar={alCerrar} cargaCompleta={cargaCompleta} />} />
+            {/* Pestañas de la barra inferior (rediseño del 2026-10-22). */}
+            <Route path="/alertas" element={<PantallaAlertas identidad={identidad} cargaCompleta={cargaCompleta} />} />
+            <Route path="/cuenta" element={<PantallaCuenta identidad={identidad} alCerrar={alCerrar} />} />
             <Route
               path="/animales/nuevo"
               element={
@@ -187,6 +223,8 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
             <Route path="/produccion" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaProduccion /> : <Navigate to="/" replace />} />
             {/* Documento técnico 28: comparación entre vacas, solo el propietario (CU-07, pasos 5 y 6). */}
             <Route path="/produccion/comparar" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaComparacion /> : <Navigate to="/" replace />} />
+            {/* Documento técnico 34: producción de carne, solo el propietario (como CU-07, Tabla 27). */}
+            <Route path="/produccion-carne" element={puedeUsar(identidad.perfil, 'CU-07') ? <PantallaProduccionCarne /> : <Navigate to="/" replace />} />
             {/* Documento técnico 27: solo el propietario (CU-18, Tabla 27). */}
             <Route path="/correcciones" element={puedeUsar(identidad.perfil, 'CU-18') ? <PantallaCorreccionesRecientes /> : <Navigate to="/" replace />} />
             {/* Documento técnico 26, sección 10.6: los conflictos de este teléfono, para ambos perfiles. */}
@@ -194,69 +232,6 @@ function RutasDelPredio({ identidad, alCerrar }: { identidad: Identidad; alCerra
             <Route path="/medicamentos" element={<PantallaMedicamentos identidad={identidad} puedeAgregar={puedeUsar(identidad.perfil, 'CU-04')} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-  );
-}
-
-/**
- * Pantalla de inicio. Los accesos se muestran solo a los perfiles que pueden usarlos (Tabla 27);
- * los recordatorios van arriba (3.10.4.4, documento técnico 30).
- */
-function Inicio({ identidad, alCerrar, cargaCompleta }: { identidad: Identidad; alCerrar: () => void; cargaCompleta: boolean | undefined }) {
-  return (
-    <>
-      <p className="titulo-seccion">Prototipo en construcción</p>
-      <p className="texto-secundario">Iteración 5 · Consultas, alertas y economía</p>
-
-      {cargaCompleta === false && <PreparandoTelefono />}
-
-      {/* Documento técnico 30: los recordatorios derivados, arriba y para ambos perfiles (incluye la chapeta del 4.2). */}
-      {cargaCompleta !== false && <Recordatorios identidad={identidad} />}
-
-      {puedeUsar(identidad.perfil, 'CU-03') && cargaCompleta !== false && (
-        <Link className="boton boton--principal boton--ancho" to="/animales">
-          Animales
-        </Link>
-      )}
-
-      {puedeUsar(identidad.perfil, 'CU-02') && cargaCompleta === true && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/animales/nuevo">
-          Registrar animal
-        </Link>
-      )}
-
-      {puedeUsar(identidad.perfil, 'CU-06') && cargaCompleta === true && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/ordeno">
-          Ronda de ordeño
-        </Link>
-      )}
-
-      {puedeUsar(identidad.perfil, 'CU-07') && cargaCompleta !== false && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/produccion">
-          Producción de leche
-        </Link>
-      )}
-
-      {puedeUsar(identidad.perfil, 'CU-18') && cargaCompleta !== false && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/correcciones">
-          Correcciones recientes
-        </Link>
-      )}
-
-      {cargaCompleta !== false && (
-        <Link className="boton boton--secundario boton--ancho separado" to="/medicamentos">
-          Medicamentos
-        </Link>
-      )}
-
-      <section className="tarjeta tarjeta--correcto separado">
-        <h2>Sesión</h2>
-        <p>
-          {identidad.nombre} · {identidad.perfil === 'propietario' ? 'Propietario' : 'Trabajador'}
-        </p>
-      </section>
-
-      <ConfirmacionCierre alCerrar={alCerrar} />
-    </>
   );
 }
 
@@ -316,3 +291,4 @@ function useSincronizacionAutomatica(activa: boolean): void {
     return iniciarSincronizacionAutomatica(crearServicioRemoto(supabase));
   }, [activa]);
 }
+
