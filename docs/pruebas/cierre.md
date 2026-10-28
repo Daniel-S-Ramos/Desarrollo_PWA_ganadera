@@ -465,3 +465,12 @@ de la Tabla 34 quedan verificados.**
    la herramienta con la que se aplicaron las migraciones antes de cerrar la versión.
 3. Siguen pendientes, por decisión del autor, el vaciado de los datos simulados, el borrado de sus fotos y la
    eliminación de la cuenta de pruebas, que las pruebas de integración necesitan.
+
+**Publicación de la versión 1.0 (2026-10-28).**
+
+| Paso | Resultado |
+|---|---|
+| Compilación | `npm run build` sin errores (aviso de paquete de 896 kB, 254 kB comprimido; la división por pantallas queda en R12) |
+| Fusión | PR #6 de `cierre` a `main`, commit de fusión `8508987` |
+| Etiqueta | `v1.0` anotada y subida a GitHub |
+| Producción | Vercel publicó `8508987` desde `main` como **Production**, estado **Ready** (17 s) |
