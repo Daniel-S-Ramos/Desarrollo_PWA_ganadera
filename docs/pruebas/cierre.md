@@ -4,7 +4,7 @@ Pasos 6.0 a 6.7 del [plan](../../PLAN.md) (apartados 1.6.3.7 a 1.6.3.11). Rama `
 etiqueta `v1.0`.
 
 **Responsable:** Daniel Santiago Ramos Pintor
-**Estado:** en curso
+**Estado:** evaluación terminada; regresión de la versión 1.0 aprobada (2026-10-28)
 
 ## Resumen de resultados
 
@@ -28,6 +28,7 @@ etiqueta `v1.0`.
 | R4 | Conjunto de datos simulados cargado en el servidor | 6.1 | 1.6.3.8 · Tabla 26 | ✅ |
 | R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7; sesión A (consultas con el volumen de la finca): 13 de 13; sesión C con el propietario: CP-53 y CP-54 aprobados | 6.3 | RF-24 a RF-27 · CU-01 · consultas · RNF-02 · RNF-03 | ✅ |
 | R7 | Conectividad limitada (sesión B): CP-44, CP-45, CP-47 y CP-48 aprobados | 6.4 | RF-28 a RF-30 · RNF-05 · Tabla 34 | ✅ |
+| R9 | Regresión antes de la versión 1.0: 968 automáticas, PI-01 (21), PI-02 (5), PI-03 (11), PI-04 (4) y PI-05 (6) | 6.5 | Todos los requerimientos verificados contra el servicio | ✅ |
 
 ---
 
@@ -435,3 +436,32 @@ está cubierto por PE-32 (chapeta en dos teléfonos), PI-03 (permisos en el serv
 
 **La sesión B queda completa: los cuatro escenarios aprobados. Con PE-32, PI-03, CP-02 y CP-07, los siete escenarios
 de la Tabla 34 quedan verificados.**
+
+## R9 · Regresión antes de la versión 1.0 (paso 6.5)
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Repetir el conjunto automático y las cinco pruebas de integración contra el servicio real después de los últimos cambios (buscadores y botón de medicamentos de la sesión C), antes de fusionar `cierre` en `main` y etiquetar `v1.0` |
+| Requerimiento | Todos (regresión) · R9 de la ruta de cierre |
+| Tipo | Unitarias automáticas e integración contra Supabase, ejecutadas por el autor en su equipo |
+| Decisión | Los datos simulados **se conservan** para la sustentación (decisión del autor, 2026-10-28); se vacían antes del uso real. Las pruebas de integración no los tocan: usan chapetas libres de la serie Z900–Z999 y limpian lo que crean |
+| Estado | ✅ Aprobada |
+| Fecha | 2026-10-28 |
+
+| Prueba | Comando | Resultado |
+|---|---|---|
+| Automáticas | `npm test` | **968 de 968** en 43 archivos |
+| PI-01 · Esquema remoto | `npm run prueba:pi-01` | **21 de 21** verificaciones aprobadas (las 15 tablas con RLS, sin UPDATE ni DELETE para nadie, unicidades vigentes, parámetros del propietario) |
+| PI-02 · Gancho del token | `npm run prueba:pi-02` | **5 de 5** (perfil y nombre en el token; la función solo la ejecuta `supabase_auth_admin`; SECURITY INVOKER) |
+| PI-03 · Políticas por perfil | `npm run prueba:pi-03` | **11 de 11** (el trabajador no lee movimientos económicos: 0 filas frente a 85 del propietario; ni el propietario modifica ni elimina) |
+| PI-04 · Sincronización de extremo a extremo | `npm run prueba:pi-04` | **4 de 4**; limpieza: 0 registros de prueba restantes |
+| PI-05 · Fotografías | `npm run prueba:pi-05` | **6 de 6**; archivos de prueba borrados del almacenamiento y 0 registros restantes |
+
+**Observaciones.**
+
+1. Las cifras de PI-03 (85 movimientos económicos, 184 pesajes, 15 salidas) incluyen los datos simulados que siguen
+   cargados y los registros de las sesiones de evaluación; la prueba solo verifica quién puede leerlos.
+2. La CLI de Supabase avisó una versión nueva (2.122.0 frente a 2.120.0 instalada). No se actualizó, para no cambiar
+   la herramienta con la que se aplicaron las migraciones antes de cerrar la versión.
+3. Siguen pendientes, por decisión del autor, el vaciado de los datos simulados, el borrado de sus fotos y la
+   eliminación de la cuenta de pruebas, que las pruebas de integración necesitan.
