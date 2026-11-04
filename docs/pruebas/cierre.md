@@ -29,6 +29,7 @@ etiqueta `v1.0`.
 | R6 | Pruebas funcionales · bloque 1 de acceso: 7 de 7; sesión A (consultas con el volumen de la finca): 13 de 13; sesión C con el propietario: CP-53 y CP-54 aprobados | 6.3 | RF-24 a RF-27 · CU-01 · consultas · RNF-02 · RNF-03 | ✅ |
 | R7 | Conectividad limitada (sesión B): CP-44, CP-45, CP-47 y CP-48 aprobados | 6.4 | RF-28 a RF-30 · RNF-05 · Tabla 34 | ✅ |
 | R9 | Regresión antes de la versión 1.0: 968 automáticas, PI-01 (21), PI-02 (5), PI-03 (11), PI-04 (4) y PI-05 (6) | 6.5 | Todos los requerimientos verificados contra el servicio | ✅ |
+| R6 | Repetición de las tareas de la sesión C después de los buscadores: toques 4, 8 y 10 (antes 8, 13 y 16) | Observación del asesor | RNF-03 · CP-53 | ✅ |
 
 ---
 
@@ -401,6 +402,42 @@ quepa.
 - En **Medicamentos**, un botón **«Aplicar medicamento a un animal»** que lleve a Animales con la guía «Busque y
   seleccione el animal al que desea aplicar algún medicamento», para registrar el evento desde su ficha sin crear otro
   módulo.
+
+### Repetición de las tareas después de las mejoras (2026-11-04)
+
+El asesor observó que las mejoras no se habían comprobado repitiendo las tareas. Se repitieron las tres con el
+propietario, en la versión 1.0.
+
+| Campo | Contenido |
+|---|---|
+| Objetivo | Medir de nuevo los toques y el tiempo de las tres tareas de CP-53 y CP-54 después de incorporar los buscadores y el acceso guiado a los medicamentos |
+| Requerimiento | RNF-03 · CP-53 |
+| Participante | José Ramos Bernal, propietario, en su teléfono y con su cuenta. Sin acompañamiento ni explicación ese día; no se le mostraron los buscadores ni el botón nuevo |
+| Acompañante | Daniel Ramos |
+| Animales | Distintos a los de la primera sesión y en una posición parecida en las listas, para que no recordara dónde estaban |
+| Resultado obtenido | Las tres tareas **sin ayuda**, usando el buscador; los tres registros en el servidor («Todo enviado») |
+| Estado | ✅ CP-53 aprobado; los toques quedaron cerca de la referencia del diseño |
+
+| Tarea sin ayuda | Sin ayuda | Tiempo | Toques (referencia) | Primera sesión | Observado |
+|---|---|---|---|---|---|
+| 1 · «Registre que hoy la vaca 213 dio 6 litros» | ✅ Sí | 10 s | 4 (unos 3) | 26 s · 8 | Entró por la ronda de ordeño y usó el buscador |
+| 2 · «Pese al novillo 440: 345 kilos, con la cinta» | ✅ Sí | 12 s | 8 (unos 7) | 35 s · 13 | Entró por Producción de carne y usó el buscador |
+| 3 · «Registre que hoy le aplicó la purga al novillo 419» | ✅ Sí | 15 s | 10 (unos 8) | 42 s · 16 | Fue directo a la pestaña Animales, usó el buscador y registró desde la ficha; no usó el botón de Medicamentos |
+
+Los toques se contaron sin las teclas de los números; según el acompañante, con ellas serían unos tres más.
+
+**Opinión del propietario:** le pareció mucho más fácil con el buscador y se siente mucho más cómodo con la aplicación.
+
+**Observaciones.**
+
+1. La mejora **no puede atribuirse solo a los buscadores**. El propietario ya conocía la aplicación y las tareas, y el
+   acompañante observó que parte de la reducción se debió a que entiende mejor su funcionamiento. Lo que sí muestra la
+   sesión es que encontró el buscador sin que se lo enseñaran y lo usó en las tres tareas.
+2. El acompañante dictó por error «440 kilos» (el número de la chapeta) en la tarea 2. La aplicación lo registró
+   mostrando un aumento de 112,4 kg en 31 días (3,6 kg por día), sin advertir que era inusual. El propietario lo
+   corrigió a 345 kg con «Corregir o anular», y la corrección quedó en el historial. No cuenta como error del
+   participante, pero muestra que la aplicación no advierte un peso muy distinto al anterior.
+3. El 419 es una hembra de ceba; la instrucción decía «novillo». No cambia la tarea.
 
 ## R7 · Conectividad limitada (paso 6.4)
 
